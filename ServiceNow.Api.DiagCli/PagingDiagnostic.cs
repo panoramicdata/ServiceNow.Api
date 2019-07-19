@@ -35,7 +35,7 @@ namespace ServiceNow.Api.DiagCli
 					_configuration.Credentials.ServiceNowPassword,
 					new Options { ValidateCountItemsReturned = true, PageSize = test.PageSize.Value, Logger = _logger }))
 				{
-					var results = await client.GetAllByQueryAsync(test.Table, fieldList: test.Fields).ConfigureAwait(false);
+					var results = await client.GetAllByQueryAsync(test.Table, test.Query, fieldList: test.Fields).ConfigureAwait(false);
 					_logger.LogInformation($"Got {results.Count} results");
 
 					// Check for dupes
