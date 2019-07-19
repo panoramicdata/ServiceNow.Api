@@ -2,7 +2,6 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<Version>1.1.20</Version>
 		<Authors>David Bond, Daniel Abbatt</Authors>
 		<Company>Panoramic Data Limited</Company>
 		<Description>A ServiceNow REST API client</Description>
@@ -11,7 +10,7 @@
 		<PackageProjectUrl>https://www.nuget.org/packages/ServiceNow.Api/</PackageProjectUrl>
 		<PackageIconUrl>https://connectoricons-prod.azureedge.net/service-now/icon_1.0.1093.1311.png</PackageIconUrl>
 		<PackageTags>ServiceNow API</PackageTags>
-		<PackageReleaseNotes>JObjects returns now only contain requested fields when requested fields have been specified, regardless of internal paging mechanisms.</PackageReleaseNotes>
+		<PackageReleaseNotes>Fixes for handling timeouts from ServiceNow. Defaults to paging by 1,000 instead of 10,000.</PackageReleaseNotes>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<LangVersion>7.3</LangVersion>
 	</PropertyGroup>
