@@ -17,7 +17,8 @@ $version = (Get-Command $dllPath).FileVersionInfo
 $major = $version.FileMajorPart
 $minor = $version.FileMinorPart
 $build = $version.FileBuildPart
-$versionString = @($major, $minor, $build) -join "."
+$private = $version.FilePrivatePart
+$versionString = @($major, $minor, $build, $private) -join "."
 
 # Rename the exe
 move "${assemblyName}.exe" "${assemblyName}.${versionString}.exe" -Force
