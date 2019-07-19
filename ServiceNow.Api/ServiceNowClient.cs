@@ -22,7 +22,7 @@ namespace ServiceNow.Api
 {
 	public class ServiceNowClient : IDisposable
 	{
-		private const int DefaultPageSize = 1000;
+		private const int DefaultPageSize = 10000;
 		private readonly ILogger _logger;
 		private readonly HttpClient _httpClient;
 		private readonly Options _options;
@@ -93,20 +93,6 @@ namespace ServiceNow.Api
 			return GetAllByQueryInternalAsync<T>(Table.GetTableName<T>(), query, null, null, DefaultPageSize, cancellationToken);
 		}
 
-		[Obsolete("Use GetAllByQueryAsync instead.")]
-		public Task<List<JObject>> GetAllByQuery(string tableName, string query = null, List<string> fieldList = null, string extraQueryString = null, CancellationToken cancellationToken = default)
-			=> GetAllByQueryAsync(tableName, query, fieldList, extraQueryString, cancellationToken);
-
-		public Task<List<JObject>> GetAllByQueryAsync(string tableName, string query = null, List<string> fieldList = null, string extraQueryString = null, CancellationToken cancellationToken = default)
-		{
-			_logger.LogDebug($"Calling {nameof(GetAllByQuery)}" +
-							 $" {nameof(tableName)}: {tableName}" +
-							 $", {nameof(query)}: {query ?? "<not set>"}" +
-							 $", {nameof(fieldList)}: {(fieldList?.Any() == true ? string.Join(", ", fieldList) : "<not set>")}" +
-							 ".");
-			return GetAllByQueryInternalAsync<JObject>(tableName, query, fieldList, extraQueryString, DefaultPageSize, cancellationToken);
-		}
-
 		internal async Task<List<T>> GetAllByQueryInternalAsync<T>(string tableName, string query, List<string> fieldList, string extraQueryString, int take, CancellationToken cancellationToken)
 		{
 			_logger.LogTrace($"Entered {nameof(GetAllByQueryInternalAsync)}" +
@@ -168,6 +154,164 @@ namespace ServiceNow.Api
 			{
 				// Do we have a sys_id to work with
 
+			}
+
+			return finalResult.Items;
+		}
+
+		[Obsolete("Use GetAllByQueryAsync instead.")]
+		public Task<List<JObject>> GetAllByQuery(string tableName, string query = null, List<string> fieldList = null, string extraQueryString = null, CancellationToken cancellationToken = default)
+			=> GetAllByQueryAsync(tableName, query, fieldList, extraQueryString, cancellationToken);
+
+		public Task<List<JObject>> GetAllByQueryAsync(string tableName, string query = null, List<string> fieldList = null, string extraQueryString = null, CancellationToken cancellationToken = default)
+		{
+			_logger.LogDebug($"Calling {nameof(GetAllByQuery)}" +
+							 $" {nameof(tableName)}: {tableName}" +
+							 $", {nameof(query)}: {query ?? "<not set>"}" +
+							 $", {nameof(fieldList)}: {(fieldList?.Any() == true ? string.Join(", ", fieldList) : "<not set>")}" +
+							 ".");
+			return GetAllByQueryInternalJObjectAsync(tableName, query, fieldList, extraQueryString, DefaultPageSize, cancellationToken);
+		}
+
+		internal async Task<List<JObject>> GetAllByQueryInternalJObjectAsync(string tableName, string query, List<string> fieldList, string extraQueryString, int take, CancellationToken cancellationToken)
+		{
+			_logger.LogTrace($"Entered {nameof(GetAllByQueryInternalJObjectAsync)}" +
+							 $" type: {typeof(JObject)}" +
+							 $", {nameof(tableName)}: {tableName}" +
+							 $", {nameof(query)}: {query ?? "<not set>"}" +
+							 $", {nameof(fieldList)}: {(fieldList?.Any() == true ? string.Join(", ", fieldList) : "<not set>")}" +
+							 $", {nameof(extraQueryString)}: {(string.IsNullOrWhiteSpace(extraQueryString) ? "<not set>" : extraQueryString)}" +
+							 ".");
+
+			const string PagingFieldName = "sys_created_on";
+
+			// Initialise actualFieldList from fieldList or an empty list if it was null
+			var actualFieldList = new List<string>(fieldList ?? new List<string>());
+
+			if (actualFieldList.Count > 0)
+			{
+				// Field list is provided so we need to make sure it includes the fields we need
+				if (!actualFieldList.Contains(PagingFieldName))
+				{
+					actualFieldList.Add(PagingFieldName);
+				}
+
+				// sys_id is required for dedupe during paging
+				if (!actualFieldList.Contains("sys_id"))
+				{
+					actualFieldList.Add("sys_id");
+				}
+			}
+			// To avoid issues with duplicates we HAVE to sort by something.
+
+			// Does the query contain an ORDERBY?
+			// Ordering: https://docs.servicenow.com/bundle/geneva-servicenow-platform/page/administer/exporting_data/reference/r_URLQueryParameters.html
+			// Complain if ORDERBY has been provided
+			if (query?.Contains("ORDERBY") == true)
+			{
+				throw new ServiceNowApiException("ORDERBY not supported in query due to paging mechanism");
+			}
+
+			// Set the ordering default
+			if (query == null)
+			{
+				query = $"ORDERBY{PagingFieldName}";
+			}
+			else
+			{
+				query += $"^ORDERBY{PagingFieldName}";
+			}
+
+			// Strategy: We're ordering by the sys_created_on so get the first page without limits and then subsequent pages based on >= the max time we got to make sure we don't miss any, need to remove duplicates
+
+			DateTimeOffset maxDateTimeRetrieved;
+			DateTimeOffset previousMaxDateTimeRetrieved;
+			// This will be our final response
+			var finalResult = new Page<JObject>();
+			// While the last request returned at least the pageSize then we continue
+			var apiReportedTotalCount = 0;
+			var pagesRetrieved = 0;
+			// Initially the queryWithPagingOffset will just be the original query
+			var queryWithPagingOffset = query;
+			while (true)
+			{
+				var response = await GetPageByQueryInternalAsync<JObject>(0, take, tableName, queryWithPagingOffset, actualFieldList, extraQueryString, cancellationToken).ConfigureAwait(false);
+				pagesRetrieved++;
+				if (pagesRetrieved == 1)
+				{
+					// TotalCount will change each time as the criteria is changing so get it from the original query where we didn't change the criteria to include a date range
+					apiReportedTotalCount = response.TotalCount;
+				}
+
+				// Add this response to the list
+				finalResult.Items.AddRange(response.Items);
+
+				// If we got at least the number we asked for then there are probably more
+				if (response.Items.Count == take)
+				{
+					previousMaxDateTimeRetrieved = maxDateTimeRetrieved;
+					maxDateTimeRetrieved = response.Items.Max(jObject =>
+					{
+						// Parse and enforce source as being UTC (Z)
+						return DateTimeOffset.Parse(jObject[PagingFieldName].ToString() + "Z");
+					});
+
+					if (previousMaxDateTimeRetrieved == maxDateTimeRetrieved)
+					{
+						throw new ServiceNowApiException("Paging window has not increased, try a larger page size.");
+					}
+
+					// Update the offset for the next query
+					queryWithPagingOffset = $"{query}^{PagingFieldName}>={maxDateTimeRetrieved.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss")}";
+					continue;
+				}
+
+				// All done
+				break;
+			}
+
+			// https://community.servicenow.com/community?id=community_question&sys_id=bd7f8725dbdcdbc01dcaf3231f961949
+			// See if we have any dupes based on sys_id
+			if (finalResult.Items.Count > 0)
+			{
+				// Do we have a sys_id to work with
+				// Need to dedupe as we might have got multiples due to paging mechanism
+				var unique = new Dictionary<string, JObject>();
+				foreach (var jObject in finalResult.Items)
+				{
+					unique[jObject["sys_id"].ToString()] = jObject;
+				}
+				finalResult.Items = unique.Values.ToList();
+			}
+
+			// If required, double check how many we got is how many we should have
+			finalResult.TotalCount = apiReportedTotalCount;
+			if (_options.ValidateCountItemsReturned && finalResult.TotalCount != finalResult.Items.Count)
+			{
+				throw new Exception($"Expected {finalResult.TotalCount} {typeof(JObject)} but retrieved {finalResult.Items.Count}");
+			}
+
+			// Are there any results
+			if (finalResult.Items.Count > 0)
+			{
+				// YES - Did we specify any fields?
+				if (fieldList?.Count > 0)
+				{
+					// YES - Make sure we only send back the fields we asked for
+					var first = finalResult.Items[0];
+					var actualPropertyNames = first.Properties().Select(p => p.Name).OrderBy(name => name).ToList();
+					if (!fieldList.OrderBy(name => name).SequenceEqual(actualPropertyNames))
+					{
+						var propertiesToRemove = actualPropertyNames.Where(name => !fieldList.Contains(name)).ToList();
+						foreach (var item in finalResult.Items)
+						{
+							foreach (var propertyName in propertiesToRemove)
+							{
+								item.Remove(propertyName);
+							}
+						}
+					}
+				}
 			}
 
 			return finalResult.Items;
@@ -539,7 +683,7 @@ namespace ServiceNow.Api
 					if (totalCount != null && int.TryParse(totalCount, out var totalCountInt))
 					{
 						restListResponse.TotalCount = totalCountInt;
-						_logger.LogTrace($"Request {requestId}: TotalCount: {totalCountInt:N0}");
+						_logger.LogTrace($"Request {requestId}: X-Total-Count: {totalCountInt:N0}");
 					}
 				}
 
