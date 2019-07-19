@@ -22,7 +22,6 @@ namespace ServiceNow.Api
 {
 	public class ServiceNowClient : IDisposable
 	{
-		private const int DefaultPageSize = 10000;
 		private readonly ILogger _logger;
 		private readonly HttpClient _httpClient;
 		private readonly Options _options;
@@ -90,7 +89,7 @@ namespace ServiceNow.Api
 							 $" type: {typeof(T)}" +
 							 $", {nameof(query)}:{query ?? "<not set>"}" +
 							 ".");
-			return GetAllByQueryInternalAsync<T>(Table.GetTableName<T>(), query, null, null, DefaultPageSize, cancellationToken);
+			return GetAllByQueryInternalAsync<T>(Table.GetTableName<T>(), query, null, null, _options.PageSize, cancellationToken);
 		}
 
 		internal async Task<List<T>> GetAllByQueryInternalAsync<T>(string tableName, string query, List<string> fieldList, string extraQueryString, int take, CancellationToken cancellationToken)
@@ -170,10 +169,10 @@ namespace ServiceNow.Api
 							 $", {nameof(query)}: {query ?? "<not set>"}" +
 							 $", {nameof(fieldList)}: {(fieldList?.Any() == true ? string.Join(", ", fieldList) : "<not set>")}" +
 							 ".");
-			return GetAllByQueryInternalJObjectAsync(tableName, query, fieldList, extraQueryString, DefaultPageSize, cancellationToken);
+			return GetAllByQueryInternalJObjectAsync(tableName, query, fieldList, extraQueryString, _options.PageSize, cancellationToken);
 		}
 
-		internal async Task<List<JObject>> GetAllByQueryInternalJObjectAsync(string tableName, string query, List<string> fieldList, string extraQueryString, int take, CancellationToken cancellationToken)
+		internal async Task<List<JObject>> GetAllByQueryInternalJObjectAsync(string tableName, string query, List<string> fieldList, string extraQueryString, int pageSize, CancellationToken cancellationToken)
 		{
 			_logger.LogTrace($"Entered {nameof(GetAllByQueryInternalJObjectAsync)}" +
 							 $" type: {typeof(JObject)}" +
@@ -181,6 +180,7 @@ namespace ServiceNow.Api
 							 $", {nameof(query)}: {query ?? "<not set>"}" +
 							 $", {nameof(fieldList)}: {(fieldList?.Any() == true ? string.Join(", ", fieldList) : "<not set>")}" +
 							 $", {nameof(extraQueryString)}: {(string.IsNullOrWhiteSpace(extraQueryString) ? "<not set>" : extraQueryString)}" +
+							 $", PageSize: {pageSize}" +
 							 ".");
 
 			const string PagingFieldName = "sys_created_on";
@@ -235,7 +235,7 @@ namespace ServiceNow.Api
 			var queryWithPagingOffset = query;
 			while (true)
 			{
-				var response = await GetPageByQueryInternalAsync<JObject>(0, take, tableName, queryWithPagingOffset, actualFieldList, extraQueryString, cancellationToken).ConfigureAwait(false);
+				var response = await GetPageByQueryInternalAsync<JObject>(0, pageSize, tableName, queryWithPagingOffset, actualFieldList, extraQueryString, cancellationToken).ConfigureAwait(false);
 				pagesRetrieved++;
 				if (pagesRetrieved == 1)
 				{
@@ -245,9 +245,10 @@ namespace ServiceNow.Api
 
 				// Add this response to the list
 				finalResult.Items.AddRange(response.Items);
+				_logger.LogTrace($"Last request received {response?.Items?.Count.ToString() ?? "UNKNOWN" } items");
 
 				// If we got at least the number we asked for then there are probably more
-				if (response.Items.Count == take)
+				if (response.Items.Count == pageSize)
 				{
 					previousMaxDateTimeRetrieved = maxDateTimeRetrieved;
 					maxDateTimeRetrieved = response.Items.Max(jObject =>
@@ -286,6 +287,7 @@ namespace ServiceNow.Api
 
 			// If required, double check how many we got is how many we should have
 			finalResult.TotalCount = apiReportedTotalCount;
+			_logger.LogTrace($"Initial reported TotalCount from API: {apiReportedTotalCount}");
 			if (_options.ValidateCountItemsReturned && finalResult.TotalCount != finalResult.Items.Count)
 			{
 				throw new Exception($"Expected {finalResult.TotalCount} {typeof(JObject)} but retrieved {finalResult.Items.Count}");
