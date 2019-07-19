@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ServiceNow.Api.DiagCli": {
+      "commandName": "Project",
+      "commandLineArgs": "\"F:\\Code\\servicenow.api\\ServiceNow.Api.DiagCli\\appsettings.json\""
+    }
+  }
+}
