@@ -17,6 +17,6 @@ namespace ServiceNow.Api
 		/// </summary>
 		public bool ValidateCountItemsReturned { get; set; } = true;
 
-		public int PageSize { get; set; } = 10000;
+		public int PageSize { get; set; } = 1000;
 	}
 }
