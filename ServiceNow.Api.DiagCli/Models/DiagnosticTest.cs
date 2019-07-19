@@ -1,4 +1,6 @@
-﻿namespace ServiceNow.Api.DiagCli.Models
+﻿using System.Collections.Generic;
+
+namespace ServiceNow.Api.DiagCli.Models
 {
 	public class DiagnosticTest
 	{
@@ -9,5 +11,7 @@
 		public string Table { get; set; }
 
 		public string Query { get; set; }
+
+		public List<string> Fields { get; set; } = new List<string> { "sys_id" };
 	}
 }

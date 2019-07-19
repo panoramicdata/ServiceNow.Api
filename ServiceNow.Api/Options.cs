@@ -16,5 +16,7 @@ namespace ServiceNow.Api
 		/// Checks that the number of items returned matches the header total when getting all CIs
 		/// </summary>
 		public bool ValidateCountItemsReturned { get; set; } = true;
+
+		public int PageSize { get; set; } = 10000;
 	}
 }

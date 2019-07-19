@@ -42,7 +42,16 @@ namespace ServiceNow.Api.DiagCli
 			services.AddTransient<DiagApplication>();
 			services.AddTransient<PagingDiagnostic>();
 
-			services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true));
+			services.AddLogging(loggingBuilder =>
+			{
+				loggingBuilder.AddSerilog(
+					new LoggerConfiguration()
+						.MinimumLevel.Verbose()
+						.WriteTo.Console()
+						.WriteTo.File($"Log-{DateTimeOffset.UtcNow:yyyyMMddTHHmmssZ}.txt")
+						.CreateLogger(),
+					dispose: true);
+			});
 
 			return services;
 		}
