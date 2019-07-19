@@ -333,7 +333,7 @@ namespace ServiceNow.Api
 		public Task<Page<T>> GetPageByQueryAsync<T>(int skip, int take, string query = null, CancellationToken cancellationToken = default) where T : Table
 			=> GetPageByQueryInternalAsync<T>(skip, take, Table.GetTableName<T>(), query, null, null, cancellationToken);
 
-		private Task<Page<T>> GetPageByQueryInternalAsync<T>(int skip, int take, string tableName, string query, List<string> fieldList, string extraQueryString, CancellationToken cancellationToken)
+		private async Task<Page<T>> GetPageByQueryInternalAsync<T>(int skip, int take, string tableName, string query, List<string> fieldList, string extraQueryString, CancellationToken cancellationToken)
 		{
 			_logger.LogTrace($"Entered {nameof(GetPageByQueryInternalAsync)}" +
 							 $" type: {typeof(T)}" +
@@ -344,15 +344,21 @@ namespace ServiceNow.Api
 							 $", {nameof(take)}: {take}" +
 							 ".");
 
-			return GetInternalAsync<Page<T>>(
+			var pageResult = await GetInternalAsync<Page<T>>(
 				$"api/now/table/{tableName}" +
 				$"?sysparm_offset={skip}" +
 				$"&sysparm_limit={take}" +
 				(!string.IsNullOrWhiteSpace(query) ? $"&sysparm_query={HttpUtility.UrlEncode(query)}" : null) +
 				(fieldList?.Any() == true ? "&" : "") +
 				BuildFieldListQueryParameter(fieldList) +
-				(string.IsNullOrWhiteSpace(extraQueryString) ? "" : "&" + extraQueryString
-			), cancellationToken);
+				(string.IsNullOrWhiteSpace(extraQueryString) ? "" : "&" + extraQueryString)
+				, cancellationToken).ConfigureAwait(false);
+			if (pageResult.Status == "failure")
+			{
+				var message = $"An status response of 'failure' was observed. Error Message: '{pageResult.Error?.Message}'. Error Detail: '{pageResult.Error?.Detail}'";
+				throw new ServiceNowApiException(message);
+			}
+			return pageResult;
 		}
 
 		private static string BuildFieldListQueryParameter(List<string> fieldList)
