@@ -290,7 +290,7 @@ namespace ServiceNow.Api
 			_logger.LogTrace($"Initial reported TotalCount from API: {apiReportedTotalCount}");
 			if (_options.ValidateCountItemsReturned && finalResult.TotalCount != finalResult.Items.Count)
 			{
-				throw new Exception($"Expected {finalResult.TotalCount} {typeof(JObject)} but retrieved {finalResult.Items.Count}");
+				throw new Exception($"Expected {finalResult.TotalCount:N0} {typeof(JObject)} but retrieved {finalResult.Items.Count:N0}");
 			}
 
 			// Are there any results
@@ -316,7 +316,7 @@ namespace ServiceNow.Api
 				}
 			}
 
-			_logger.LogDebug($"Retrieved {finalResult.Items} items from ServiceNow.");
+			_logger.LogDebug($"Retrieved {finalResult.Items:N0} items from ServiceNow.");
 			return finalResult.Items;
 		}
 
