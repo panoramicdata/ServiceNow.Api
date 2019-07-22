@@ -316,6 +316,7 @@ namespace ServiceNow.Api
 				}
 			}
 
+			_logger.LogDebug($"Retrieved {finalResult.Items} items from ServiceNow.");
 			return finalResult.Items;
 		}
 
