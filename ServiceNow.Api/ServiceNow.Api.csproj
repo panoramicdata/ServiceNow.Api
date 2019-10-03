@@ -6,7 +6,7 @@
 		<Company>Panoramic Data Limited</Company>
 		<Description>A ServiceNow REST API client</Description>
 		<Copyright>Copyright © Panoramic Data Limited 2019</Copyright>
-		<PackageLicense>Apache-2.0</PackageLicense>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageProjectUrl>https://www.nuget.org/packages/ServiceNow.Api/</PackageProjectUrl>
 		<PackageIconUrl>https://connectoricons-prod.azureedge.net/service-now/icon_1.0.1093.1311.png</PackageIconUrl>
 		<PackageTags>ServiceNow API</PackageTags>
