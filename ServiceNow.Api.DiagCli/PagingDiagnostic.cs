@@ -33,7 +33,7 @@ namespace ServiceNow.Api.DiagCli
 					_configuration.Credentials.ServiceNowAccount,
 					_configuration.Credentials.ServiceNowUsername,
 					_configuration.Credentials.ServiceNowPassword,
-					new Options { ValidateCountItemsReturned = true, PageSize = test.PageSize.Value, Logger = _logger }))
+					new Options { ValidateCountItemsReturned = true, ValidateCountItemsReturnedTolerance = 0, PageSize = test.PageSize.Value, Logger = _logger }))
 				{
 					var results = await client.GetAllByQueryAsync(test.Table, test.Query, fieldList: test.Fields).ConfigureAwait(false);
 					_logger.LogInformation($"Got {results.Count} results");
