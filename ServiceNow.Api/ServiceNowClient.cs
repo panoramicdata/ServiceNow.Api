@@ -177,7 +177,7 @@ namespace ServiceNow.Api
 								  && countItems <= totalExpected + _options.ValidateCountItemsReturnedTolerance;
 				message += $"{(isCountItemsOk ? "Yes - inside" : "No - outside")} the tolerance of {_options.ValidateCountItemsReturnedTolerance}.";
 			}
-			_logger.LogInformation(message);
+			_logger.LogDebug(message);
 			return isCountItemsOk;
 		}
 
