@@ -10,7 +10,7 @@
 		<PackageProjectUrl>https://www.nuget.org/packages/ServiceNow.Api/</PackageProjectUrl>
 		<PackageIconUrl>https://connectoricons-prod.azureedge.net/service-now/icon_1.0.1093.1311.png</PackageIconUrl>
 		<PackageTags>ServiceNow API</PackageTags>
-		<PackageReleaseNotes>Added support for Options.ValidateCountItemsReturnedTolerance to allow the validation to be within the expected total, plus or minus this tolerance</PackageReleaseNotes>
+		<PackageReleaseNotes>Reduced tolerance messages to debug</PackageReleaseNotes>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<LangVersion>7.3</LangVersion>
 	</PropertyGroup>
