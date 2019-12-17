@@ -22,7 +22,7 @@ namespace ServiceNow.Api.DiagCli
 				services.Configure<Configuration>(configuration.Build());
 
 				var serviceProvider = services.BuildServiceProvider();
-				return await serviceProvider.GetService<DiagApplication>().RunAsync(args).ConfigureAwait(false);
+				return await serviceProvider.GetService<DiagApplication>().RunAsync().ConfigureAwait(false);
 			}
 			catch (Exception e)
 			{
