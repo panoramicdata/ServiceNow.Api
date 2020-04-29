@@ -10,7 +10,7 @@ namespace ServiceNow.Api.Test
 {
 	public class QueryTests : ServiceNowTest
 	{
-		public QueryTests(ITestOutputHelper output) : base(output, "appsettings.ntt.dev.json", new Options { ValidateCountItemsReturned = true, PageSize = 1000 })
+		public QueryTests(ITestOutputHelper output) : base(output, "appsettings.ntt.dev.json", new Options { ValidateCountItemsReturned = true, ValidateCountItemsReturnedTolerance = 0, PageSize = 1000 })
 		{
 		}
 
@@ -19,7 +19,7 @@ namespace ServiceNow.Api.Test
 		{
 			// This test fails if not ordering by ORDERBYsys_id
 			const string query = "u_nameISNOTEMPTY";
-			var fieldList = new List<string> { "sys_id", "sys_class_name", "name", "sys_updated_on", "u_name", "u_value", "u_parent.sys_id", "sys_created_on" };
+			var fieldList = new List<string> { "sys_id", "sys_updated_on", "u_name", "u_value", "sys_created_on" };
 			const string extraQueryString = null;
 
 			var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default).ConfigureAwait(false);

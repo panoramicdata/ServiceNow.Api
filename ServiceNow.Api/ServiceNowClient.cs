@@ -141,9 +141,9 @@ namespace ServiceNow.Api
 
 				// If required, double check how many we got is how many we should have
 				finalResult.TotalCount = response.TotalCount;
-				if (_options.ValidateCountItemsReturned && finalResult.TotalCount != finalResult.Items.Count)
+				if (!ItemsReturnedInsideTolerance(finalResult.Items.Count, finalResult.TotalCount))
 				{
-					throw new Exception($"Expected {finalResult.TotalCount} {typeof(T)} but only retrieved {finalResult.Items.Count}");
+					throw new Exception($"Expected {finalResult.TotalCount} entries but only retrieved {finalResult.Items.Count} which is not within the {_options.ValidateCountItemsReturnedTolerance} tolerance");
 				}
 			}
 
@@ -156,6 +156,29 @@ namespace ServiceNow.Api
 			}
 
 			return finalResult.Items;
+		}
+
+		private bool ItemsReturnedInsideTolerance(int countItems, int totalExpected)
+		{
+			string message;
+			bool isCountItemsOk;
+
+			message = $"Checking whether {countItems} of {totalExpected} expected is acceptable... ";
+
+			if (!_options.ValidateCountItemsReturned)
+			{
+				// Items are always inside tolerance if validation is disabled
+				isCountItemsOk = true;
+				message += $"Yes - {nameof(_options.ValidateCountItemsReturned)} is disabled.";
+			}
+			else
+			{
+				isCountItemsOk = countItems >= totalExpected - _options.ValidateCountItemsReturnedTolerance
+								  && countItems <= totalExpected + _options.ValidateCountItemsReturnedTolerance;
+				message += $"{(isCountItemsOk ? "Yes - inside" : "No - outside")} the tolerance of {_options.ValidateCountItemsReturnedTolerance}.";
+			}
+			_logger.LogDebug(message);
+			return isCountItemsOk;
 		}
 
 		[Obsolete("Use GetAllByQueryAsync instead.")]
@@ -288,7 +311,7 @@ namespace ServiceNow.Api
 			// If required, double check how many we got is how many we should have
 			finalResult.TotalCount = apiReportedTotalCount;
 			_logger.LogTrace($"Initial reported TotalCount from API: {apiReportedTotalCount}");
-			if (_options.ValidateCountItemsReturned && finalResult.TotalCount != finalResult.Items.Count)
+			if (!ItemsReturnedInsideTolerance(finalResult.Items.Count, finalResult.TotalCount))
 			{
 				throw new Exception($"Expected {finalResult.TotalCount:N0} {typeof(JObject)} but retrieved {finalResult.Items.Count:N0}");
 			}
@@ -316,7 +339,7 @@ namespace ServiceNow.Api
 				}
 			}
 
-			_logger.LogDebug($"Retrieved {finalResult.Items:N0} items from ServiceNow.");
+			_logger.LogDebug($"Retrieved {finalResult.Items.Count:N0} items from ServiceNow.");
 			return finalResult.Items;
 		}
 
@@ -354,7 +377,7 @@ namespace ServiceNow.Api
 				BuildFieldListQueryParameter(fieldList) +
 				(string.IsNullOrWhiteSpace(extraQueryString) ? "" : "&" + extraQueryString)
 				, cancellationToken).ConfigureAwait(false);
-			if (pageResult.Status == "failure")
+			if (!string.IsNullOrWhiteSpace(pageResult.Status))
 			{
 				var message = $"An status response of 'failure' was observed. Error Message: '{pageResult.Error?.Message}'. Error Detail: '{pageResult.Error?.Detail}'";
 				throw new ServiceNowApiException(message);

@@ -6,11 +6,11 @@
 		<Company>Panoramic Data Limited</Company>
 		<Description>A ServiceNow REST API client</Description>
 		<Copyright>Copyright © Panoramic Data Limited 2019</Copyright>
-		<PackageLicenseUrl>http://opensource.org/licenses/Apache-2.0</PackageLicenseUrl>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageProjectUrl>https://www.nuget.org/packages/ServiceNow.Api/</PackageProjectUrl>
 		<PackageIconUrl>https://connectoricons-prod.azureedge.net/service-now/icon_1.0.1093.1311.png</PackageIconUrl>
 		<PackageTags>ServiceNow API</PackageTags>
-		<PackageReleaseNotes>Version updated for new versioning package.</PackageReleaseNotes>
+		<PackageReleaseNotes>Reduced tolerance messages to debug</PackageReleaseNotes>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<LangVersion>7.3</LangVersion>
 	</PropertyGroup>
