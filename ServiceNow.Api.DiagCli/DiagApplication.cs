@@ -25,7 +25,7 @@ namespace ServiceNow.Api.DiagCli
 			_serviceProvider = serviceProvider;
 		}
 
-		public async Task<int> RunAsync(string[] args)
+		public async Task<int> RunAsync()
 		{
 			_logger.LogInformation($"ServiceNow API Diagnostics v{ThisAssembly.AssemblyFileVersion}");
 

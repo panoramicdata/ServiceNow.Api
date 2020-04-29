@@ -2,7 +2,6 @@
 
 namespace ServiceNow.Api
 {
-
 	[DataContract]
 	public class ResponseError
 	{
