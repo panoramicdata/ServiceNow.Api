@@ -81,7 +81,7 @@ namespace ServiceNow.Api
 
 		public Task<List<T>> GetAllByQueryAsync<T>(string query = null, CancellationToken cancellationToken = default) where T : Table
 		{
-			_logger.LogDebug($"Calling {nameof(GetAllByQuery)}" +
+			_logger.LogDebug($"Calling {nameof(GetAllByQueryAsync)}" +
 							 $" type: {typeof(T)}" +
 							 $", {nameof(query)}:{query ?? "<not set>"}" +
 							 ".");
@@ -179,7 +179,7 @@ namespace ServiceNow.Api
 
 		public Task<List<JObject>> GetAllByQueryAsync(string tableName, string query = null, List<string> fieldList = null, string extraQueryString = null, CancellationToken cancellationToken = default)
 		{
-			_logger.LogDebug($"Calling {nameof(GetAllByQuery)}" +
+			_logger.LogDebug($"Calling {nameof(GetAllByQueryAsync)}" +
 							 $" {nameof(tableName)}: {tableName}" +
 							 $", {nameof(query)}: {query ?? "<not set>"}" +
 							 $", {nameof(fieldList)}: {(fieldList?.Any() == true ? string.Join(", ", fieldList) : "<not set>")}" +
