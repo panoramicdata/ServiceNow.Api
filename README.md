@@ -6,7 +6,7 @@ ServiceNow REST API nuget package.
 
 To create a simple command line app that uses the ServiceNow REST API:
 
-1. Create a .NET Core 3.1 project in Visual Studio
+1. Create a .NET Core 3.1 Console project in Visual Studio
 2. Ensure that you have specified &lt;LangVersion&gt;latest&lt;/LangVersion&gt; in the csproj file, e.g.:
 ````
 	<Project Sdk="Microsoft.NET.Sdk">
@@ -31,7 +31,7 @@ using System.Threading.Tasks;
 
 namespace ServiceNow.Api.Example
 {
-	public class Program
+	public static class Program
 	{
 		public async static Task Main(string[] args)
 		{
@@ -45,12 +45,12 @@ namespace ServiceNow.Api.Example
 
 			// MANDATORY: The table name can be obtained from this list:
 			// https://docs.servicenow.com/bundle/london-platform-administration/page/administer/reference-pages/reference/r_TablesAndClasses.html
-			var tableName = "cmdb_ci_win_server";
+			const string tableName = "cmdb_ci_win_server";
 
 			// OPTIONAL: The main sysparm_query goes here.  See documention here:
 			// https://docs.servicenow.com/bundle/geneva-servicenow-platform/page/integrate/inbound_rest/reference/r_TableAPI-GET.html
 			// If you omit this, an unfiltered result will be returned
-			var query = "name";
+			const string query = "name";
 
 			// OPTIONAL: The fields to bring back.
 			// This should be set to constrain the response to ONLY the fields that you are going to process.

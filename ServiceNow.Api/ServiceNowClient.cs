@@ -286,7 +286,7 @@ namespace ServiceNow.Api
 					}
 
 					// Update the offset for the next query
-					queryWithPagingOffset = $"{query}^{PagingFieldName}>={maxDateTimeRetrieved.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss")}";
+					queryWithPagingOffset = $"{query}^{PagingFieldName}>={maxDateTimeRetrieved.UtcDateTime:yyyy-MM-dd HH:mm:ss}";
 					continue;
 				}
 
@@ -439,7 +439,6 @@ namespace ServiceNow.Api
 		/// <param name="outputPath">The path to store the attachment content in</param>
 		/// <param name="filename">Optional filename for the file, defaults to filename from ServiceNow if unspecified</param>
 		/// <returns>The path of the downloaded file</returns>
-
 		public async Task<string> DownloadAttachmentAsync(Attachment attachment, string outputPath, string filename = null, CancellationToken cancellationToken = default)
 		{
 			filename = filename ?? attachment.FileName;
