@@ -26,5 +26,35 @@ namespace ServiceNow.Api.Test
 			var localPath = await Client.DownloadAttachmentAsync(attachments[0], Path.GetTempPath()).ConfigureAwait(false);
 			Assert.NotNull(localPath);
 		}
+
+		[Fact]
+		public async void GetAttachmentAsStream_UploadAttachment()
+		{
+			string attachmentSysid = "40aa5a1bdb33c810916aee805b9619ca";
+			string tableName = "u_xxx_request";
+
+			var request = await Client.GetByIdAsync<Request>(attachmentSysid).ConfigureAwait(true);
+			var attachments = await Client.GetAttachmentsAsync(tableName, attachmentSysid).ConfigureAwait(true);
+
+			string filePath = string.Empty;
+			string filename = string.Empty;
+			using (var stream = await Client.DownloadAttachmentAsyncAsStream(attachments[0], Path.GetTempPath()).ConfigureAwait(true))
+			{
+				filename = attachments[0].FileName;
+				filePath = Path.GetTempPath() + filename;
+				Stream streamToWriteTo = File.Open(filePath, FileMode.Create);
+				await stream.CopyToAsync(streamToWriteTo).ConfigureAwait(false);
+				streamToWriteTo.Close();
+			}
+
+			MemoryStream inMemoryCopy = new MemoryStream();
+			using (FileStream fs = File.OpenRead(filePath))
+			{
+				fs.CopyTo(inMemoryCopy);
+			}
+			byte[] bs = inMemoryCopy.ToArray();
+
+			bool response = await Client.UploadAttachmentAsync(filename, tableName, attachmentSysid, bs);
+		}
 	}
 }

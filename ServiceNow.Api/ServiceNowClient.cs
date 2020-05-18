@@ -418,6 +418,35 @@ namespace ServiceNow.Api
 			return fileToWriteTo;
 		}
 
+		public async Task<Stream> DownloadAttachmentAsyncAsStream(Attachment attachment, string outputPath, string filename = null, CancellationToken cancellationToken = default)
+		{
+			var response = await _httpClient.GetAsync(attachment.DownloadLink, cancellationToken).ConfigureAwait(false);
+			var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+			return stream;
+		}
+
+		public async Task<bool> UploadAttachmentAsync(string filename, string tablename, string tablesysid, byte[] data)
+		{
+			HttpContent genericFileContent = new ByteArrayContent(data);
+			string mimeType = MimeMapping.GetMimeMapping(filename);
+			genericFileContent.Headers.Add("Content-Type", mimeType);
+
+			string requestUri = "api/now/v1/attachment/file?file_name=" + filename + "&table_name=" + tablename + "&table_sys_id=" + tablesysid;
+			var response = await _httpClient.PostAsync(requestUri, genericFileContent).ConfigureAwait(false);
+			if (response == null)
+			{
+				throw new Exception("Null response.");
+			}
+
+			if (!response.IsSuccessStatusCode)
+			{
+				throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase}.");
+			}
+
+			return response.IsSuccessStatusCode;
+		}
+
+
 		public async Task<T> CreateAsync<T>(T @object, CancellationToken cancellationToken = default) where T : Table
 		{
 			// https://docs.servicenow.com/bundle/kingston-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#ariaid-title6
