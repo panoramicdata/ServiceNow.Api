@@ -10,9 +10,7 @@
 		<PackageProjectUrl>https://github.com/panoramicdata/ServiceNow.Api</PackageProjectUrl>
 		<PackageIcon>Icon.png</PackageIcon>
 		<PackageTags>ServiceNow API</PackageTags>
-		<PackageReleaseNotes>Tweaked README
-Move to MIT license
-Fixed Project URL</PackageReleaseNotes>
+		<PackageReleaseNotes>Improved support for sysparm_limit in extraQueryString</PackageReleaseNotes>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
