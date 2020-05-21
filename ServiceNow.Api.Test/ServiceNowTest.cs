@@ -19,7 +19,7 @@ namespace ServiceNow.Api.Test
 		/// <param name="options"></param>
 		protected ServiceNowTest(ITestOutputHelper iTestOutputHelper, string appsettingsFilename = "appsettings.json", Options options = null)
 		{
-			options = options ?? new Options();
+			options ??= new Options();
 			Logger = iTestOutputHelper.BuildLogger();
 			options.Logger = Logger;
 

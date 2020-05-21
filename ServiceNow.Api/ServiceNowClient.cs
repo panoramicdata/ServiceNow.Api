@@ -14,6 +14,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -177,14 +178,23 @@ namespace ServiceNow.Api
 			return isCountItemsOk;
 		}
 
-		public Task<List<JObject>> GetAllByQueryAsync(string tableName, string query = null, List<string> fieldList = null, string extraQueryString = null, CancellationToken cancellationToken = default)
+		public async Task<List<JObject>> GetAllByQueryAsync(string tableName, string query = null, List<string> fieldList = null, string extraQueryString = null, CancellationToken cancellationToken = default)
 		{
 			_logger.LogDebug($"Calling {nameof(GetAllByQueryAsync)}" +
 							 $" {nameof(tableName)}: {tableName}" +
 							 $", {nameof(query)}: {query ?? "<not set>"}" +
 							 $", {nameof(fieldList)}: {(fieldList?.Any() == true ? string.Join(", ", fieldList) : "<not set>")}" +
 							 ".");
-			return GetAllByQueryInternalJObjectAsync(tableName, query, fieldList, extraQueryString, _options.PageSize, cancellationToken);
+
+			// Has the user constrained by sysparm_limit?
+			var limitMatches = Regex.Match(extraQueryString ?? string.Empty, "sysparm_limit=(\\d+)");
+			if (limitMatches.Success && int.TryParse(limitMatches.Groups[1].Value, out var theInt))
+			{
+				var page = await GetPageByQueryInternalAsync<JObject>(0, theInt, tableName, query, fieldList, extraQueryString, cancellationToken).ConfigureAwait(false);
+				return page.Items;
+			}
+
+			return await GetAllByQueryInternalJObjectAsync(tableName, query, fieldList, extraQueryString, _options.PageSize, cancellationToken).ConfigureAwait(false);
 		}
 
 		internal async Task<List<JObject>> GetAllByQueryInternalJObjectAsync(string tableName, string query, List<string> fieldList, string extraQueryString, int pageSize, CancellationToken cancellationToken)
@@ -352,15 +362,14 @@ namespace ServiceNow.Api
 							 $", {nameof(take)}: {take}" +
 							 ".");
 
-			var pageResult = await GetInternalAsync<Page<T>>(
-				$"api/now/table/{tableName}" +
-				$"?sysparm_offset={skip}" +
-				$"&sysparm_limit={take}" +
-				(!string.IsNullOrWhiteSpace(query) ? $"&sysparm_query={HttpUtility.UrlEncode(query)}" : null) +
-				(fieldList?.Any() == true ? "&" : "") +
-				BuildFieldListQueryParameter(fieldList) +
-				(string.IsNullOrWhiteSpace(extraQueryString) ? "" : "&" + extraQueryString)
-				, cancellationToken).ConfigureAwait(false);
+			var subUrl = $"api/now/table/{tableName}" +
+							$"?sysparm_offset={skip}" +
+							$"&sysparm_limit={take}" +
+							(!string.IsNullOrWhiteSpace(query) ? $"&sysparm_query={HttpUtility.UrlEncode(query)}" : null) +
+							(fieldList?.Any() == true ? "&" : "") +
+							BuildFieldListQueryParameter(fieldList) +
+							(string.IsNullOrWhiteSpace(extraQueryString) ? "" : "&" + extraQueryString);
+			var pageResult = await GetInternalAsync<Page<T>>(subUrl, cancellationToken).ConfigureAwait(false);
 			if (!string.IsNullOrWhiteSpace(pageResult.Status))
 			{
 				var message = $"An status response of 'failure' was observed. Error Message: '{pageResult.Error?.Message}'. Error Detail: '{pageResult.Error?.Detail}'";

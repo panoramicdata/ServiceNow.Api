@@ -87,7 +87,7 @@ namespace ServiceNow.Api.Test
 		}
 
 		[Fact]
-		public async void GetLinkedEntity()
+		public async void GetLinkedEntity_Succeeds()
 		{
 			var server = (await Client.GetAllByQueryAsync("cmdb_ci_win_server", null, new List<string> { "sys_id", "name", "company" }).ConfigureAwait(false)).FirstOrDefault();
 			Assert.NotNull(server);
@@ -95,6 +95,32 @@ namespace ServiceNow.Api.Test
 			var company = await Client.GetLinkedEntityAsync(companyLink, new List<string> { "name" }).ConfigureAwait(false);
 			Assert.NotNull(company);
 			Assert.NotNull(company["name"]);
+		}
+
+		[Fact]
+		public async void GetRelationshipByChild_Succeeds()
+		{
+			var firstTen = await Client
+				.GetAllByQueryAsync("cmdb_rel_ci", extraQueryString: "sysparm_limit=10")
+				.ConfigureAwait(false);
+
+			Assert.NotNull(firstTen);
+			Assert.NotEmpty(firstTen);
+
+			var first = firstTen[0];
+			var firstChild = first["child"];
+			Assert.NotNull(firstChild);
+
+			var childSysId = firstChild["value"];
+			Assert.NotNull(childSysId);
+
+			var list = await Client
+				.GetAllByQueryAsync("cmdb_rel_ci", $"child={childSysId}")
+				.ConfigureAwait(false);
+
+			var relationship = list.FirstOrDefault();
+
+			Assert.NotNull(relationship);
 		}
 	}
 }
