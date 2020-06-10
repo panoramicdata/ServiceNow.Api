@@ -1,29 +1,4 @@
-# ServiceNow.Api
-
-ServiceNow REST API nuget package.
-
-## Usage
-
-To create a simple command line app that uses the ServiceNow REST API:
-
-1. Create a .NET Core 3.1 Console project in Visual Studio
-2. Ensure that you have specified &lt;LangVersion&gt;latest&lt;/LangVersion&gt; in the csproj file, e.g.:
-````
-	<Project Sdk="Microsoft.NET.Sdk">
-		<PropertyGroup>
-			<OutputType>Exe</OutputType>
-			<TargetFramework>netcoreapp3.1</TargetFramework>
-			<LangVersion>latest</LangVersion>
-		</PropertyGroup>
-	</Project>
-````
-3. Add the following nuget packages:
-   - ServiceNow.Api
-   - NewtonSoft.Json
-3. Edit Program.cs to be similar to the following:
-
-```` C#
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -83,4 +58,3 @@ namespace ServiceNow.Api.Example
 		public string Name { get; set; }
 	}
 }
-````

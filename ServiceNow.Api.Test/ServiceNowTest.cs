@@ -1,5 +1,4 @@
-﻿using LogicMonitor.Api.Test.Logging;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
@@ -20,11 +19,8 @@ namespace ServiceNow.Api.Test
 		/// <param name="options"></param>
 		protected ServiceNowTest(ITestOutputHelper iTestOutputHelper, string appsettingsFilename = "appsettings.json", Options options = null)
 		{
-			options = options ?? new Options();
-			Logger = new LoggerFactory()
-				.AddDebug(LogLevel.Trace)
-				.AddXunit(iTestOutputHelper, LogLevel.Trace)
-				.CreateLogger<ServiceNowClient>();
+			options ??= new Options();
+			Logger = iTestOutputHelper.BuildLogger();
 			options.Logger = Logger;
 
 			// Locate the configuration file path at the root of the test project, relative from where these assemblies were deployed

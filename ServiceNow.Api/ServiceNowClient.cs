@@ -14,6 +14,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -79,13 +80,9 @@ namespace ServiceNow.Api
 
 		public void Dispose() => _httpClient?.Dispose();
 
-		[Obsolete("Use GetAllByQueryAsync instead.")]
-		public Task<List<T>> GetAllByQuery<T>(string query = null, CancellationToken cancellationToken = default) where T : Table
-			=> GetAllByQueryAsync<T>(query, cancellationToken);
-
 		public Task<List<T>> GetAllByQueryAsync<T>(string query = null, CancellationToken cancellationToken = default) where T : Table
 		{
-			_logger.LogDebug($"Calling {nameof(GetAllByQuery)}" +
+			_logger.LogDebug($"Calling {nameof(GetAllByQueryAsync)}" +
 							 $" type: {typeof(T)}" +
 							 $", {nameof(query)}:{query ?? "<not set>"}" +
 							 ".");
@@ -181,18 +178,23 @@ namespace ServiceNow.Api
 			return isCountItemsOk;
 		}
 
-		[Obsolete("Use GetAllByQueryAsync instead.")]
-		public Task<List<JObject>> GetAllByQuery(string tableName, string query = null, List<string> fieldList = null, string extraQueryString = null, CancellationToken cancellationToken = default)
-			=> GetAllByQueryAsync(tableName, query, fieldList, extraQueryString, cancellationToken);
-
-		public Task<List<JObject>> GetAllByQueryAsync(string tableName, string query = null, List<string> fieldList = null, string extraQueryString = null, CancellationToken cancellationToken = default)
+		public async Task<List<JObject>> GetAllByQueryAsync(string tableName, string query = null, List<string> fieldList = null, string extraQueryString = null, CancellationToken cancellationToken = default)
 		{
-			_logger.LogDebug($"Calling {nameof(GetAllByQuery)}" +
+			_logger.LogDebug($"Calling {nameof(GetAllByQueryAsync)}" +
 							 $" {nameof(tableName)}: {tableName}" +
 							 $", {nameof(query)}: {query ?? "<not set>"}" +
 							 $", {nameof(fieldList)}: {(fieldList?.Any() == true ? string.Join(", ", fieldList) : "<not set>")}" +
 							 ".");
-			return GetAllByQueryInternalJObjectAsync(tableName, query, fieldList, extraQueryString, _options.PageSize, cancellationToken);
+
+			// Has the user constrained by sysparm_limit?
+			var limitMatches = Regex.Match(extraQueryString ?? string.Empty, "sysparm_limit=(\\d+)");
+			if (limitMatches.Success && int.TryParse(limitMatches.Groups[1].Value, out var theInt))
+			{
+				var page = await GetPageByQueryInternalAsync<JObject>(0, theInt, tableName, query, fieldList, extraQueryString, cancellationToken).ConfigureAwait(false);
+				return page.Items;
+			}
+
+			return await GetAllByQueryInternalJObjectAsync(tableName, query, fieldList, extraQueryString, _options.PageSize, cancellationToken).ConfigureAwait(false);
 		}
 
 		internal async Task<List<JObject>> GetAllByQueryInternalJObjectAsync(string tableName, string query, List<string> fieldList, string extraQueryString, int pageSize, CancellationToken cancellationToken)
@@ -286,7 +288,7 @@ namespace ServiceNow.Api
 					}
 
 					// Update the offset for the next query
-					queryWithPagingOffset = $"{query}^{PagingFieldName}>={maxDateTimeRetrieved.UtcDateTime.ToString("yyyy-MM-dd HH:mm:ss")}";
+					queryWithPagingOffset = $"{query}^{PagingFieldName}>={maxDateTimeRetrieved.UtcDateTime:yyyy-MM-dd HH:mm:ss}";
 					continue;
 				}
 
@@ -343,16 +345,8 @@ namespace ServiceNow.Api
 			return finalResult.Items;
 		}
 
-		[Obsolete("Use GetPageByQueryAsync instead.")]
-		public Task<Page<JObject>> GetPageByQuery(int skip, int take, string tableName, string query = null, List<string> fieldList = null, string extraQueryString = null, CancellationToken cancellationToken = default)
-			=> GetPageByQueryAsync(skip, take, tableName, query, fieldList, extraQueryString, cancellationToken);
-
 		public Task<Page<JObject>> GetPageByQueryAsync(int skip, int take, string tableName, string query = null, List<string> fieldList = null, string extraQueryString = null, CancellationToken cancellationToken = default)
 			=> GetPageByQueryInternalAsync<JObject>(skip, take, tableName, query, fieldList, extraQueryString, cancellationToken);
-
-		[Obsolete("Use GetPageByQueryAsync instead.")]
-		public Task<Page<T>> GetPageByQuery<T>(int skip, int take, string query = null, CancellationToken cancellationToken = default) where T : Table
-			=> GetPageByQueryAsync<T>(skip, take, query, cancellationToken);
 
 		public Task<Page<T>> GetPageByQueryAsync<T>(int skip, int take, string query = null, CancellationToken cancellationToken = default) where T : Table
 			=> GetPageByQueryInternalAsync<T>(skip, take, Table.GetTableName<T>(), query, null, null, cancellationToken);
@@ -368,15 +362,14 @@ namespace ServiceNow.Api
 							 $", {nameof(take)}: {take}" +
 							 ".");
 
-			var pageResult = await GetInternalAsync<Page<T>>(
-				$"api/now/table/{tableName}" +
-				$"?sysparm_offset={skip}" +
-				$"&sysparm_limit={take}" +
-				(!string.IsNullOrWhiteSpace(query) ? $"&sysparm_query={HttpUtility.UrlEncode(query)}" : null) +
-				(fieldList?.Any() == true ? "&" : "") +
-				BuildFieldListQueryParameter(fieldList) +
-				(string.IsNullOrWhiteSpace(extraQueryString) ? "" : "&" + extraQueryString)
-				, cancellationToken).ConfigureAwait(false);
+			var subUrl = $"api/now/table/{tableName}" +
+							$"?sysparm_offset={skip}" +
+							$"&sysparm_limit={take}" +
+							(!string.IsNullOrWhiteSpace(query) ? $"&sysparm_query={HttpUtility.UrlEncode(query)}" : null) +
+							(fieldList?.Any() == true ? "&" : "") +
+							BuildFieldListQueryParameter(fieldList) +
+							(string.IsNullOrWhiteSpace(extraQueryString) ? "" : "&" + extraQueryString);
+			var pageResult = await GetInternalAsync<Page<T>>(subUrl, cancellationToken).ConfigureAwait(false);
 			if (!string.IsNullOrWhiteSpace(pageResult.Status))
 			{
 				var message = $"An status response of 'failure' was observed. Error Message: '{pageResult.Error?.Message}'. Error Detail: '{pageResult.Error?.Detail}'";
@@ -388,23 +381,11 @@ namespace ServiceNow.Api
 		private static string BuildFieldListQueryParameter(List<string> fieldList)
 			=> fieldList?.Any() == true ? $"sysparm_fields={HttpUtility.UrlEncode(string.Join(",", fieldList))}" : null;
 
-		[Obsolete("Use GetByIdAsync instead.")]
-		public Task<T> GetById<T>(string sysId, CancellationToken cancellationToken = default) where T : Table
-			=> GetByIdAsync<T>(sysId, cancellationToken);
-
 		public async Task<T> GetByIdAsync<T>(string sysId, CancellationToken cancellationToken = default) where T : Table
 			=> (await GetInternalAsync<RestResponse<T>>($"api/now/table/{Table.GetTableName<T>()}/{sysId}", cancellationToken).ConfigureAwait(false)).Item;
 
-		[Obsolete("Use GetByIdAsync instead.")]
-		public Task<JObject> GetById(string tableName, string sysId, CancellationToken cancellationToken = default)
-			=> GetByIdAsync(tableName, sysId, cancellationToken);
-
 		public async Task<JObject> GetByIdAsync(string tableName, string sysId, CancellationToken cancellationToken = default)
 			=> (await GetInternalAsync<RestResponse<JObject>>($"api/now/table/{tableName}/{sysId}", cancellationToken).ConfigureAwait(false)).Item;
-
-		[Obsolete("Use GetAttachmentsAsync instead.")]
-		public Task<List<Attachment>> GetAttachments<T>(T table, CancellationToken cancellationToken = default) where T : Table
-			=> GetAttachmentsAsync<T>(table, cancellationToken);
 
 		/// <summary>
 		/// Get attachments for a given Table based entry
@@ -415,10 +396,6 @@ namespace ServiceNow.Api
 		public async Task<List<Attachment>> GetAttachmentsAsync<T>(T table, CancellationToken cancellationToken = default) where T : Table
 			=> (await GetInternalAsync<RestResponse<List<Attachment>>>($"api/now/attachment?sysparm_query=table_name={Table.GetTableName<T>()}^table_sys_id={table.SysId}", cancellationToken).ConfigureAwait(false)).Item;
 
-		[Obsolete("Use GetAttachmentsAsync instead.")]
-		public Task<List<Attachment>> GetAttachments(string tableName, string tableSysId, CancellationToken cancellationToken = default)
-			=> GetAttachmentsAsync(tableName, tableSysId, cancellationToken);
-
 		/// <summary>
 		/// Get attachments for a given Table based entry
 		/// </summary>
@@ -428,10 +405,6 @@ namespace ServiceNow.Api
 		public async Task<List<Attachment>> GetAttachmentsAsync(string tableName, string tableSysId, CancellationToken cancellationToken = default)
 			=> (await GetInternalAsync<RestResponse<List<Attachment>>>($"api/now/attachment?sysparm_query=table_name={tableName}^table_sys_id={tableSysId}", cancellationToken).ConfigureAwait(false)).Item;
 
-		[Obsolete("Use DownloadAttachmentAsync instead.")]
-		public Task<string> DownloadAttachment(Attachment attachment, string outputPath, string filename = null, CancellationToken cancellationToken = default)
-			=> DownloadAttachmentAsync(attachment, outputPath, filename, cancellationToken);
-
 		/// <summary>
 		/// Download a specified attachment to the local file system
 		/// </summary>
@@ -439,32 +412,20 @@ namespace ServiceNow.Api
 		/// <param name="outputPath">The path to store the attachment content in</param>
 		/// <param name="filename">Optional filename for the file, defaults to filename from ServiceNow if unspecified</param>
 		/// <returns>The path of the downloaded file</returns>
-
 		public async Task<string> DownloadAttachmentAsync(Attachment attachment, string outputPath, string filename = null, CancellationToken cancellationToken = default)
 		{
-			filename = filename ?? attachment.FileName;
+			filename ??= attachment.FileName;
 			var fileToWriteTo = Path.Combine(outputPath, filename);
 			//wc.DownloadProgressChanged += wc_DownloadProgressChanged;
 			//await _httpClient..DownloadFile(new Uri(attachment.DownloadLink), localPath);
-			using (var response = await _httpClient.GetAsync(attachment.DownloadLink, cancellationToken).ConfigureAwait(false))
-			{
-				using (var streamToReadFrom = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-				{
-					using (Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create))
-					{
-						await streamToReadFrom.CopyToAsync(streamToWriteTo).ConfigureAwait(false);
-					}
-
-					response.Content = null;
-				}
-			}
+			using var response = await _httpClient.GetAsync(attachment.DownloadLink, cancellationToken).ConfigureAwait(false);
+			using var streamToReadFrom = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+			using Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create);
+			await streamToReadFrom.CopyToAsync(streamToWriteTo).ConfigureAwait(false);
+			response.Content = null;
 
 			return fileToWriteTo;
 		}
-
-		[Obsolete("Use CreateAsync instead.")]
-		public Task<T> Create<T>(T @object, CancellationToken cancellationToken = default) where T : Table
-			=> CreateAsync<T>(@object, cancellationToken);
 
 		public async Task<T> CreateAsync<T>(T @object, CancellationToken cancellationToken = default) where T : Table
 		{
@@ -472,54 +433,42 @@ namespace ServiceNow.Api
 			var serializedObject = JsonConvert.SerializeObject(@object, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 			HttpContent content = new StringContent(serializedObject, null, "application/json");
 			var tableName = Table.GetTableName<T>();
-			using (var response = await _httpClient.PostAsync($"api/now/table/{tableName}", content, cancellationToken).ConfigureAwait(false))
+			using var response = await _httpClient.PostAsync($"api/now/table/{tableName}", content, cancellationToken).ConfigureAwait(false);
+			if (response == null)
 			{
-				if (response == null)
-				{
-					throw new Exception("Null response.");
-				}
-
-				if (!response.IsSuccessStatusCode)
-				{
-					var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-					throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
-				}
-
-				var deserializeObject = await GetDeserializedObjectFromResponse<RestResponse<T>>(response, Guid.NewGuid()).ConfigureAwait(false);
-				return deserializeObject.Item;
+				throw new Exception("Null response.");
 			}
-		}
 
-		[Obsolete("Use CreateAsync instead.")]
-		public Task<JObject> Create(string tableName, JObject jObject, CancellationToken cancellationToken = default)
-			=> CreateAsync(tableName, jObject, cancellationToken);
+			if (!response.IsSuccessStatusCode)
+			{
+				var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+				throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
+			}
+
+			var deserializeObject = await GetDeserializedObjectFromResponse<RestResponse<T>>(response, Guid.NewGuid()).ConfigureAwait(false);
+			return deserializeObject.Item;
+		}
 
 		public async Task<JObject> CreateAsync(string tableName, JObject jObject, CancellationToken cancellationToken = default)
 		{
 			// https://docs.servicenow.com/bundle/kingston-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#ariaid-title6
 			var serializedObject = JsonConvert.SerializeObject(jObject, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 			HttpContent content = new StringContent(serializedObject, null, "application/json");
-			using (var response = await _httpClient.PostAsync($"api/now/table/{tableName}", content, cancellationToken).ConfigureAwait(false))
+			using var response = await _httpClient.PostAsync($"api/now/table/{tableName}", content, cancellationToken).ConfigureAwait(false);
+			if (response == null)
 			{
-				if (response == null)
-				{
-					throw new Exception("Null response.");
-				}
-
-				if (!response.IsSuccessStatusCode)
-				{
-					var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-					throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
-				}
-
-				var deserializeObject = await GetDeserializedObjectFromResponse<RestResponse<JObject>>(response, Guid.NewGuid()).ConfigureAwait(false);
-				return deserializeObject.Item;
+				throw new Exception("Null response.");
 			}
-		}
 
-		[Obsolete("Use UpdateAsync instead.")]
-		public Task<JObject> Update(string tableName, JObject jObject, CancellationToken cancellationToken = default)
-			=> UpdateAsync(tableName, jObject, cancellationToken);
+			if (!response.IsSuccessStatusCode)
+			{
+				var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+				throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
+			}
+
+			var deserializeObject = await GetDeserializedObjectFromResponse<RestResponse<JObject>>(response, Guid.NewGuid()).ConfigureAwait(false);
+			return deserializeObject.Item;
+		}
 
 		public async Task<JObject> UpdateAsync(string tableName, JObject jObject, CancellationToken cancellationToken = default)
 		{
@@ -535,27 +484,21 @@ namespace ServiceNow.Api
 			// https://docs.servicenow.com/bundle/kingston-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#ariaid-title6
 			var serializedObject = JsonConvert.SerializeObject(jObject, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 			HttpContent content = new StringContent(serializedObject, null, "application/json");
-			using (var response = await _httpClient.PutAsync($"api/now/table/{tableName}/{sysId}", content, cancellationToken).ConfigureAwait(false))
+			using var response = await _httpClient.PutAsync($"api/now/table/{tableName}/{sysId}", content, cancellationToken).ConfigureAwait(false);
+			if (response == null)
 			{
-				if (response == null)
-				{
-					throw new Exception("Null response.");
-				}
-
-				if (!response.IsSuccessStatusCode)
-				{
-					var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-					throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
-				}
-
-				var deserializeObject = await GetDeserializedObjectFromResponse<RestResponse<JObject>>(response, Guid.NewGuid()).ConfigureAwait(false);
-				return deserializeObject.Item;
+				throw new Exception("Null response.");
 			}
-		}
 
-		[Obsolete("Use PatchAsync instead.")]
-		public Task<JObject> Patch(string tableName, JObject jObject, CancellationToken cancellationToken = default)
-			=> PatchAsync(tableName, jObject, cancellationToken);
+			if (!response.IsSuccessStatusCode)
+			{
+				var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+				throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
+			}
+
+			var deserializeObject = await GetDeserializedObjectFromResponse<RestResponse<JObject>>(response, Guid.NewGuid()).ConfigureAwait(false);
+			return deserializeObject.Item;
+		}
 
 		/// <summary>
 		/// Patches an existing entry. jObject must contain sys_id
@@ -577,94 +520,70 @@ namespace ServiceNow.Api
 			var serializedObject = JsonConvert.SerializeObject(jObject, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 			var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"api/now/table/{tableName}/{sysId}") { Content = new StringContent(serializedObject, null, "application/json") };
 
-			using (var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false))
+			using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+			if (response == null)
 			{
-				if (response == null)
-				{
-					throw new Exception("Null response.");
-				}
-
-				if (!response.IsSuccessStatusCode)
-				{
-					var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-					throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
-				}
-
-				var deserializeObject = await GetDeserializedObjectFromResponse<RestResponse<JObject>>(response, Guid.NewGuid()).ConfigureAwait(false);
-				return deserializeObject.Item;
+				throw new Exception("Null response.");
 			}
-		}
 
-		[Obsolete("Use DeleteAsync instead.")]
-		public Task Delete(string tableName, string sysId, CancellationToken cancellationToken = default)
-			=> DeleteAsync(tableName, sysId, cancellationToken);
+			if (!response.IsSuccessStatusCode)
+			{
+				var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+				throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
+			}
+
+			var deserializeObject = await GetDeserializedObjectFromResponse<RestResponse<JObject>>(response, Guid.NewGuid()).ConfigureAwait(false);
+			return deserializeObject.Item;
+		}
 
 		public async Task DeleteAsync(string tableName, string sysId, CancellationToken cancellationToken = default)
 		{
 			// https://docs.servicenow.com/bundle/kingston-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#ariaid-title6
-			using (var response = await _httpClient.DeleteAsync($"api/now/table/{tableName}/{sysId}", cancellationToken).ConfigureAwait(false))
+			using var response = await _httpClient.DeleteAsync($"api/now/table/{tableName}/{sysId}", cancellationToken).ConfigureAwait(false);
+			if (response == null)
 			{
-				if (response == null)
-				{
-					throw new Exception("Null response.");
-				}
+				throw new Exception("Null response.");
+			}
 
-				if (!response.IsSuccessStatusCode)
-				{
-					var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-					throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
-				}
+			if (!response.IsSuccessStatusCode)
+			{
+				var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+				throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
 			}
 		}
-
-		[Obsolete("Use UpdateAsync instead.")]
-		public Task Update<T>(T @object, CancellationToken cancellationToken = default) where T : Table
-			=> UpdateAsync<T>(@object, cancellationToken);
 
 		public async Task UpdateAsync<T>(T @object, CancellationToken cancellationToken = default) where T : Table
 		{
 			HttpContent content = new StringContent(JsonConvert.SerializeObject(@object), null, "application/json");
 			var tableName = Table.GetTableName<T>();
-			using (var response = await _httpClient.PutAsync($"api/now/table/{tableName}/{@object.SysId}", content, cancellationToken).ConfigureAwait(false))
+			using var response = await _httpClient.PutAsync($"api/now/table/{tableName}/{@object.SysId}", content, cancellationToken).ConfigureAwait(false);
+			if (response == null)
 			{
-				if (response == null)
-				{
-					throw new Exception("Null response.");
-				}
+				throw new Exception("Null response.");
+			}
 
-				if (!response.IsSuccessStatusCode)
-				{
-					var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-					throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
-				}
+			if (!response.IsSuccessStatusCode)
+			{
+				var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+				throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
 			}
 		}
-
-		[Obsolete("Use DeleteAsync instead.")]
-		public Task Delete<T>(string sysId, CancellationToken cancellationToken = default) where T : Table
-			=> DeleteAsync<T>(sysId, cancellationToken);
 
 		public async Task DeleteAsync<T>(string sysId, CancellationToken cancellationToken = default) where T : Table
 		{
 			var tableName = Table.GetTableName<T>();
-			using (var response = await _httpClient.DeleteAsync($"api/now/table/{tableName}/{sysId}", cancellationToken).ConfigureAwait(false))
+			using var response = await _httpClient.DeleteAsync($"api/now/table/{tableName}/{sysId}", cancellationToken).ConfigureAwait(false);
+			if (response == null)
 			{
-				if (response == null)
-				{
-					throw new Exception("Null response.");
-				}
+				throw new Exception("Null response.");
+			}
 
-				if (!response.IsSuccessStatusCode)
-				{
-					var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-					throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
-				}
+			if (!response.IsSuccessStatusCode)
+			{
+				var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+				throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
 			}
 		}
-
-		[Obsolete("Use GetMetaForClassAsync instead.")]
-		public Task<RestResponse<MetaDataResult>> GetMetaForClass(string className, CancellationToken cancellationToken = default)
-			=> GetMetaForClass(className, cancellationToken);
 
 		public Task<RestResponse<MetaDataResult>> GetMetaForClassAsync(string className, CancellationToken cancellationToken = default)
 			=> GetInternalAsync<RestResponse<MetaDataResult>>($"api/now/cmdb/meta/{className}", cancellationToken);
@@ -674,23 +593,21 @@ namespace ServiceNow.Api
 			var requestId = Guid.NewGuid();
 			_logger.LogTrace($"Request {requestId}: Entered {nameof(GetInternalAsync)} {nameof(subUrl)}: {subUrl}");
 			var sw = Stopwatch.StartNew();
-			using (var response = await _httpClient.GetAsync(subUrl, cancellationToken).ConfigureAwait(false))
+			using var response = await _httpClient.GetAsync(subUrl, cancellationToken).ConfigureAwait(false);
+			_logger.LogTrace($"Request {requestId}: GetAsync took {sw.Elapsed}");
+
+			if (response == null)
 			{
-				_logger.LogTrace($"Request {requestId}: GetAsync took {sw.Elapsed}");
-
-				if (response == null)
-				{
-					throw new Exception("Null response.");
-				}
-
-				if (!response.IsSuccessStatusCode)
-				{
-					var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-					throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
-				}
-
-				return await GetDeserializedObjectFromResponse<T>(response, requestId).ConfigureAwait(false);
+				throw new Exception("Null response.");
 			}
+
+			if (!response.IsSuccessStatusCode)
+			{
+				var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+				throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
+			}
+
+			return await GetDeserializedObjectFromResponse<T>(response, requestId).ConfigureAwait(false);
 		}
 
 		private async Task<T> GetDeserializedObjectFromResponse<T>(HttpResponseMessage response, Guid requestId)
@@ -726,10 +643,6 @@ namespace ServiceNow.Api
 				throw new ServiceNowApiException($"A problem occurred deserializing the content from the response. Content:\n{content ?? "<content not read>"}", e);
 			}
 		}
-
-		[Obsolete("Use GetLinkedEntityAsync instead.")]
-		public Task<JObject> GetLinkedEntity(string link, List<string> fieldList, CancellationToken cancellationToken = default)
-			=> GetLinkedEntityAsync(link, fieldList, cancellationToken);
 
 		public async Task<JObject> GetLinkedEntityAsync(string link, List<string> fieldList, CancellationToken cancellationToken = default)
 		{
