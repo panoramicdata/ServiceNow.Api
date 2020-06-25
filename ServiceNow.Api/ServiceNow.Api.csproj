@@ -11,6 +11,8 @@
 		<PackageIcon>Icon.png</PackageIcon>
 		<PackageTags>ServiceNow API</PackageTags>
 		<PackageReleaseNotes>Improved support for sysparm_limit in extraQueryString</PackageReleaseNotes>
+		<RepositoryUrl>https://github.com/panoramicdata/ServiceNow.Api</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
