@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
-    <Copyright>Copyright (C) 2019 LogicMonitor</Copyright>
+    <TargetFramework>net5.0</TargetFramework>
+    <Copyright>Copyright (C) 2020 Panoramic Data Limited</Copyright>
     <Product>ServiceNow API DiagCli</Product>
   </PropertyGroup>
 

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace ServiceNow.Api.Example
@@ -38,7 +36,7 @@ namespace ServiceNow.Api.Example
 				fields
 				).ConfigureAwait(false);
 
-			var modelResults = jObjectResults.Select(o => o.ToObject<WinServerModel>()).ToList();
+			var modelResults = jObjectResults.ConvertAll(o => o.ToObject<WinServerModel>());
 
 			Console.WriteLine("Windows Servers:");
 			foreach (var modelResult in modelResults)
@@ -46,15 +44,5 @@ namespace ServiceNow.Api.Example
 				Console.WriteLine($"  - {modelResult.Id}: {modelResult.Name}");
 			}
 		}
-	}
-
-	[DataContract]
-	public class WinServerModel
-	{
-		[DataMember(Name = "sys_id")]
-		public string Id { get; set; }
-
-		[DataMember(Name = "name")]
-		public string Name { get; set; }
 	}
 }

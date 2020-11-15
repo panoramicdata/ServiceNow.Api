@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<Authors>David Bond, Daniel Abbatt</Authors>
+		<Authors>Panoramic Data Limited</Authors>
 		<Company>Panoramic Data Limited</Company>
 		<Description>A ServiceNow REST API client</Description>
 		<Copyright>Copyright © Panoramic Data Limited 2020</Copyright>
