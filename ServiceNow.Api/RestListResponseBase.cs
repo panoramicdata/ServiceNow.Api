@@ -8,9 +8,9 @@ namespace ServiceNow.Api
 		public int TotalCount { get; set; }
 
 		[DataMember(Name = "error")]
-		public ResponseError Error { get; set; }
+		public ResponseError? Error { get; set; }
 
 		[DataMember(Name = "status")]
-		public string Status { get; set; }
+		public string? Status { get; set; }
 	}
 }

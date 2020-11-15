@@ -45,7 +45,7 @@ namespace ServiceNow.Api.Test
 			// Arrange
 			var reFetchedIncident = await Client.GetByIdAsync<Incident>(createdIncident.SysId).ConfigureAwait(false);
 			reFetchedIncident.Should().NotBeNull();
-			reFetchedIncident.SysId.Should().Be(createdIncident.SysId);
+			reFetchedIncident!.SysId.Should().Be(createdIncident.SysId);
 
 			// Act
 			reFetchedIncident.Comments = "Some new comment text " + testId;
@@ -56,7 +56,7 @@ namespace ServiceNow.Api.Test
 			// Assert
 			var incidentAfterUpdate = await Client.GetByIdAsync<Incident>(createdIncident.SysId).ConfigureAwait(false);
 			incidentAfterUpdate.Should().NotBeNull();
-			incidentAfterUpdate.SysId.Should().Be(createdIncident.SysId);
+			incidentAfterUpdate!.SysId.Should().Be(createdIncident.SysId);
 
 			// Delete the incident //
 			await Client.DeleteAsync<Incident>(createdIncident.SysId).ConfigureAwait(false);

@@ -1,5 +1,5 @@
-﻿using System.Runtime.Serialization;
-using ServiceNow.Api.Attributes;
+﻿using ServiceNow.Api.Attributes;
+using System.Runtime.Serialization;
 
 namespace ServiceNow.Api.Tables
 {
@@ -8,135 +8,135 @@ namespace ServiceNow.Api.Tables
 	public class Company : Table
 	{
 		[DataMember(Name = "banner_image_light")]
-		public string BannerImageLight { get; set; }
+		public string? BannerImageLight { get; set; }
 
 		[DataMember(Name = "country")]
-		public string Country { get; set; }
+		public string? Country { get; set; }
 
 		[DataMember(Name = "parent")]
-		public string Parent { get; set; }
+		public string? Parent { get; set; }
 
 		[DataMember(Name = "notes")]
-		public string Notes { get; set; }
+		public string? Notes { get; set; }
 
 		[DataMember(Name = "city")]
-		public string City { get; set; }
+		public string? City { get; set; }
 
 		[DataMember(Name = "stock_symbol")]
-		public string StockSymbol { get; set; }
+		public string? StockSymbol { get; set; }
 
 		[DataMember(Name = "latitude")]
-		public string Latitude { get; set; }
+		public string? Latitude { get; set; }
 
 		[DataMember(Name = "discount")]
-		public string Discount { get; set; }
+		public string? Discount { get; set; }
 
 		[DataMember(Name = "sys_updated_on")]
-		public string SysUpdatedOn { get; set; }
+		public string? SysUpdatedOn { get; set; }
 
 		[DataMember(Name = "sys_class_name")]
-		public string SysClassName { get; set; }
+		public string? SysClassName { get; set; }
 
 		[DataMember(Name = "manufacturer")]
-		public string Manufacturer { get; set; }
+		public string? Manufacturer { get; set; }
 
 		[DataMember(Name = "apple_icon")]
-		public string AppleIcon { get; set; }
+		public string? AppleIcon { get; set; }
 
 		[DataMember(Name = "market_cap")]
-		public string MarketCap { get; set; }
+		public string? MarketCap { get; set; }
 
 		[DataMember(Name = "sys_updated_by")]
-		public string SysUpdatedBy { get; set; }
+		public string? SysUpdatedBy { get; set; }
 
 		[DataMember(Name = "num_employees")]
-		public string NumEmployees { get; set; }
+		public string? NumEmployees { get; set; }
 
 		[DataMember(Name = "fiscal_year")]
-		public string FiscalYear { get; set; }
+		public string? FiscalYear { get; set; }
 
 		[DataMember(Name = "rank_tier")]
-		public string RankTier { get; set; }
+		public string? RankTier { get; set; }
 
 		[DataMember(Name = "sso_source")]
-		public string SsoSource { get; set; }
+		public string? SsoSource { get; set; }
 
 		[DataMember(Name = "street")]
-		public string Street { get; set; }
+		public string? Street { get; set; }
 
 		[DataMember(Name = "sys_created_on")]
-		public string SysCreatedOn { get; set; }
+		public string? SysCreatedOn { get; set; }
 
 		[DataMember(Name = "vendor")]
-		public string Vendor { get; set; }
+		public string? Vendor { get; set; }
 
 		[DataMember(Name = "contact")]
-		public string Contact { get; set; }
+		public string? Contact { get; set; }
 
 		[DataMember(Name = "lat_long_error")]
-		public string LatLongError { get; set; }
+		public string? LatLongError { get; set; }
 
 		[DataMember(Name = "stock_price")]
-		public string StockPrice { get; set; }
+		public string? StockPrice { get; set; }
 
 		[DataMember(Name = "theme")]
-		public string Theme { get; set; }
+		public string? Theme { get; set; }
 
 		[DataMember(Name = "banner_image")]
-		public string BannerImage { get; set; }
+		public string? BannerImage { get; set; }
 
 		[DataMember(Name = "state")]
-		public string State { get; set; }
+		public string? State { get; set; }
 
 		[DataMember(Name = "sys_created_by")]
-		public string SysCreatedBy { get; set; }
+		public string? SysCreatedBy { get; set; }
 
 		[DataMember(Name = "longitude")]
-		public string Longitude { get; set; }
+		public string? Longitude { get; set; }
 
 		[DataMember(Name = "vendor_type")]
-		public string VendorType { get; set; }
+		public string? VendorType { get; set; }
 
 		[DataMember(Name = "zip")]
-		public string Zip { get; set; }
+		public string? Zip { get; set; }
 
 		[DataMember(Name = "profits")]
-		public string Profits { get; set; }
+		public string? Profits { get; set; }
 
 		[DataMember(Name = "revenue_per_year")]
-		public string RevenuePerYear { get; set; }
+		public string? RevenuePerYear { get; set; }
 
 		[DataMember(Name = "website")]
-		public string Website { get; set; }
+		public string? Website { get; set; }
 
 		[DataMember(Name = "publicly_traded")]
-		public string PubliclyTraded { get; set; }
+		public string? PubliclyTraded { get; set; }
 
 		[DataMember(Name = "sys_mod_count")]
-		public string SysModCount { get; set; }
+		public string? SysModCount { get; set; }
 
 		[DataMember(Name = "sys_tags")]
-		public string SysTags { get; set; }
+		public string? SysTags { get; set; }
 
 		[DataMember(Name = "fax_phone")]
-		public string FaxPhone { get; set; }
+		public string? FaxPhone { get; set; }
 
 		[DataMember(Name = "phone")]
-		public string Phone { get; set; }
+		public string? Phone { get; set; }
 
 		[DataMember(Name = "vendor_manager")]
-		public string VendorManager { get; set; }
+		public string? VendorManager { get; set; }
 
 		[DataMember(Name = "banner_text")]
-		public string BannerText { get; set; }
+		public string? BannerText { get; set; }
 
 		[DataMember(Name = "name")]
-		public string Name { get; set; }
+		public string? Name { get; set; }
 
 		[DataMember(Name = "customer")]
-		public string Customer { get; set; }
+		public string? Customer { get; set; }
 
 		[DataMember(Name = "primary")]
-		public string Primary { get; set; }
+		public string? Primary { get; set; }
 	}
 }

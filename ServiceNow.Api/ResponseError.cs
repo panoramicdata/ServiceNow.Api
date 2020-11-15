@@ -6,9 +6,9 @@ namespace ServiceNow.Api
 	public class ResponseError
 	{
 		[DataMember(Name = "message")]
-		public string Message { get; set; }
+		public string? Message { get; set; }
 
 		[DataMember(Name = "detail")]
-		public string Detail { get; set; }
+		public string? Detail { get; set; }
 	}
 }

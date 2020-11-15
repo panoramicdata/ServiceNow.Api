@@ -1,5 +1,5 @@
-﻿using System.Runtime.Serialization;
-using ServiceNow.Api.Attributes;
+﻿using ServiceNow.Api.Attributes;
+using System.Runtime.Serialization;
 
 namespace ServiceNow.Api.Tables
 {
@@ -8,27 +8,27 @@ namespace ServiceNow.Api.Tables
 	public class HyperVVirtualMachineInstance : VirtualMachineInstance
 	{
 		[DataMember(Name = "baseboard_serial")]
-		public string BaseboardSerial { get; set; }
+		public string? BaseboardSerial { get; set; }
 
 		[DataMember(Name = "chassis_serial")]
-		public string ChassisSerial { get; set; }
+		public string? ChassisSerial { get; set; }
 
 		[DataMember(Name = "object_id")]
-		public string ObjectId { get; set; }
+		public string? ObjectId { get; set; }
 
 		[DataMember(Name = "bios_serial")]
-		public string BiosSerial { get; set; }
+		public string? BiosSerial { get; set; }
 
 		[DataMember(Name = "server")]
-		public Server Server { get; set; }
+		public Server? Server { get; set; }
 
 		[DataMember(Name = "mac_address")]
-		public string MacAddress { get; set; }
+		public string? MacAddress { get; set; }
 
 		[DataMember(Name = "bios_guid")]
-		public string BiosGuid { get; set; }
+		public string? BiosGuid { get; set; }
 
 		[DataMember(Name = "sys_tags")]
-		public string SysTags { get; set; }
+		public string? SysTags { get; set; }
 	}
 }

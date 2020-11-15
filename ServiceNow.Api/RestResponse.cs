@@ -6,6 +6,6 @@ namespace ServiceNow.Api
 	public class RestResponse<T>
 	{
 		[DataMember(Name = "result")]
-		public T Item { get; set; }
+		public T? Item { get; set; }
 	}
 }

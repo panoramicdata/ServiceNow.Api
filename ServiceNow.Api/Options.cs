@@ -10,7 +10,7 @@ namespace ServiceNow.Api
 		/// <summary>
 		/// The logger
 		/// </summary>
-		public ILogger Logger { get; set; }
+		public ILogger? Logger { get; set; }
 
 		/// <summary>
 		/// Checks that the number of items returned matches the header total when getting all CIs

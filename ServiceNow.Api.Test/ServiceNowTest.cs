@@ -17,19 +17,28 @@ namespace ServiceNow.Api.Test
 		/// <param name="iTestOutputHelper"></param>
 		/// <param name="appsettingsFilename"></param>
 		/// <param name="options"></param>
-		protected ServiceNowTest(ITestOutputHelper iTestOutputHelper, string appsettingsFilename = "appsettings.json", Options options = null)
+		protected ServiceNowTest(
+			ITestOutputHelper iTestOutputHelper,
+			string appsettingsFilename = "appsettings.json",
+			Options? options = null)
 		{
-			options ??= new Options();
+			options ??= new();
 			Logger = iTestOutputHelper.BuildLogger();
 			options.Logger = Logger;
 
 			// Locate the configuration file path at the root of the test project, relative from where these assemblies were deployed
-			var configurationJsonFilePath = Path.Combine(Path.GetDirectoryName(typeof(ServiceNowTest).GetTypeInfo().Assembly.Location), "../../..");
+			var configurationJsonFilePath = Path.Combine(Path.GetDirectoryName(typeof(ServiceNowTest).GetTypeInfo().Assembly.Location) ?? string.Empty, "../../..");
 			var configurationRoot = new ConfigurationBuilder()
 				.SetBasePath(configurationJsonFilePath)
 				.AddJsonFile(appsettingsFilename, optional: false, reloadOnChange: false)
 				.Build();
-			var config = configurationRoot.Get<TestConfiguration>();
+
+			var config = new TestConfiguration
+			{
+				ServiceNowAccount = configurationRoot["ServiceNowAccount"],
+				ServiceNowUsername = configurationRoot["ServiceNowUsername"],
+				ServiceNowPassword = configurationRoot["ServiceNowPassword"]
+			};
 			if (string.IsNullOrWhiteSpace(config.ServiceNowAccount))
 			{
 				throw new Exception($"{nameof(TestConfiguration)}.{nameof(TestConfiguration.ServiceNowAccount)} must be set.");

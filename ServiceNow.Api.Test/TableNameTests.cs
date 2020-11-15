@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using ServiceNow.Api.Test.Extensions;
 using System.Collections.Generic;
@@ -22,10 +23,10 @@ namespace ServiceNow.Api.Test
 			var page = await Client.GetPageByQueryAsync(0, 10, tableName).ConfigureAwait(false);
 			Logger.LogInformation($"Call completed in {stopwatch.Elapsed.TotalSeconds:N0}s");
 			// Make sure that IF we have items that they have unique SysIds
-			Assert.True(page?.Items.AreDistinctBy(i => i["sys_id"]) ?? true);
+			(page?.Items.AreDistinctBy(i => i["sys_id"]) ?? true).Should().BeTrue();
 		}
 
-		private async Task<List<JObject>> GetAllItems(string tableName, string query, List<string> fieldList = null)
+		private async Task<List<JObject>> GetAllItems(string tableName, string query, List<string>? fieldList = null)
 		{
 			var stopwatch = Stopwatch.StartNew();
 			// Go and get 10 items for the type we're testing

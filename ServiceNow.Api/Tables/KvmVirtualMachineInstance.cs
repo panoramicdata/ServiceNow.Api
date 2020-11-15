@@ -1,5 +1,5 @@
-﻿using System.Runtime.Serialization;
-using ServiceNow.Api.Attributes;
+﻿using ServiceNow.Api.Attributes;
+using System.Runtime.Serialization;
 
 namespace ServiceNow.Api.Tables
 {
@@ -8,6 +8,6 @@ namespace ServiceNow.Api.Tables
 	public class KvmVirtualMachineInstance : VirtualMachineInstance
 	{
 		[DataMember(Name = "details_xml")]
-		public string DetailsXml { get; set; }
+		public string? DetailsXml { get; set; }
 	}
 }

@@ -28,9 +28,9 @@ namespace ServiceNow.Api.Test
 			// A repeat of another test but with tolerance defined in the client
 
 			// This test fails if not ordering by ORDERBYsys_id
-			const string query = null;
+			const string? query = null;
 			var fieldList = new List<string>();
-			const string extraQueryString = null;
+			const string? extraQueryString = null;
 
 			var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default).ConfigureAwait(false);
 			Assert.NotNull(result);

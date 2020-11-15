@@ -19,6 +19,6 @@ namespace ServiceNow.Api.Tables
 		//}
 
 		public static string GetTableName<T>() where T : Table
-			=> ((TableNameAttribute)Attribute.GetCustomAttribute(typeof(T), typeof(TableNameAttribute)))?.TableName;
+			=> ((TableNameAttribute)Attribute.GetCustomAttribute(typeof(T), typeof(TableNameAttribute)))?.TableName ?? string.Empty;
 	}
 }

@@ -1,5 +1,5 @@
-﻿using System.Runtime.Serialization;
-using ServiceNow.Api.Attributes;
+﻿using ServiceNow.Api.Attributes;
+using System.Runtime.Serialization;
 
 namespace ServiceNow.Api.Tables
 {
@@ -8,48 +8,48 @@ namespace ServiceNow.Api.Tables
 	public class Printer : Hardware
 	{
 		[DataMember(Name = "resolution_units")]
-		public string ResolutionUnits { get; set; }
+		public string? ResolutionUnits { get; set; }
 
 		[DataMember(Name = "hardware_substatus")]
-		public string HardwareSubstatus { get; set; }
+		public string? HardwareSubstatus { get; set; }
 
 		[DataMember(Name = "horizontal_resolution")]
-		public string HorizontalResolution { get; set; }
+		public string? HorizontalResolution { get; set; }
 
 		[DataMember(Name = "use_units")]
-		public string UseUnits { get; set; }
+		public string? UseUnits { get; set; }
 
 		[DataMember(Name = "vertical_resolution")]
-		public string VerticalResolution { get; set; }
+		public string? VerticalResolution { get; set; }
 
 		[DataMember(Name = "color")]
-		public string Color { get; set; }
+		public string? Color { get; set; }
 
 		[DataMember(Name = "postscript")]
-		public string Postscript { get; set; }
+		public string? Postscript { get; set; }
 
 		[DataMember(Name = "print_type")]
-		public string PrintType { get; set; }
+		public string? PrintType { get; set; }
 
 		[DataMember(Name = "colors")]
-		public string Colors { get; set; }
+		public string? Colors { get; set; }
 
 		[DataMember(Name = "use_count")]
-		public string UseCount { get; set; }
+		public string? UseCount { get; set; }
 
 		[DataMember(Name = "paper")]
-		public string Paper { get; set; }
+		public string? Paper { get; set; }
 
 		[DataMember(Name = "mac_address")]
-		public string MacAddress { get; set; }
+		public string? MacAddress { get; set; }
 
 		[DataMember(Name = "pcl")]
-		public string Pcl { get; set; }
+		public string? Pcl { get; set; }
 
 		[DataMember(Name = "ppm")]
-		public string Ppm { get; set; }
+		public string? Ppm { get; set; }
 
 		[DataMember(Name = "sys_tags")]
-		public string SysTags { get; set; }
+		public string? SysTags { get; set; }
 	}
 }

@@ -31,12 +31,12 @@ namespace ServiceNow.Api
 			 string account,
 			 string username,
 			 string password,
-			Options options = null)
+			Options? options = null)
 		{
-			_options = options;
+			_options = options ?? new();
 
 			// Accept the ILogger passed in on options or create a NullLogger
-			_logger = options.Logger ?? new NullLogger<ServiceNowClient>();
+			_logger = _options.Logger ?? new NullLogger<ServiceNowClient>();
 
 			AccountName = account;
 			if (account == null)
@@ -76,11 +76,11 @@ namespace ServiceNow.Api
 		{
 		}
 
-		public string AccountName { get; }
+		public string AccountName { get; } = string.Empty;
 
 		public void Dispose() => _httpClient?.Dispose();
 
-		public Task<List<T>> GetAllByQueryAsync<T>(string query = null, CancellationToken cancellationToken = default) where T : Table
+		public Task<List<T>> GetAllByQueryAsync<T>(string? query = null, CancellationToken cancellationToken = default) where T : Table
 		{
 			_logger.LogDebug($"Calling {nameof(GetAllByQueryAsync)}" +
 							 $" type: {typeof(T)}" +
@@ -89,7 +89,13 @@ namespace ServiceNow.Api
 			return GetAllByQueryInternalAsync<T>(Table.GetTableName<T>(), query, null, null, _options.PageSize, cancellationToken);
 		}
 
-		internal async Task<List<T>> GetAllByQueryInternalAsync<T>(string tableName, string query, List<string> fieldList, string extraQueryString, int take, CancellationToken cancellationToken)
+		internal async Task<List<T>> GetAllByQueryInternalAsync<T>(
+			string tableName,
+			string? query,
+			List<string>? fieldList,
+			string? extraQueryString,
+			int take,
+			CancellationToken cancellationToken)
 		{
 			_logger.LogTrace($"Entered {nameof(GetAllByQueryInternalAsync)}" +
 							 $" type: {typeof(T)}" +
@@ -178,7 +184,12 @@ namespace ServiceNow.Api
 			return isCountItemsOk;
 		}
 
-		public async Task<List<JObject>> GetAllByQueryAsync(string tableName, string query = null, List<string> fieldList = null, string extraQueryString = null, CancellationToken cancellationToken = default)
+		public async Task<List<JObject>> GetAllByQueryAsync(
+			string tableName,
+			string? query = null,
+			List<string>? fieldList = null,
+			string? extraQueryString = null,
+			CancellationToken cancellationToken = default)
 		{
 			_logger.LogDebug($"Calling {nameof(GetAllByQueryAsync)}" +
 							 $" {nameof(tableName)}: {tableName}" +
@@ -197,7 +208,13 @@ namespace ServiceNow.Api
 			return await GetAllByQueryInternalJObjectAsync(tableName, query, fieldList, extraQueryString, _options.PageSize, cancellationToken).ConfigureAwait(false);
 		}
 
-		internal async Task<List<JObject>> GetAllByQueryInternalJObjectAsync(string tableName, string query, List<string> fieldList, string extraQueryString, int pageSize, CancellationToken cancellationToken)
+		internal async Task<List<JObject>> GetAllByQueryInternalJObjectAsync(
+			string tableName,
+			string? query,
+			List<string>? fieldList,
+			string? extraQueryString,
+			int pageSize,
+			CancellationToken cancellationToken)
 		{
 			_logger.LogTrace($"Entered {nameof(GetAllByQueryInternalJObjectAsync)}" +
 							 $" type: {typeof(JObject)}" +
@@ -273,13 +290,13 @@ namespace ServiceNow.Api
 				_logger.LogTrace($"Last request received {response?.Items?.Count.ToString() ?? "UNKNOWN" } items");
 
 				// If we got at least the number we asked for then there are probably more
-				if (response.Items.Count == pageSize)
+				if (response?.Items?.Count == pageSize)
 				{
 					previousMaxDateTimeRetrieved = maxDateTimeRetrieved;
 					maxDateTimeRetrieved = response.Items.Max(jObject =>
 					{
 						// Parse and enforce source as being UTC (Z)
-						return DateTimeOffset.Parse(jObject[PagingFieldName].ToString() + "Z");
+						return DateTimeOffset.Parse((jObject[PagingFieldName]?.ToString() ?? string.Empty) + "Z");
 					});
 
 					if (previousMaxDateTimeRetrieved == maxDateTimeRetrieved)
@@ -305,7 +322,7 @@ namespace ServiceNow.Api
 				var unique = new Dictionary<string, JObject>();
 				foreach (var jObject in finalResult.Items)
 				{
-					unique[jObject["sys_id"].ToString()] = jObject;
+					unique[jObject["sys_id"]?.ToString() ?? string.Empty] = jObject;
 				}
 				finalResult.Items = unique.Values.ToList();
 			}
@@ -345,13 +362,31 @@ namespace ServiceNow.Api
 			return finalResult.Items;
 		}
 
-		public Task<Page<JObject>> GetPageByQueryAsync(int skip, int take, string tableName, string query = null, List<string> fieldList = null, string extraQueryString = null, CancellationToken cancellationToken = default)
+		public Task<Page<JObject>> GetPageByQueryAsync(
+			int skip,
+			int take,
+			string tableName,
+			string? query = null,
+			List<string>? fieldList = null,
+			string? extraQueryString = null,
+			CancellationToken cancellationToken = default)
 			=> GetPageByQueryInternalAsync<JObject>(skip, take, tableName, query, fieldList, extraQueryString, cancellationToken);
 
-		public Task<Page<T>> GetPageByQueryAsync<T>(int skip, int take, string query = null, CancellationToken cancellationToken = default) where T : Table
+		public Task<Page<T>> GetPageByQueryAsync<T>(
+			int skip,
+			int take,
+			string? query = null,
+			CancellationToken cancellationToken = default) where T : Table
 			=> GetPageByQueryInternalAsync<T>(skip, take, Table.GetTableName<T>(), query, null, null, cancellationToken);
 
-		private async Task<Page<T>> GetPageByQueryInternalAsync<T>(int skip, int take, string tableName, string query, List<string> fieldList, string extraQueryString, CancellationToken cancellationToken)
+		private async Task<Page<T>> GetPageByQueryInternalAsync<T>(
+			int skip,
+			int take,
+			string tableName,
+			string? query,
+			List<string>? fieldList,
+			string? extraQueryString,
+			CancellationToken cancellationToken)
 		{
 			_logger.LogTrace($"Entered {nameof(GetPageByQueryInternalAsync)}" +
 							 $" type: {typeof(T)}" +
@@ -378,13 +413,13 @@ namespace ServiceNow.Api
 			return pageResult;
 		}
 
-		private static string BuildFieldListQueryParameter(List<string> fieldList)
+		private static string? BuildFieldListQueryParameter(List<string>? fieldList)
 			=> fieldList?.Any() == true ? $"sysparm_fields={HttpUtility.UrlEncode(string.Join(",", fieldList))}" : null;
 
-		public async Task<T> GetByIdAsync<T>(string sysId, CancellationToken cancellationToken = default) where T : Table
+		public async Task<T?> GetByIdAsync<T>(string sysId, CancellationToken cancellationToken = default) where T : Table
 			=> (await GetInternalAsync<RestResponse<T>>($"api/now/table/{Table.GetTableName<T>()}/{sysId}", cancellationToken).ConfigureAwait(false)).Item;
 
-		public async Task<JObject> GetByIdAsync(string tableName, string sysId, CancellationToken cancellationToken = default)
+		public async Task<JObject?> GetByIdAsync(string tableName, string sysId, CancellationToken cancellationToken = default)
 			=> (await GetInternalAsync<RestResponse<JObject>>($"api/now/table/{tableName}/{sysId}", cancellationToken).ConfigureAwait(false)).Item;
 
 		/// <summary>
@@ -394,7 +429,7 @@ namespace ServiceNow.Api
 		/// <param name="table">The object itself</param>
 		/// <returns>A list of attachments</returns>
 		public async Task<List<Attachment>> GetAttachmentsAsync<T>(T table, CancellationToken cancellationToken = default) where T : Table
-			=> (await GetInternalAsync<RestResponse<List<Attachment>>>($"api/now/attachment?sysparm_query=table_name={Table.GetTableName<T>()}^table_sys_id={table.SysId}", cancellationToken).ConfigureAwait(false)).Item;
+			=> (await GetInternalAsync<RestResponse<List<Attachment>>>($"api/now/attachment?sysparm_query=table_name={Table.GetTableName<T>()}^table_sys_id={table.SysId}", cancellationToken).ConfigureAwait(false)).Item ?? new();
 
 		/// <summary>
 		/// Get attachments for a given Table based entry
@@ -402,8 +437,11 @@ namespace ServiceNow.Api
 		/// <param name="tableName">The name of the table</param>
 		/// <param name="tableSysId">The sys_id of the entry in the referenced table</param>
 		/// <returns>A list of attachments</returns>
-		public async Task<List<Attachment>> GetAttachmentsAsync(string tableName, string tableSysId, CancellationToken cancellationToken = default)
-			=> (await GetInternalAsync<RestResponse<List<Attachment>>>($"api/now/attachment?sysparm_query=table_name={tableName}^table_sys_id={tableSysId}", cancellationToken).ConfigureAwait(false)).Item;
+		public async Task<List<Attachment>> GetAttachmentsAsync(
+			string tableName,
+			string tableSysId,
+			CancellationToken cancellationToken = default)
+			=> (await GetInternalAsync<RestResponse<List<Attachment>>>($"api/now/attachment?sysparm_query=table_name={tableName}^table_sys_id={tableSysId}", cancellationToken).ConfigureAwait(false)).Item ?? new();
 
 		/// <summary>
 		/// Download a specified attachment to the local file system
@@ -412,7 +450,11 @@ namespace ServiceNow.Api
 		/// <param name="outputPath">The path to store the attachment content in</param>
 		/// <param name="filename">Optional filename for the file, defaults to filename from ServiceNow if unspecified</param>
 		/// <returns>The path of the downloaded file</returns>
-		public async Task<string> DownloadAttachmentAsync(Attachment attachment, string outputPath, string filename = null, CancellationToken cancellationToken = default)
+		public async Task<string> DownloadAttachmentAsync(
+			Attachment attachment,
+			string outputPath,
+			string? filename = null,
+			CancellationToken cancellationToken = default)
 		{
 			filename ??= attachment.FileName;
 			var fileToWriteTo = Path.Combine(outputPath, filename);
@@ -446,7 +488,7 @@ namespace ServiceNow.Api
 			}
 
 			var deserializeObject = await GetDeserializedObjectFromResponse<RestResponse<T>>(response, Guid.NewGuid()).ConfigureAwait(false);
-			return deserializeObject.Item;
+			return deserializeObject.Item!;
 		}
 
 		public async Task<JObject> CreateAsync(string tableName, JObject jObject, CancellationToken cancellationToken = default)
@@ -467,7 +509,7 @@ namespace ServiceNow.Api
 			}
 
 			var deserializeObject = await GetDeserializedObjectFromResponse<RestResponse<JObject>>(response, Guid.NewGuid()).ConfigureAwait(false);
-			return deserializeObject.Item;
+			return deserializeObject.Item!;
 		}
 
 		public async Task<JObject> UpdateAsync(string tableName, JObject jObject, CancellationToken cancellationToken = default)
@@ -497,7 +539,7 @@ namespace ServiceNow.Api
 			}
 
 			var deserializeObject = await GetDeserializedObjectFromResponse<RestResponse<JObject>>(response, Guid.NewGuid()).ConfigureAwait(false);
-			return deserializeObject.Item;
+			return deserializeObject.Item!;
 		}
 
 		/// <summary>
@@ -533,7 +575,7 @@ namespace ServiceNow.Api
 			}
 
 			var deserializeObject = await GetDeserializedObjectFromResponse<RestResponse<JObject>>(response, Guid.NewGuid()).ConfigureAwait(false);
-			return deserializeObject.Item;
+			return deserializeObject.Item!;
 		}
 
 		public async Task DeleteAsync(string tableName, string sysId, CancellationToken cancellationToken = default)
@@ -612,7 +654,7 @@ namespace ServiceNow.Api
 
 		private async Task<T> GetDeserializedObjectFromResponse<T>(HttpResponseMessage response, Guid requestId)
 		{
-			string content = null;
+			string? content = null;
 			try
 			{
 				content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -644,7 +686,7 @@ namespace ServiceNow.Api
 			}
 		}
 
-		public async Task<JObject> GetLinkedEntityAsync(string link, List<string> fieldList, CancellationToken cancellationToken = default)
+		public async Task<JObject?> GetLinkedEntityAsync(string link, List<string> fieldList, CancellationToken cancellationToken = default)
 		{
 			var linkWithFields = link.Substring(link.IndexOf("/api/", StringComparison.Ordinal) + 1);
 			if (fieldList?.Any() == true)

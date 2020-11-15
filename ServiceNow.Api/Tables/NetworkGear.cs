@@ -8,63 +8,63 @@ namespace ServiceNow.Api.Tables
 	public class NetworkGear : Hardware
 	{
 		[DataMember(Name = "device_type")]
-		public string DeviceType { get; set; }
+		public string? DeviceType { get; set; }
 
 		[DataMember(Name = "bandwidth")]
-		public string Bandwidth { get; set; }
+		public string? Bandwidth { get; set; }
 
 		[DataMember(Name = "ports")]
-		public string Ports { get; set; }
+		public string? Ports { get; set; }
 
 		[DataMember(Name = "range")]
-		public string Range { get; set; }
+		public string? Range { get; set; }
 
 		[DataMember(Name = "channels")]
-		public string Channels { get; set; }
+		public string? Channels { get; set; }
 
 		[DataMember(Name = "ram")]
-		public string Ram { get; set; }
+		public string? Ram { get; set; }
 
 		[DataMember(Name = "disk_space")]
-		public string DiskSpace { get; set; }
+		public string? DiskSpace { get; set; }
 
 		[DataMember(Name = "cpu_type")]
-		public string CpuType { get; set; }
+		public string? CpuType { get; set; }
 
 		[DataMember(Name = "cpu_count")]
-		public string CpuCount { get; set; }
+		public string? CpuCount { get; set; }
 
 		[DataMember(Name = "cpu_speed")]
-		public string CpuSpeed { get; set; }
+		public string? CpuSpeed { get; set; }
 
 		[DataMember(Name = "cpu_manufacturer")]
-		public ResourceLink<Company> CpuManufacturer { get; set; }
+		public ResourceLink<Company>? CpuManufacturer { get; set; }
 
 		[DataMember(Name = "firmware_manufacturer")]
-		public ResourceLink<Company> FirmwareManufacturer { get; set; }
+		public ResourceLink<Company>? FirmwareManufacturer { get; set; }
 
 		[DataMember(Name = "firmware_version")]
-		public string FirmwareVersion { get; set; }
+		public string? FirmwareVersion { get; set; }
 
 		[DataMember(Name = "can_route")]
-		public string CanRoute { get; set; }
+		public string? CanRoute { get; set; }
 
 		[DataMember(Name = "can_switch")]
-		public string CanSwitch { get; set; }
+		public string? CanSwitch { get; set; }
 
 		[DataMember(Name = "can_hub")]
-		public string CanHub { get; set; }
+		public string? CanHub { get; set; }
 
 		[DataMember(Name = "can_partitionVlans")]
-		public string CanPartitionVlans { get; set; }
+		public string? CanPartitionVlans { get; set; }
 
 		[DataMember(Name = "physical_interface_count")]
-		public string PhysicalInterfaceCount { get; set; }
+		public string? PhysicalInterfaceCount { get; set; }
 
 		[DataMember(Name = "discovery_proto_id")]
-		public string DiscoveryProtocolId { get; set; }
+		public string? DiscoveryProtocolId { get; set; }
 
 		[DataMember(Name = "discovery_proto_type")]
-		public string DiscoveryProtocolType { get; set; }
+		public string? DiscoveryProtocolType { get; set; }
 	}
 }

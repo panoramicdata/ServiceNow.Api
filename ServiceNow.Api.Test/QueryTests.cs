@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using ServiceNow.Api.Tables;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace ServiceNow.Api.Test
 			// This test fails if not ordering by ORDERBYsys_id
 			const string query = "u_nameISNOTEMPTY";
 			var fieldList = new List<string> { "sys_id", "sys_updated_on", "u_name", "u_value", "sys_created_on" };
-			const string extraQueryString = null;
+			const string? extraQueryString = null;
 
 			var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default).ConfigureAwait(false);
 			Assert.NotNull(result);
@@ -47,9 +48,9 @@ namespace ServiceNow.Api.Test
 		public async Task PagingTestAsync()
 		{
 			// This test fails if not ordering by ORDERBYsys_id
-			const string query = null;
+			const string? query = null;
 			var fieldList = new List<string>();
-			const string extraQueryString = null;
+			const string? extraQueryString = null;
 
 			var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default).ConfigureAwait(false);
 			Assert.NotNull(result);
@@ -72,29 +73,35 @@ namespace ServiceNow.Api.Test
 		public async void Incident()
 		{
 			var page = await Client.GetPageByQueryAsync<Incident>(0, 10).ConfigureAwait(false);
-			Assert.NotNull(page);
-			Assert.NotEmpty(page.Items);
+			page.Should().NotBeNull();
+			page.Items.Should().NotBeNullOrEmpty();
 			var firstItem = page.Items[0];
 
 			// Re-fetch using SysId
 			var refetchById = await Client.GetByIdAsync<Incident>(firstItem.SysId).ConfigureAwait(false);
-			Assert.Equal(firstItem.SysId, refetchById.SysId);
+			refetchById.Should().NotBeNull();
+			firstItem.SysId.Should().Equals(refetchById!.SysId);
 
 			// Re-fetch using SysId
 			var refetchByQuery = (await Client.GetPageByQueryAsync<Incident>(0, 1, $"sys_id={firstItem.SysId}").ConfigureAwait(false))?.Items.FirstOrDefault();
-			Assert.NotNull(refetchByQuery);
-			Assert.Equal(firstItem.SysId, refetchByQuery.SysId);
+			refetchByQuery.Should().NotBeNull();
+			firstItem.SysId.Should().Equals(refetchByQuery!.SysId);
 		}
 
 		[Fact]
 		public async void GetLinkedEntity_Succeeds()
 		{
 			var server = (await Client.GetAllByQueryAsync("cmdb_ci_win_server", null, new List<string> { "sys_id", "name", "company" }).ConfigureAwait(false)).FirstOrDefault();
-			Assert.NotNull(server);
-			var companyLink = server["company"]["link"].ToString();
+			server.Should().NotBeNull();
+			server!["company"].Should().NotBeNull();
+			server!["company"]!["link"].Should().NotBeNull();
+
+			var companyLink = server!["company"]!["link"]!.ToString();
+
 			var company = await Client.GetLinkedEntityAsync(companyLink, new List<string> { "name" }).ConfigureAwait(false);
-			Assert.NotNull(company);
-			Assert.NotNull(company["name"]);
+
+			company.Should().NotBeNull();
+			company!["name"].Should().NotBeNull();
 		}
 
 		[Fact]
@@ -104,23 +111,21 @@ namespace ServiceNow.Api.Test
 				.GetAllByQueryAsync("cmdb_rel_ci", extraQueryString: "sysparm_limit=10")
 				.ConfigureAwait(false);
 
-			Assert.NotNull(firstTen);
-			Assert.NotEmpty(firstTen);
+			firstTen.Should().NotBeNullOrEmpty();
 
 			var first = firstTen[0];
 			var firstChild = first["child"];
-			Assert.NotNull(firstChild);
+			firstChild.Should().NotBeNull();
 
-			var childSysId = firstChild["value"];
-			Assert.NotNull(childSysId);
+			var childSysId = firstChild!["value"];
+			childSysId.Should().NotBeNull();
 
 			var list = await Client
 				.GetAllByQueryAsync("cmdb_rel_ci", $"child={childSysId}")
 				.ConfigureAwait(false);
 
 			var relationship = list.FirstOrDefault();
-
-			Assert.NotNull(relationship);
+			relationship.Should().NotBeNull();
 		}
 	}
 }
