@@ -657,7 +657,11 @@ namespace ServiceNow.Api
 			string? content = null;
 			try
 			{
-				content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+				content = await response
+					.Content
+					.ReadAsStringAsync()
+					.ConfigureAwait(false);
+
 				_logger.LogTrace($"Request {requestId}: Content length: {content.Length / 1024:N0} KB");
 
 				// Deserialize the object
