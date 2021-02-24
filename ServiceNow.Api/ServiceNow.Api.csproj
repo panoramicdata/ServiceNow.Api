@@ -10,7 +10,7 @@
 		<PackageProjectUrl>https://github.com/panoramicdata/ServiceNow.Api</PackageProjectUrl>
 		<PackageIcon>Icon.png</PackageIcon>
 		<PackageTags>ServiceNow API</PackageTags>
-		<PackageReleaseNotes>Improved support for sysparm_limit in extraQueryString</PackageReleaseNotes>
+		<PackageReleaseNotes>Updated ServiceNow logo</PackageReleaseNotes>
 		<RepositoryUrl>https://github.com/panoramicdata/ServiceNow.Api</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
