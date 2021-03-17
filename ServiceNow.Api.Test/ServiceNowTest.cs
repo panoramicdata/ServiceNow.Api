@@ -37,7 +37,8 @@ namespace ServiceNow.Api.Test
 			{
 				ServiceNowAccount = configurationRoot["ServiceNowAccount"],
 				ServiceNowUsername = configurationRoot["ServiceNowUsername"],
-				ServiceNowPassword = configurationRoot["ServiceNowPassword"]
+				ServiceNowPassword = configurationRoot["ServiceNowPassword"],
+				ServiceNowEnvironment = configurationRoot["ServiceNowEnvironment"]
 			};
 			if (string.IsNullOrWhiteSpace(config.ServiceNowAccount))
 			{
@@ -53,6 +54,11 @@ namespace ServiceNow.Api.Test
 			{
 				throw new Exception($"{nameof(TestConfiguration)}.{nameof(TestConfiguration.ServiceNowPassword)} must be set.");
 			}
+
+			var environment = ServiceNowEnvironment.Community;
+			Enum.TryParse(config.ServiceNowEnvironment, true, out environment);
+
+			options.Environment = environment;
 
 			Client = new ServiceNowClient(
 				config.ServiceNowAccount,

@@ -54,10 +54,22 @@ namespace ServiceNow.Api
 				throw new ArgumentNullException(nameof(password));
 			}
 
+
+			string baseAddress;
+			switch (options?.Environment ?? ServiceNowEnvironment.Community)
+			{
+				case ServiceNowEnvironment.GCC:
+					baseAddress = $"https://{account}.servicenowservices.com";
+					break;
+				default:
+					baseAddress = $"https://{account}.service-now.com";
+					break;
+			}
+
 			var httpClientHandler = new HttpClientHandler();
 			_httpClient = new HttpClient(httpClientHandler)
 			{
-				BaseAddress = new Uri($"https://{account}.service-now.com"),
+				BaseAddress = new Uri(baseAddress),
 				DefaultRequestHeaders =
 				{
 					Accept = {new MediaTypeWithQualityHeaderValue("application/json")},
