@@ -225,7 +225,9 @@ namespace ServiceNow.Api
 							 $", PageSize: {pageSize}" +
 							 ".");
 
-			const string PagingFieldName = "sys_created_on";
+			// NO - we are now using options because it's been discovered that not all tables/views will have
+			// the below, and you can set to another field name if you want
+			//const string PagingFieldName = "sys_created_on";
 
 			// Initialise actualFieldList from fieldList or an empty list if it was null
 			var actualFieldList = new List<string>(fieldList ?? new List<string>());
@@ -233,12 +235,12 @@ namespace ServiceNow.Api
 			if (actualFieldList.Count > 0)
 			{
 				// Field list is provided so we need to make sure it includes the fields we need
-				if (!actualFieldList.Contains(PagingFieldName))
+				if (!actualFieldList.Contains(_options.PagingFieldName))
 				{
-					actualFieldList.Add(PagingFieldName);
+					actualFieldList.Add(_options.PagingFieldName);
 				}
 
-				// sys_id is required for dedupe during paging
+				// sys_id is required for de-dupe during paging
 				if (!actualFieldList.Contains("sys_id"))
 				{
 					actualFieldList.Add("sys_id");
@@ -257,15 +259,14 @@ namespace ServiceNow.Api
 			// Set the ordering default
 			if (query == null)
 			{
-				query = $"ORDERBY{PagingFieldName}";
+				query = $"ORDERBY{_options.PagingFieldName}";
 			}
 			else
 			{
-				query += $"^ORDERBY{PagingFieldName}";
+				query += $"^ORDERBY{_options.PagingFieldName}";
 			}
 
-			// Strategy: We're ordering by the sys_created_on so get the first page without limits and then subsequent pages based on >= the max time we got to make sure we don't miss any, need to remove duplicates
-
+			// Strategy: We're ordering by the sys_created_on (by default, unless set to something else), so get the first page without limits and then subsequent pages based on >= the max time we got to make sure we don't miss any, need to remove duplicates
 			DateTimeOffset maxDateTimeRetrieved;
 			DateTimeOffset previousMaxDateTimeRetrieved;
 			// This will be our final response
@@ -293,10 +294,20 @@ namespace ServiceNow.Api
 				if (response?.Items?.Count == pageSize)
 				{
 					previousMaxDateTimeRetrieved = maxDateTimeRetrieved;
+
+					if (response.Items.All(item => item[_options.PagingFieldName] is null))
+					{
+						// We cannot determine the paging based on this field name (which MAY NOT EXIST!)
+						throw new ServiceNowApiException(
+							$"The table / view '{tableName}' does not have the '{_options.PagingFieldName}' field " +
+							"required to automatically page all the results. You could try a paged query instead.");
+					}
+
+					// At this point, we can be sure that we have the paging field in the data
 					maxDateTimeRetrieved = response.Items.Max(jObject =>
 					{
 						// Parse and enforce source as being UTC (Z)
-						return DateTimeOffset.Parse((jObject[PagingFieldName]?.ToString() ?? string.Empty) + "Z");
+						return DateTimeOffset.Parse((jObject[_options.PagingFieldName]?.ToString() ?? string.Empty) + "Z");
 					});
 
 					if (previousMaxDateTimeRetrieved == maxDateTimeRetrieved)
@@ -305,7 +316,7 @@ namespace ServiceNow.Api
 					}
 
 					// Update the offset for the next query
-					queryWithPagingOffset = $"{query}^{PagingFieldName}>={maxDateTimeRetrieved.UtcDateTime:yyyy-MM-dd HH:mm:ss}";
+					queryWithPagingOffset = $"{query}^{_options.PagingFieldName}>={maxDateTimeRetrieved.UtcDateTime:yyyy-MM-dd HH:mm:ss}";
 					continue;
 				}
 

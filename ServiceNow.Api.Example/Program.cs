@@ -20,7 +20,7 @@ namespace ServiceNow.Api.Example
 			// https://docs.servicenow.com/bundle/london-platform-administration/page/administer/reference-pages/reference/r_TablesAndClasses.html
 			const string tableName = "cmdb_ci_win_server";
 
-			// OPTIONAL: The main sysparm_query goes here.  See documention here:
+			// OPTIONAL: The main sysparm_query goes here.  See documentation here:
 			// https://docs.servicenow.com/bundle/geneva-servicenow-platform/page/integrate/inbound_rest/reference/r_TableAPI-GET.html
 			// If you omit this, an unfiltered result will be returned
 			const string query = "name";

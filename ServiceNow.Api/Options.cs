@@ -13,6 +13,13 @@ namespace ServiceNow.Api
 		public ILogger? Logger { get; set; }
 
 		/// <summary>
+		/// The field that is used in the "GetAllByQueryInternalAsync" method in ServiceNowClient.
+		/// This can be set because it CAN happen that the table/view does NOT have this field,
+		/// but another field e.g. inc_sys_created_on. Note it must be DateTime-related to parse properly
+		/// </summary>
+		public string PagingFieldName { get; set; } = "sys_created_on";
+
+		/// <summary>
 		/// Checks that the number of items returned matches the header total when getting all CIs
 		/// </summary>
 		public bool ValidateCountItemsReturned { get; set; } = true;
