@@ -33,5 +33,13 @@ namespace ServiceNow.Api
 		/// The default paging size
 		/// </summary>
 		public int PageSize { get; set; } = 1000;
+
+		public ServiceNowEnvironment Environment { get; set; } = ServiceNowEnvironment.Community;
+	}
+
+	public enum ServiceNowEnvironment
+	{
+		Community = 0,
+		GCC = 1
 	}
 }
