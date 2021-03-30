@@ -8,10 +8,6 @@
 #use hard tabs for indentation
 indent_style = tab
 
-[*.json]
-
-#Formatting - new line options
-
 #place catch statements on a new line
 #require braces to be on a new line for object_collection, properties, anonymous_methods, methods, types, lambdas, and control_blocks (also known as "Allman" style)
 csharp_new_line_before_open_brace = all
@@ -55,8 +51,8 @@ csharp_preserve_single_line_blocks = true
 
 #prefer expression-bodied members for accessors
 csharp_style_expression_bodied_accessors = true:suggestion
-#prefer expression-bodied members for constructors
-csharp_style_expression_bodied_constructors = true:suggestion
+#prefer blocks for constructors
+csharp_style_expression_bodied_constructors = false:suggestion
 #prefer expression-bodied members for methods
 csharp_style_expression_bodied_methods = true:suggestion
 #prefer expression-bodied members for properties
