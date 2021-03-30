@@ -10,12 +10,13 @@
 		<PackageProjectUrl>https://github.com/panoramicdata/ServiceNow.Api</PackageProjectUrl>
 		<PackageIcon>Icon.png</PackageIcon>
 		<PackageTags>ServiceNow API</PackageTags>
-		<PackageReleaseNotes>Updated ServiceNow logo</PackageReleaseNotes>
 		<RepositoryUrl>https://github.com/panoramicdata/ServiceNow.Api</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Nullable>enable</Nullable>
 		<LangVersion>latest</LangVersion>
+
+		<PackageReleaseNotes>Supported new GovCommunityCloud Environment in options</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>

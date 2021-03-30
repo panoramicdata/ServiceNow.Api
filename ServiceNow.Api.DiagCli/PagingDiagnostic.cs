@@ -29,21 +29,20 @@ namespace ServiceNow.Api.DiagCli
 
 			try
 			{
-				using (var client = new ServiceNowClient(
+				using var client = new ServiceNowClient(
 					_configuration.Credentials.ServiceNowAccount,
 					_configuration.Credentials.ServiceNowUsername,
 					_configuration.Credentials.ServiceNowPassword,
-					new Options { ValidateCountItemsReturned = true, ValidateCountItemsReturnedTolerance = 0, PageSize = test.PageSize.Value, Logger = _logger }))
-				{
-					var results = await client.GetAllByQueryAsync(test.Table, test.Query, fieldList: test.Fields).ConfigureAwait(false);
-					_logger.LogInformation($"Got {results.Count} results");
+					new Options { ValidateCountItemsReturned = true, ValidateCountItemsReturnedTolerance = 0, PageSize = test.PageSize.Value, Logger = _logger });
 
-					// Check for dupes
-					var dupes = results.GroupBy(ci => ci["sys_id"]).Where(g => g.Count() > 1).Select(g => new { Id = g.First()["sys_id"], Count = g.Count() }).ToList();
-					var unique = results.GroupBy(ci => ci["sys_id"]).Select(ci => ci.First()).ToList();
+				var results = await client.GetAllByQueryAsync(test.Table, test.Query, fieldList: test.Fields).ConfigureAwait(false);
+				_logger.LogInformation($"Got {results.Count} results");
 
-					_logger.LogInformation($"Found {dupes.Count} dupes - total retrieved = {results.Count} - unique = {unique.Count}");
-				}
+				// Check for dupes
+				var dupes = results.GroupBy(ci => ci["sys_id"]).Where(g => g.Count() > 1).Select(g => new { Id = g.First()["sys_id"], Count = g.Count() }).ToList();
+				var unique = results.GroupBy(ci => ci["sys_id"]).Select(ci => ci.First()).ToList();
+
+				_logger.LogInformation($"Found {dupes.Count} dupes - total retrieved = {results.Count} - unique = {unique.Count}");
 			}
 			catch (System.Exception e)
 			{

@@ -20,7 +20,7 @@ namespace ServiceNow.Api.Test
 			var request = await Client.GetByIdAsync<Request>("2c8e0e3b4f20130003d03b718110c762").ConfigureAwait(false);
 			// Make sure that something was returned
 			Assert.NotNull(request);
-			var attachments = await Client.GetAttachmentsAsync(request).ConfigureAwait(false);
+			var attachments = await Client.GetAttachmentsAsync(request!).ConfigureAwait(false);
 			Assert.NotNull(attachments);
 			Assert.Single(attachments);
 			var localPath = await Client.DownloadAttachmentAsync(attachments[0], Path.GetTempPath()).ConfigureAwait(false);

@@ -53,16 +53,11 @@ namespace ServiceNow.Api.DiagCli
 
 		private async Task ExecuteTestAsync(DiagnosticTest test)
 		{
-			IDiagnostic diagnostic;
-			switch (test.Type)
+			IDiagnostic diagnostic = test.Type switch
 			{
-				case DiagnosticType.Paging:
-					diagnostic = _serviceProvider.GetRequiredService<PagingDiagnostic>();
-					break;
-				default:
-					throw new NotSupportedException($"Test type {test.Type} is not supported.");
-			}
-
+				DiagnosticType.Paging => _serviceProvider.GetRequiredService<PagingDiagnostic>(),
+				_ => throw new NotSupportedException($"Test type {test.Type} is not supported."),
+			};
 			await diagnostic.ExecuteAsync(test).ConfigureAwait(false);
 		}
 	}

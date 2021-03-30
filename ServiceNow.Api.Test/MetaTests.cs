@@ -17,7 +17,7 @@ namespace ServiceNow.Api.Test
 			var result = await Client.GetMetaForClassAsync(className).ConfigureAwait(false);
 			Assert.NotNull(result);
 			Assert.NotNull(result.Item);
-			Assert.Equal("cmdb_ci_computer", result.Item.Parent);
+			Assert.Equal("cmdb_ci_computer", result.Item!.Parent);
 			Assert.NotNull(result.Item.Attributes);
 			Assert.NotEmpty(result.Item.Attributes);
 			Assert.NotNull(result.Item.Children);

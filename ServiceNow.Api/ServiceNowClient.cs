@@ -54,18 +54,11 @@ namespace ServiceNow.Api
 				throw new ArgumentNullException(nameof(password));
 			}
 
-
-			string baseAddress;
-			switch (options?.Environment ?? ServiceNowEnvironment.Community)
+			var baseAddress = _options.Environment switch
 			{
-				case ServiceNowEnvironment.GCC:
-					baseAddress = $"https://{account}.servicenowservices.com";
-					break;
-				default:
-					baseAddress = $"https://{account}.service-now.com";
-					break;
-			}
-
+				ServiceNowEnvironment.GCC => $"https://{account}.servicenowservices.com",
+				_ => $"https://{account}.service-now.com",
+			};
 			var httpClientHandler = new HttpClientHandler();
 			_httpClient = new HttpClient(httpClientHandler)
 			{
@@ -80,10 +73,10 @@ namespace ServiceNow.Api
 		}
 
 		public ServiceNowClient(
-			 string account,
-			 string username,
-			 string password,
-			ILogger iLogger = null)
+			string account,
+			string username,
+			string password,
+			ILogger? iLogger = null)
 		: this(account, username, password, new Options { Logger = iLogger })
 		{
 		}
