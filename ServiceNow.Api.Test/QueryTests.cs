@@ -31,6 +31,7 @@ namespace ServiceNow.Api.Test
 			//Assert.False(result[0].ContainsKey("u_value"));
 
 			// There should only be the properties requested, even though sys_id and sys_created_on are used internally for paging
+			// (sys_created_on is used unless the paging field has been set in options passed to the client, which would be used instead)
 			var actualProperties = result[0].Properties().Select(p => p.Name).ToList();
 			//Assert.Equal(fieldList.OrderBy(name => name), actualProperties.OrderBy(name => name));
 

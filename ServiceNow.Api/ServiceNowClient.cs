@@ -116,11 +116,11 @@ namespace ServiceNow.Api
 				// NO - So set a default
 				if (query == null)
 				{
-					query = "ORDERBYsys_created_on";
+					query = $"ORDERBY{_options.PagingFieldName}";
 				}
 				else
 				{
-					query += "^ORDERBYsys_created_on";
+					query += $"^ORDERBY{_options.PagingFieldName}";
 				}
 			}
 
