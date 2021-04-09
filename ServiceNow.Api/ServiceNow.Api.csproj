@@ -16,7 +16,7 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>latest</LangVersion>
 
-		<PackageReleaseNotes>Supported new GovCommunityCloud Environment in options</PackageReleaseNotes>
+		<PackageReleaseNotes>Updated ORDERBY / ORDERBYDESC to use paging field set in options.</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>
