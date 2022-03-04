@@ -1,6 +1,6 @@
 # ServiceNow.Api
 
-ServiceNow REST API nuget package.
+[![Nuget](https://img.shields.io/nuget/v/ServiceNow.Api)](https://www.nuget.org/packages/ServiceNow.Api/) ServiceNow REST API nuget package.
 
 ## Usage
 
