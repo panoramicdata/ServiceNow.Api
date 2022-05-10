@@ -293,7 +293,7 @@ namespace ServiceNow.Api
 
 				// Add this response to the list
 				finalResult.Items.AddRange(response.Items);
-				_logger.LogTrace($"Last request received {response?.Items?.Count.ToString() ?? "UNKNOWN" } items");
+				_logger.LogTrace($"Last request received {response?.Items?.Count.ToString() ?? "UNKNOWN"} items");
 
 				// If we got at least the number we asked for then there are probably more
 				if (response?.Items?.Count == pageSize)
@@ -485,13 +485,19 @@ namespace ServiceNow.Api
 			return fileToWriteTo;
 		}
 
-		public async Task<T> CreateAsync<T>(T @object, CancellationToken cancellationToken = default) where T : Table
+		public Task<T> CreateAsync<T>(T @object, CancellationToken cancellationToken = default) where T : Table
+		 => CreateAsync<T>(@object, null, cancellationToken);
+
+		public async Task<T> CreateAsync<T>(T @object, string? extraQueryString = null, CancellationToken cancellationToken = default) where T : Table
 		{
 			// https://docs.servicenow.com/bundle/kingston-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#ariaid-title6
 			var serializedObject = JsonConvert.SerializeObject(@object, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 			HttpContent content = new StringContent(serializedObject, null, "application/json");
 			var tableName = Table.GetTableName<T>();
-			using var response = await _httpClient.PostAsync($"api/now/table/{tableName}", content, cancellationToken).ConfigureAwait(false);
+			using var response = await _httpClient.PostAsync(
+				$"api/now/table/{tableName}" + (string.IsNullOrWhiteSpace(extraQueryString) ? "" : "?" + extraQueryString),
+				content,
+				cancellationToken).ConfigureAwait(false);
 			if (response == null)
 			{
 				throw new Exception("Null response.");
@@ -507,12 +513,18 @@ namespace ServiceNow.Api
 			return deserializeObject.Item!;
 		}
 
-		public async Task<JObject> CreateAsync(string tableName, JObject jObject, CancellationToken cancellationToken = default)
+		public Task<JObject> CreateAsync(string tableName, JObject jObject, CancellationToken cancellationToken = default)
+			=> CreateAsync(tableName, jObject, null, cancellationToken);
+
+		public async Task<JObject> CreateAsync(string tableName, JObject jObject, string? extraQueryString = null, CancellationToken cancellationToken = default)
 		{
 			// https://docs.servicenow.com/bundle/kingston-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#ariaid-title6
 			var serializedObject = JsonConvert.SerializeObject(jObject, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 			HttpContent content = new StringContent(serializedObject, null, "application/json");
-			using var response = await _httpClient.PostAsync($"api/now/table/{tableName}", content, cancellationToken).ConfigureAwait(false);
+			using var response = await _httpClient.PostAsync(
+				$"api/now/table/{tableName}" + (string.IsNullOrWhiteSpace(extraQueryString) ? "" : "?" + extraQueryString),
+				content,
+				cancellationToken).ConfigureAwait(false);
 			if (response == null)
 			{
 				throw new Exception("Null response.");
