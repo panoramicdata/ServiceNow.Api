@@ -28,7 +28,7 @@ namespace ServiceNow.Api.Test
 			};
 
 			// Act
-			var createdIncident = await Client.CreateAsync(incident).ConfigureAwait(false);
+			var createdIncident = await Client.CreateAsync(incident, System.Threading.CancellationToken.None).ConfigureAwait(false);
 
 			// Assert
 			createdIncident.Should().NotBeNull();

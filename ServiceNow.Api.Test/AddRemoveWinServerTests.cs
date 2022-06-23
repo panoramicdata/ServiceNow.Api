@@ -16,7 +16,7 @@ namespace ServiceNow.Api.Test
 		public async Task AddUpdateAndDeleteServer_BehavesAsExpected()
 		{
 			var createDictionary = new Dictionary<string, string> { { "name", "bob" } };
-			var newServer = await Client.CreateAsync("cmdb_ci_win_server", JObject.FromObject(createDictionary)).ConfigureAwait(false);
+			var newServer = await Client.CreateAsync("cmdb_ci_win_server", JObject.FromObject(createDictionary), System.Threading.CancellationToken.None).ConfigureAwait(false);
 			Assert.NotNull(newServer);
 			Assert.Equal("bob", newServer["name"]?.ToString());
 			Assert.Equal(string.Empty, newServer["short_description"]?.ToString());
