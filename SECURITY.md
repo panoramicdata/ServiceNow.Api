@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-We resolve security concerns to our software by creating a new version of the affected solution. The new version 
+We resolve security concerns regarding our software by creating a new version of the affected solution. The new version 
 is based upon the latest public release available at the time the vulnerability is identified.
 
 We recommend upgrading to the latest version of any package to get the best experience, as they include the latest 
@@ -15,6 +15,7 @@ bug fixes and security patches.
 
 ## Reporting a Vulnerability
 
-Please use our main support page for reporting any security concerns you may have about our software.
+To report a security vulnerability, use our support form: https://panoramicdata.com/support
 
-https://www.panoramicdata.com/support/
+We will acknowledge valid submissions and provide a ticket reference, update you as the issue progresses, 
+communicate that vulnerabilities are fixed in release notes and provide full disclosure to the community once the security fix version is deployed.
