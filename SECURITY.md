@@ -2,22 +2,12 @@
 
 ## Supported Versions
 
-The following versions of this project are currently being supported with security updates.
+If a vulnerability is found in our software, we will issue an update to the latest available public release at the time the vulnerability is identified. Versions of this project that are currently supported with security updates are **Version 1.2**. Any version earlier than this is unsupported.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.2.x   | :white_check_mark: |
-| < 1.2   | :x:                |
-
-We resolve security concerns in our software by creating a new version of the affected solution. The new version 
-is based upon the latest public release available at the time the vulnerability is identified.
-
-We recommend upgrading to the latest version of any package to get the best experience, as they include the latest 
-bug fixes and security patches.
+We recommend you always use the latest version of any software to benefit from up to date bug fixes and security patches.
 
 ## Reporting a Vulnerability
 
-To report a security vulnerability, use our support form: https://panoramicdata.com/support
+To report an issue, complete this form: https://panoramicdata.com/support
 
-We will acknowledge valid submissions and provide a ticket reference, update you as the issue progresses, 
-communicate that vulnerabilities are fixed in release notes and provide full disclosure to the community once the security fix version is deployed.
+We will acknowledge valid submissions, provide a ticket reference and give you updates on the issue. Fixed vulnerabilities are described in release notes and disclosed to the community once the fix is deployed.
