@@ -312,7 +312,15 @@ namespace ServiceNow.Api
 					maxDateTimeRetrieved = response.Items.Max(jObject =>
 					{
 						// Parse and enforce source as being UTC (Z)
-						return DateTimeOffset.Parse((jObject[_options.PagingFieldName]?.ToString() ?? string.Empty) + "Z");
+						if (jObject[_options.PagingFieldName]?["value"] != null)
+						{
+							// This has a value and display_value subcomponent.  We want to use the "value".
+							return DateTimeOffset.Parse((jObject[_options.PagingFieldName]?["value"]?.ToString() ?? string.Empty) + "Z");
+						}
+						else
+						{
+							return DateTimeOffset.Parse((jObject[_options.PagingFieldName]?.ToString() ?? string.Empty) + "Z");
+						}
 					});
 
 					if (previousMaxDateTimeRetrieved == maxDateTimeRetrieved)
