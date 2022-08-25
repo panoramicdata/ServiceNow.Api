@@ -57,6 +57,7 @@ namespace ServiceNow.Api
 			var baseAddress = _options.Environment switch
 			{
 				ServiceNowEnvironment.GCC => $"https://{account}.servicenowservices.com",
+				ServiceNowEnvironment.OnPremise => $"https://{account}",
 				_ => $"https://{account}.service-now.com",
 			};
 			var httpClientHandler = new HttpClientHandler();

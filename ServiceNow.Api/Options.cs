@@ -40,6 +40,7 @@ namespace ServiceNow.Api
 	public enum ServiceNowEnvironment
 	{
 		Community = 0,
-		GCC = 1
+		GCC = 1,
+		OnPremise = 2
 	}
 }
