@@ -13,7 +13,7 @@ public class ServiceNowApiException : Exception
 	{
 	}
 
-	public ServiceNowApiException() : base()
+	public ServiceNowApiException()
 	{
 	}
 
