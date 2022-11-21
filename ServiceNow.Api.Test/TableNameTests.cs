@@ -38,29 +38,29 @@ namespace ServiceNow.Api.Test
 		}
 
 		[Fact]
-		public async void WindowsServers()
+		public async Task WindowsServers()
 			=> await GetItems("cmdb_ci_win_server").ConfigureAwait(false);
 
 		[Fact]
-		public async void Servers()
+		public async Task Servers()
 			=> await GetItems("cmdb_ci_server").ConfigureAwait(false);
 
 		/// <summary>
 		/// Only get some fields for speed
 		/// </summary>
 		[Fact]
-		public async void ServersAll()
+		public async Task ServersAll()
 			=> await GetAllItems("cmdb_ci_server", "install_status!=7^firewall_status=intranet", new List<string> { "sys_id", "name" }).ConfigureAwait(false);
 
 		[Fact]
-		public async void ServersAllWithFieldLimit()
+		public async Task ServersAllWithFieldLimit()
 			=> await GetAllItems("cmdb_ci_server", "install_status!=7", new List<string> { "sys_updated_on", "name", "sys_id", "sys_class_name" }).ConfigureAwait(false);
 
 		[Fact]
-		public async void Requests() => await GetItems("sc_request").ConfigureAwait(false);
+		public async Task Requests() => await GetItems("sc_request").ConfigureAwait(false);
 
 		[Fact]
-		public async void Choices()
+		public async Task Choices()
 		{
 			var serverChoices = await GetAllItems("sys_choice", "name=cmdb_ci_server^element=os^inactive=false", new List<string> { "sys_id", "label", "value" }).ConfigureAwait(false);
 			Assert.NotNull(serverChoices);

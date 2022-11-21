@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace ServiceNow.Api.DiagCli.Exceptions
 {
 	[Serializable]
-	internal class ConfigurationException : Exception
+	public class ConfigurationException : Exception
 	{
 		public ConfigurationException()
 		{

@@ -71,7 +71,7 @@ namespace ServiceNow.Api.Test
 		}
 
 		[Fact]
-		public async void Incident()
+		public async Task Incident()
 		{
 			var page = await Client.GetPageByQueryAsync<Incident>(0, 10).ConfigureAwait(false);
 			page.Should().NotBeNull();
@@ -90,7 +90,7 @@ namespace ServiceNow.Api.Test
 		}
 
 		[Fact]
-		public async void GetLinkedEntity_Succeeds()
+		public async Task GetLinkedEntity_Succeeds()
 		{
 			var server = (await Client.GetAllByQueryAsync("cmdb_ci_win_server", null, new List<string> { "sys_id", "name", "company" }).ConfigureAwait(false)).FirstOrDefault();
 			server.Should().NotBeNull();
@@ -106,7 +106,7 @@ namespace ServiceNow.Api.Test
 		}
 
 		[Fact]
-		public async void GetRelationshipByChild_Succeeds()
+		public async Task GetRelationshipByChild_Succeeds()
 		{
 			var firstTen = await Client
 				.GetAllByQueryAsync("cmdb_rel_ci", extraQueryString: "sysparm_limit=10")

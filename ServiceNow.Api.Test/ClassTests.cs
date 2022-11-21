@@ -21,7 +21,7 @@ namespace ServiceNow.Api.Test
 		}
 
 		[Fact]
-		public async void GetAllServers()
+		public async Task GetAllServers()
 		{
 			var allItems = await Client.GetAllByQueryAsync<Server>("firewall_status=Intranet").ConfigureAwait(false);
 			// Check that the total count matches the count of items
@@ -29,115 +29,115 @@ namespace ServiceNow.Api.Test
 		}
 
 		[Fact]
-		public async void Agreement() => await GetItemsAsync<Agreement>().ConfigureAwait(false);
+		public async Task Agreement() => await GetItemsAsync<Agreement>().ConfigureAwait(false);
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
 		[Fact(Skip = "This table doesn't seem to exist in the dev systems")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
-		public async void AmazonWebService() => await GetItemsAsync<AmazonWebService>().ConfigureAwait(false);
+		public async Task AmazonWebService() => await GetItemsAsync<AmazonWebService>().ConfigureAwait(false);
 
 		[Fact]
-		public async void Application() => await GetItemsAsync<Application>().ConfigureAwait(false);
+		public async Task Application() => await GetItemsAsync<Application>().ConfigureAwait(false);
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
 		[Fact(Skip = "This table doesn't seem to exist in the dev systems")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
-		public async void AzureVirtualMachineInstance() => await GetItemsAsync<AzureVirtualMachineInstance>().ConfigureAwait(false);
+		public async Task AzureVirtualMachineInstance() => await GetItemsAsync<AzureVirtualMachineInstance>().ConfigureAwait(false);
 
 		[Fact]
-		public async void BusinessService() => await GetItemsAsync<BusinessService>().ConfigureAwait(false);
+		public async Task BusinessService() => await GetItemsAsync<BusinessService>().ConfigureAwait(false);
 
 		[Fact]
-		public async void CmdbCi() => await GetItemsAsync<CmdbCi>().ConfigureAwait(false);
+		public async Task CmdbCi() => await GetItemsAsync<CmdbCi>().ConfigureAwait(false);
 
 		[Fact]
-		public async void Company() => await GetItemsAsync<Company>().ConfigureAwait(false);
+		public async Task Company() => await GetItemsAsync<Company>().ConfigureAwait(false);
 
 		[Fact]
-		public async void Computer() => await GetItemsAsync<Computer>().ConfigureAwait(false);
+		public async Task Computer() => await GetItemsAsync<Computer>().ConfigureAwait(false);
 
 		[Fact]
-		public async void CostCenter() => await GetItemsAsync<CostCenter>().ConfigureAwait(false);
+		public async Task CostCenter() => await GetItemsAsync<CostCenter>().ConfigureAwait(false);
 
 		[Fact]
-		public async void Country() => await GetItemsAsync<Country>().ConfigureAwait(false);
+		public async Task Country() => await GetItemsAsync<Country>().ConfigureAwait(false);
 
 		[Fact]
-		public async void Department() => await GetItemsAsync<Department>().ConfigureAwait(false);
+		public async Task Department() => await GetItemsAsync<Department>().ConfigureAwait(false);
 
 		[Fact]
-		public async void Ec2VirtualMachineInstance() => await GetItemsAsync<Ec2VirtualMachineInstance>().ConfigureAwait(false);
+		public async Task Ec2VirtualMachineInstance() => await GetItemsAsync<Ec2VirtualMachineInstance>().ConfigureAwait(false);
 
 		[Fact]
-		public async void Environment() => await GetItemsAsync<Environment>().ConfigureAwait(false);
+		public async Task Environment() => await GetItemsAsync<Environment>().ConfigureAwait(false);
 
 		[Fact]
-		public async void EsxServer() => await GetItemsAsync<EsxServer>().ConfigureAwait(false);
+		public async Task EsxServer() => await GetItemsAsync<EsxServer>().ConfigureAwait(false);
 
 		[Fact]
-		public async void Hardware() => await GetItemsAsync<Hardware>().ConfigureAwait(false);
+		public async Task Hardware() => await GetItemsAsync<Hardware>().ConfigureAwait(false);
 
 		[Fact]
-		public async void HpuxServer() => await GetItemsAsync<HpuxServer>().ConfigureAwait(false);
+		public async Task HpuxServer() => await GetItemsAsync<HpuxServer>().ConfigureAwait(false);
 
 		[Fact]
-		public async void HyperVVirtualMachineInstance() => await GetItemsAsync<HyperVVirtualMachineInstance>().ConfigureAwait(false);
+		public async Task HyperVVirtualMachineInstance() => await GetItemsAsync<HyperVVirtualMachineInstance>().ConfigureAwait(false);
 
 		[Fact]
-		public async void Incident() => await GetItemsAsync<Incident>().ConfigureAwait(false);
+		public async Task Incident() => await GetItemsAsync<Incident>().ConfigureAwait(false);
 
 		[Fact]
-		public async void IpFirewall() => await GetItemsAsync<IpFirewall>().ConfigureAwait(false);
+		public async Task IpFirewall() => await GetItemsAsync<IpFirewall>().ConfigureAwait(false);
 
 		[Fact]
-		public async void IpRouter() => await GetItemsAsync<IpRouter>().ConfigureAwait(false);
+		public async Task IpRouter() => await GetItemsAsync<IpRouter>().ConfigureAwait(false);
 
 		[Fact]
-		public async void IpSwitch() => await GetItemsAsync<IpSwitch>().ConfigureAwait(false);
+		public async Task IpSwitch() => await GetItemsAsync<IpSwitch>().ConfigureAwait(false);
 
 		[Fact]
-		public async void KvmVirtualMachineInstance() => await GetItemsAsync<KvmVirtualMachineInstance>().ConfigureAwait(false);
+		public async Task KvmVirtualMachineInstance() => await GetItemsAsync<KvmVirtualMachineInstance>().ConfigureAwait(false);
 
 		[Fact]
-		public async void LinuxServer() => await GetItemsAsync<LinuxServer>().ConfigureAwait(false);
+		public async Task LinuxServer() => await GetItemsAsync<LinuxServer>().ConfigureAwait(false);
 
 		[Fact]
-		public async void LoadBalancer() => await GetItemsAsync<LoadBalancer>().ConfigureAwait(false);
+		public async Task LoadBalancer() => await GetItemsAsync<LoadBalancer>().ConfigureAwait(false);
 
 		[Fact]
-		public async void Location() => await GetItemsAsync<Location>().ConfigureAwait(false);
+		public async Task Location() => await GetItemsAsync<Location>().ConfigureAwait(false);
 
 		[Fact]
-		public async void NetworkGear() => await GetItemsAsync<NetworkGear>().ConfigureAwait(false);
+		public async Task NetworkGear() => await GetItemsAsync<NetworkGear>().ConfigureAwait(false);
 
 		[Fact]
-		public async void Printer() => await GetItemsAsync<Printer>().ConfigureAwait(false);
+		public async Task Printer() => await GetItemsAsync<Printer>().ConfigureAwait(false);
 
 		[Fact]
-		public async void Relationship() => await GetItemsAsync<Relationship>().ConfigureAwait(false);
+		public async Task Relationship() => await GetItemsAsync<Relationship>().ConfigureAwait(false);
 
 		[Fact]
-		public async void Server() => await GetItemsAsync<Server>().ConfigureAwait(false);
+		public async Task Server() => await GetItemsAsync<Server>().ConfigureAwait(false);
 
 		[Fact]
-		public async void SolarisServer() => await GetItemsAsync<SolarisServer>().ConfigureAwait(false);
+		public async Task SolarisServer() => await GetItemsAsync<SolarisServer>().ConfigureAwait(false);
 
 		[Fact]
-		public async void SolarisVirtualMachineInstance() => await GetItemsAsync<SolarisVirtualMachineInstance>().ConfigureAwait(false);
+		public async Task SolarisVirtualMachineInstance() => await GetItemsAsync<SolarisVirtualMachineInstance>().ConfigureAwait(false);
 
 		[Fact]
-		public async void UnixServer() => await GetItemsAsync<UnixServer>().ConfigureAwait(false);
+		public async Task UnixServer() => await GetItemsAsync<UnixServer>().ConfigureAwait(false);
 
 		[Fact]
-		public async void User() => await GetItemsAsync<User>().ConfigureAwait(false);
+		public async Task User() => await GetItemsAsync<User>().ConfigureAwait(false);
 
 		[Fact]
-		public async void VirtualizationServer() => await GetItemsAsync<VirtualizationServer>().ConfigureAwait(false);
+		public async Task VirtualizationServer() => await GetItemsAsync<VirtualizationServer>().ConfigureAwait(false);
 
 		[Fact]
-		public async void VirtualMachineInstance() => await GetItemsAsync<VirtualMachineInstance>().ConfigureAwait(false);
+		public async Task VirtualMachineInstance() => await GetItemsAsync<VirtualMachineInstance>().ConfigureAwait(false);
 
 		[Fact]
-		public async void WindowsServer() => await GetItemsAsync<WindowsServer>().ConfigureAwait(false);
+		public async Task WindowsServer() => await GetItemsAsync<WindowsServer>().ConfigureAwait(false);
 	}
 }

@@ -232,7 +232,6 @@ namespace ServiceNow.Api
 
 			// NO - we are now using options because it's been discovered that not all tables/views will have
 			// the below, and you can set to another field name if you want
-			//const string PagingFieldName = "sys_created_on";
 
 			// Initialise actualFieldList from fieldList or an empty list if it was null
 			var actualFieldList = new List<string>(fieldList ?? new List<string>());
@@ -474,8 +473,6 @@ namespace ServiceNow.Api
 		{
 			filename ??= attachment.FileName;
 			var fileToWriteTo = Path.Combine(outputPath, filename);
-			//wc.DownloadProgressChanged += wc_DownloadProgressChanged;
-			//await _httpClient..DownloadFile(new Uri(attachment.DownloadLink), localPath);
 			using var response = await _httpClient.GetAsync(attachment.DownloadLink, cancellationToken).ConfigureAwait(false);
 			using var streamToReadFrom = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 			using Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create);

@@ -13,10 +13,6 @@ namespace ServiceNow.Api.Tables
 		[DataMember(Name = "used_for")]
 		public string? UsedFor { get; set; }
 
-		// TODO - On "London" this is a ResourceLink to an SLA type which we don't have
-		//[DataMember(Name="sla")]
-		//public string? Sla { get; set; }
-
 		[DataMember(Name = "version")]
 		public string? Version { get; set; }
 
