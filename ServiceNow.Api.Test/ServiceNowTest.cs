@@ -42,17 +42,17 @@ public abstract class ServiceNowTest
 		};
 		if (string.IsNullOrWhiteSpace(config.ServiceNowAccount))
 		{
-			throw new Exception($"{nameof(TestConfiguration)}.{nameof(TestConfiguration.ServiceNowAccount)} must be set.");
+			throw new InvalidOperationException($"{nameof(TestConfiguration)}.{nameof(TestConfiguration.ServiceNowAccount)} must be set.");
 		}
 
 		if (string.IsNullOrWhiteSpace(config.ServiceNowUsername))
 		{
-			throw new Exception($"{nameof(TestConfiguration)}.{nameof(TestConfiguration.ServiceNowUsername)} must be set.");
+			throw new InvalidOperationException($"{nameof(TestConfiguration)}.{nameof(TestConfiguration.ServiceNowUsername)} must be set.");
 		}
 
 		if (string.IsNullOrWhiteSpace(config.ServiceNowPassword))
 		{
-			throw new Exception($"{nameof(TestConfiguration)}.{nameof(TestConfiguration.ServiceNowPassword)} must be set.");
+			throw new InvalidOperationException($"{nameof(TestConfiguration)}.{nameof(TestConfiguration.ServiceNowPassword)} must be set.");
 		}
 
 		var environment = ServiceNowEnvironment.Community;

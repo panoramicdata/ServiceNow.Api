@@ -5,7 +5,7 @@ namespace ServiceNow.Api.DiagCli.Models;
 
 public class Configuration
 {
-	public const string DefaultFilename = "appsettings.json";
+	public static readonly string DefaultFilename = "appsettings.json";
 
 	public List<DiagnosticTest> Tests { get; set; }
 

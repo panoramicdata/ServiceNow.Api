@@ -15,10 +15,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\ServiceNow.Api\ServiceNow.Api.csproj" />
+		<PackageReference Include="ServiceNow.Api" Version="1.2.*" />
 	</ItemGroup>
 
 </Project>
