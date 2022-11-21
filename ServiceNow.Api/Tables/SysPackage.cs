@@ -1,7 +1,6 @@
-﻿namespace ServiceNow.Api.Tables
+﻿namespace ServiceNow.Api.Tables;
+
+public class SysPackage
 {
-	public class SysPackage
-	{
-		// TODO Incomplete
-	}
+	// TODO Incomplete
 }

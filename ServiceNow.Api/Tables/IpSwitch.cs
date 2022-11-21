@@ -1,6 +1,5 @@
-﻿namespace ServiceNow.Api.Tables
+﻿namespace ServiceNow.Api.Tables;
+
+public class IpSwitch : NetworkGear
 {
-	public class IpSwitch : NetworkGear
-	{
-	}
 }

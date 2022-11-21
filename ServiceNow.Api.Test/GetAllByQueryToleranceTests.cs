@@ -5,48 +5,47 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace ServiceNow.Api.Test
+namespace ServiceNow.Api.Test;
+
+public class GetAllByQueryToleranceTests : ServiceNowTest
 {
-	public class GetAllByQueryToleranceTests : ServiceNowTest
+	public GetAllByQueryToleranceTests(ITestOutputHelper output)
+		: base(
+			output,
+			"appsettings.ntt.dev.json",
+			new Options
+			{
+				ValidateCountItemsReturned = true,
+				ValidateCountItemsReturnedTolerance = 5,
+				PageSize = 1000
+			})
 	{
-		public GetAllByQueryToleranceTests(ITestOutputHelper output)
-			: base(
-				output,
-				"appsettings.ntt.dev.json",
-				new Options
-				{
-					ValidateCountItemsReturned = true,
-					ValidateCountItemsReturnedTolerance = 5,
-					PageSize = 1000
-				})
-		{
-		}
+	}
 
-		[Fact]
-		public async Task PagingTestAsync()
-		{
-			// A repeat of another test but with tolerance defined in the client
+	[Fact]
+	public async Task PagingTestAsync()
+	{
+		// A repeat of another test but with tolerance defined in the client
 
-			// This test fails if not ordering by ORDERBYsys_id
-			const string? query = null;
-			var fieldList = new List<string>();
-			const string? extraQueryString = null;
+		// This test fails if not ordering by ORDERBYsys_id
+		const string? query = null;
+		var fieldList = new List<string>();
+		const string? extraQueryString = null;
 
-			var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default).ConfigureAwait(false);
-			Assert.NotNull(result);
-			Assert.NotEmpty(result);
-			Assert.True(result[0].ContainsKey("sys_id"));
-			// Expecting the u_value field to be present as we didn't limit the fields to be retrieved
-			Assert.True(result[0].ContainsKey("u_value"));
+		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default).ConfigureAwait(false);
+		Assert.NotNull(result);
+		Assert.NotEmpty(result);
+		Assert.True(result[0].ContainsKey("sys_id"));
+		// Expecting the u_value field to be present as we didn't limit the fields to be retrieved
+		Assert.True(result[0].ContainsKey("u_value"));
 
-			// Check for dupes
-			var dupes = result.GroupBy(ci => ci["sys_id"]).Where(g => g.Count() > 1).Select(g => new { Id = g.First()["sys_id"], Count = g.Count() }).ToList();
+		// Check for dupes
+		var dupes = result.GroupBy(ci => ci["sys_id"]).Where(g => g.Count() > 1).Select(g => new { Id = g.First()["sys_id"], Count = g.Count() }).ToList();
 
-			var unique = result.GroupBy(ci => ci["sys_id"]).Select(ci => ci.First()).ToList();
+		var unique = result.GroupBy(ci => ci["sys_id"]).Select(ci => ci.First()).ToList();
 
-			Logger.LogInformation($"Found {dupes.Count} dupes - total retrieved = {result.Count} - unique = {unique.Count}");
+		Logger.LogInformation($"Found {dupes.Count} dupes - total retrieved = {result.Count} - unique = {unique.Count}");
 
-			Assert.Empty(dupes);
-		}
+		Assert.Empty(dupes);
 	}
 }

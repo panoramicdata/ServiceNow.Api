@@ -1,8 +1,7 @@
-﻿namespace ServiceNow.Api.DiagCli.Models
+﻿namespace ServiceNow.Api.DiagCli.Models;
+
+public enum DiagnosticType
 {
-	public enum DiagnosticType
-	{
-		Unknown = 0,
-		Paging
-	}
+	Unknown = 0,
+	Paging
 }

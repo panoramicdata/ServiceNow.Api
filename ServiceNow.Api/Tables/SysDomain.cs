@@ -1,10 +1,9 @@
 ﻿using ServiceNow.Api.Attributes;
 
-namespace ServiceNow.Api.Tables
+namespace ServiceNow.Api.Tables;
+
+[TableName("sys_domain")]
+public class SysDomain
 {
-	[TableName("sys_domain")]
-	public class SysDomain
-	{
-		// TODO Incomplete
-	}
+	// TODO Incomplete
 }

@@ -1,10 +1,9 @@
 ﻿using ServiceNow.Api.DiagCli.Models;
 using System.Threading.Tasks;
 
-namespace ServiceNow.Api.DiagCli
+namespace ServiceNow.Api.DiagCli;
+
+internal interface IDiagnostic
 {
-	internal interface IDiagnostic
-	{
-		Task ExecuteAsync(DiagnosticTest test);
-	}
+	Task ExecuteAsync(DiagnosticTest test);
 }

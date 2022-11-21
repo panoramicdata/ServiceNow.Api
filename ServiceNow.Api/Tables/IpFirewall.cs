@@ -1,6 +1,5 @@
-﻿namespace ServiceNow.Api.Tables
+﻿namespace ServiceNow.Api.Tables;
+
+public class IpFirewall : NetworkGear
 {
-	public class IpFirewall : NetworkGear
-	{
-	}
 }

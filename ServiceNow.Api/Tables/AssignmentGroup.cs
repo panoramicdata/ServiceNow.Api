@@ -1,7 +1,6 @@
-﻿namespace ServiceNow.Api.Tables
+﻿namespace ServiceNow.Api.Tables;
+
+public class AssignmentGroup
 {
-	public class AssignmentGroup
-	{
-		// TODO Incomplete
-	}
+	// TODO Incomplete
 }

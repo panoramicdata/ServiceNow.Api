@@ -1,7 +1,6 @@
-﻿namespace ServiceNow.Api.Tables
+﻿namespace ServiceNow.Api.Tables;
+
+public class SysPhoneTerritory
 {
-	public class SysPhoneTerritory
-	{
-		// TODO Not yet implemented
-	}
+	// TODO Not yet implemented
 }

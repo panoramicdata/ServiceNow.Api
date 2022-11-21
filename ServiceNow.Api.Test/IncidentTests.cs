@@ -6,60 +6,59 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace ServiceNow.Api.Test
+namespace ServiceNow.Api.Test;
+
+public class IncidentTests : ServiceNowTest
 {
-	public class IncidentTests : ServiceNowTest
+	public IncidentTests(ITestOutputHelper iTestOutputHelper) : base(iTestOutputHelper)
 	{
-		public IncidentTests(ITestOutputHelper iTestOutputHelper) : base(iTestOutputHelper)
+	}
+
+	[Fact]
+	public async Task IncidentCrud()
+	{
+		// Create an incident //
+
+		// Arrange
+		var testId = Guid.NewGuid().ToString();
+		var incident = new Incident
 		{
-		}
+			Description = "Incident description: " + testId,
+			ShortDescription = "Incident short description: " + testId,
+		};
 
-		[Fact]
-		public async Task IncidentCrud()
-		{
-			// Create an incident //
+		// Act
+		var createdIncident = await Client.CreateAsync(incident, System.Threading.CancellationToken.None).ConfigureAwait(false);
 
-			// Arrange
-			var testId = Guid.NewGuid().ToString();
-			var incident = new Incident
-			{
-				Description = "Incident description: " + testId,
-				ShortDescription = "Incident short description: " + testId,
-			};
+		// Assert
+		createdIncident.Should().NotBeNull();
+		createdIncident.Description.Should().Be("Incident description: " + testId);
+		createdIncident.ShortDescription.Should().Be("Incident short description: " + testId);
+		createdIncident.SysId.Should().NotBeNullOrEmpty();
+		createdIncident.Number.Should().NotBeNullOrEmpty();
 
-			// Act
-			var createdIncident = await Client.CreateAsync(incident, System.Threading.CancellationToken.None).ConfigureAwait(false);
+		Logger.LogInformation("SysId: " + createdIncident.SysId);
+		Logger.LogInformation("Number: " + createdIncident.Number);
 
-			// Assert
-			createdIncident.Should().NotBeNull();
-			createdIncident.Description.Should().Be("Incident description: " + testId);
-			createdIncident.ShortDescription.Should().Be("Incident short description: " + testId);
-			createdIncident.SysId.Should().NotBeNullOrEmpty();
-			createdIncident.Number.Should().NotBeNullOrEmpty();
+		// Update an incident //
 
-			Logger.LogInformation("SysId: " + createdIncident.SysId);
-			Logger.LogInformation("Number: " + createdIncident.Number);
+		// Arrange
+		var reFetchedIncident = await Client.GetByIdAsync<Incident>(createdIncident.SysId).ConfigureAwait(false);
+		reFetchedIncident.Should().NotBeNull();
+		reFetchedIncident!.SysId.Should().Be(createdIncident.SysId);
 
-			// Update an incident //
+		// Act
+		reFetchedIncident.Comments = "Some new comment text " + testId;
+		await Client.UpdateAsync(reFetchedIncident).ConfigureAwait(false);
+		reFetchedIncident.Comments = "Some other comment text " + testId;
+		await Client.UpdateAsync(reFetchedIncident).ConfigureAwait(false);
 
-			// Arrange
-			var reFetchedIncident = await Client.GetByIdAsync<Incident>(createdIncident.SysId).ConfigureAwait(false);
-			reFetchedIncident.Should().NotBeNull();
-			reFetchedIncident!.SysId.Should().Be(createdIncident.SysId);
+		// Assert
+		var incidentAfterUpdate = await Client.GetByIdAsync<Incident>(createdIncident.SysId).ConfigureAwait(false);
+		incidentAfterUpdate.Should().NotBeNull();
+		incidentAfterUpdate!.SysId.Should().Be(createdIncident.SysId);
 
-			// Act
-			reFetchedIncident.Comments = "Some new comment text " + testId;
-			await Client.UpdateAsync(reFetchedIncident).ConfigureAwait(false);
-			reFetchedIncident.Comments = "Some other comment text " + testId;
-			await Client.UpdateAsync(reFetchedIncident).ConfigureAwait(false);
-
-			// Assert
-			var incidentAfterUpdate = await Client.GetByIdAsync<Incident>(createdIncident.SysId).ConfigureAwait(false);
-			incidentAfterUpdate.Should().NotBeNull();
-			incidentAfterUpdate!.SysId.Should().Be(createdIncident.SysId);
-
-			// Delete the incident //
-			await Client.DeleteAsync<Incident>(createdIncident.SysId).ConfigureAwait(false);
-		}
+		// Delete the incident //
+		await Client.DeleteAsync<Incident>(createdIncident.SysId).ConfigureAwait(false);
 	}
 }

@@ -1,6 +1,5 @@
-namespace ServiceNow.Api.Tables
+namespace ServiceNow.Api.Tables;
+
+public class IpRouter : NetworkGear
 {
-	public class IpRouter : NetworkGear
-	{
-	}
 }

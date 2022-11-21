@@ -1,10 +1,9 @@
 ﻿using ServiceNow.Api.Attributes;
 
-namespace ServiceNow.Api.Tables
+namespace ServiceNow.Api.Tables;
+
+[TableName("alm_asset")]
+public class Asset
 {
-	[TableName("alm_asset")]
-	public class Asset
-	{
-		// TODO Incomplete
-	}
+	// TODO Incomplete
 }
