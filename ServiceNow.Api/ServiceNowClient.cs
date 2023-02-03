@@ -190,11 +190,22 @@ public class ServiceNowClient : IDisposable
 		return isCountItemsOk;
 	}
 
+	/// <summary>
+	/// Get data by query
+	/// </summary>
+	/// <param name="tableName">Table name</param>
+	/// <param name="query">Query</param>
+	/// <param name="fieldList">Fields to retrieve</param>
+	/// <param name="extraQueryString">Extra query string</param>
+	/// <param name="customOrderByField">Optional field to order by when paging; default=sys_created_on</param>
+	/// <param name="cancellationToken">CancellationToken</param>
+	/// <returns></returns>
 	public async Task<List<JObject>> GetAllByQueryAsync(
 		string tableName,
 		string? query = null,
 		List<string>? fieldList = null,
 		string? extraQueryString = null,
+		string? customOrderByField = null,
 		CancellationToken cancellationToken = default)
 	{
 		_logger.LogDebug($"Calling {nameof(GetAllByQueryAsync)}" +
@@ -211,7 +222,15 @@ public class ServiceNowClient : IDisposable
 			return page.Items;
 		}
 
-		return await GetAllByQueryInternalJObjectAsync(tableName, query, fieldList, extraQueryString, _options.PageSize, cancellationToken).ConfigureAwait(false);
+		return await GetAllByQueryInternalJObjectAsync(
+			tableName,
+			query,
+			fieldList,
+			extraQueryString,
+			_options.PageSize,
+			customOrderByField,
+			cancellationToken
+			).ConfigureAwait(false);
 	}
 
 	internal async Task<List<JObject>> GetAllByQueryInternalJObjectAsync(
@@ -220,8 +239,11 @@ public class ServiceNowClient : IDisposable
 		List<string>? fieldList,
 		string? extraQueryString,
 		int pageSize,
+		string? customOrderByField,
 		CancellationToken cancellationToken)
 	{
+		var orderByField = customOrderByField ?? _options.PagingFieldName;
+
 		_logger.LogTrace($"Entered {nameof(GetAllByQueryInternalJObjectAsync)}" +
 						 $" type: {typeof(JObject)}" +
 						 $", {nameof(tableName)}: {tableName}" +
@@ -240,9 +262,9 @@ public class ServiceNowClient : IDisposable
 		if (actualFieldList.Count > 0)
 		{
 			// Field list is provided so we need to make sure it includes the fields we need
-			if (!actualFieldList.Contains(_options.PagingFieldName))
+			if (!actualFieldList.Contains(orderByField))
 			{
-				actualFieldList.Add(_options.PagingFieldName);
+				actualFieldList.Add(orderByField);
 			}
 
 			// sys_id is required for de-dupe during paging
@@ -264,11 +286,11 @@ public class ServiceNowClient : IDisposable
 		// Set the ordering default
 		if (query == null)
 		{
-			query = $"ORDERBY{_options.PagingFieldName}";
+			query = $"ORDERBY{orderByField}";
 		}
 		else
 		{
-			query += $"^ORDERBY{_options.PagingFieldName}";
+			query += $"^ORDERBY{orderByField}";
 		}
 
 		// Strategy: We're ordering by the sys_created_on (by default, unless set to something else), so get the first page without limits and then subsequent pages based on >= the max time we got to make sure we don't miss any, need to remove duplicates
@@ -300,7 +322,7 @@ public class ServiceNowClient : IDisposable
 			{
 				previousMaxDateTimeRetrieved = maxDateTimeRetrieved;
 
-				if (response.Items.All(item => item[_options.PagingFieldName] is null))
+				if (response.Items.All(item => item[orderByField] is null))
 				{
 					// We cannot determine the paging based on this field name (which MAY NOT EXIST!)
 					throw new ServiceNowApiException(
@@ -311,7 +333,7 @@ public class ServiceNowClient : IDisposable
 				// At this point, we can be sure that we have the paging field in the data
 				maxDateTimeRetrieved = response.Items.Max(jObject =>
 					// Parse and enforce source as being UTC (Z)
-					DateTimeOffset.Parse((jObject[_options.PagingFieldName]?.ToString() ?? string.Empty) + "Z"));
+					DateTimeOffset.Parse((jObject[orderByField]?.ToString() ?? string.Empty) + "Z"));
 
 				if (previousMaxDateTimeRetrieved == maxDateTimeRetrieved)
 				{
@@ -319,7 +341,7 @@ public class ServiceNowClient : IDisposable
 				}
 
 				// Update the offset for the next query
-				queryWithPagingOffset = $"{query}^{_options.PagingFieldName}>={maxDateTimeRetrieved.UtcDateTime:yyyy-MM-dd HH:mm:ss}";
+				queryWithPagingOffset = $"{query}^{orderByField}>={maxDateTimeRetrieved.UtcDateTime:yyyy-MM-dd HH:mm:ss}";
 				continue;
 			}
 
