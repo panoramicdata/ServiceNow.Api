@@ -242,7 +242,9 @@ public class ServiceNowClient : IDisposable
 		string? customOrderByField,
 		CancellationToken cancellationToken)
 	{
-		var orderByField = customOrderByField ?? _options.PagingFieldName;
+		var orderByField = string.IsNullOrWhiteSpace(customOrderByField)
+			? _options.PagingFieldName
+			: customOrderByField;
 
 		_logger.LogTrace($"Entered {nameof(GetAllByQueryInternalJObjectAsync)}" +
 						 $" type: {typeof(JObject)}" +
