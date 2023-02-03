@@ -40,7 +40,10 @@ public class QueryTests : ServiceNowTest
 
 		var unique = result.GroupBy(ci => ci["sys_id"]).Select(ci => ci.First()).ToList();
 
-		Logger.LogInformation($"Found {dupes.Count} dupes - total retrieved = {result.Count} - unique = {unique.Count}");
+		Logger.LogInformation("Found {DupesCount} dupes - total retrieved = {ResultCount} - unique = {UniqueCount}",
+			dupes.Count,
+			result.Count,
+			unique.Count);
 
 		Assert.Empty(dupes);
 	}
@@ -65,7 +68,8 @@ public class QueryTests : ServiceNowTest
 
 		var unique = result.GroupBy(ci => ci["sys_id"]).Select(ci => ci.First()).ToList();
 
-		Logger.LogInformation($"Found {dupes.Count} dupes - total retrieved = {result.Count} - unique = {unique.Count}");
+		Logger.LogInformation("Found {DupesCount} dupes - total retrieved = {ResultCount} - unique = {UniqueCount}",
+			dupes.Count, result.Count, unique.Count);
 
 		Assert.Empty(dupes);
 	}
@@ -74,35 +78,35 @@ public class QueryTests : ServiceNowTest
 	public async Task Incident()
 	{
 		var page = await Client.GetPageByQueryAsync<Incident>(0, 10).ConfigureAwait(false);
-		page.Should().NotBeNull();
-		page.Items.Should().NotBeNullOrEmpty();
+		_ = page.Should().NotBeNull();
+		_ = page.Items.Should().NotBeNullOrEmpty();
 		var firstItem = page.Items[0];
 
 		// Re-fetch using SysId
 		var refetchById = await Client.GetByIdAsync<Incident>(firstItem.SysId).ConfigureAwait(false);
-		refetchById.Should().NotBeNull();
-		firstItem.SysId.Should().Equals(refetchById!.SysId);
+		_ = refetchById.Should().NotBeNull();
+		_ = firstItem.SysId.Should().Equals(refetchById!.SysId);
 
 		// Re-fetch using SysId
 		var refetchByQuery = (await Client.GetPageByQueryAsync<Incident>(0, 1, $"sys_id={firstItem.SysId}").ConfigureAwait(false))?.Items.FirstOrDefault();
-		refetchByQuery.Should().NotBeNull();
-		firstItem.SysId.Should().Equals(refetchByQuery!.SysId);
+		_ = refetchByQuery.Should().NotBeNull();
+		_ = firstItem.SysId.Should().Equals(refetchByQuery!.SysId);
 	}
 
 	[Fact]
 	public async Task GetLinkedEntity_Succeeds()
 	{
 		var server = (await Client.GetAllByQueryAsync("cmdb_ci_win_server", null, new List<string> { "sys_id", "name", "company" }).ConfigureAwait(false)).FirstOrDefault();
-		server.Should().NotBeNull();
-		server!["company"].Should().NotBeNull();
-		server!["company"]!["link"].Should().NotBeNull();
+		_ = server.Should().NotBeNull();
+		_ = server!["company"].Should().NotBeNull();
+		_ = server!["company"]!["link"].Should().NotBeNull();
 
 		var companyLink = server!["company"]!["link"]!.ToString();
 
 		var company = await Client.GetLinkedEntityAsync(companyLink, new List<string> { "name" }).ConfigureAwait(false);
 
-		company.Should().NotBeNull();
-		company!["name"].Should().NotBeNull();
+		_ = company.Should().NotBeNull();
+		_ = company!["name"].Should().NotBeNull();
 	}
 
 	[Fact]
@@ -112,20 +116,20 @@ public class QueryTests : ServiceNowTest
 			.GetAllByQueryAsync("cmdb_rel_ci", extraQueryString: "sysparm_limit=10")
 			.ConfigureAwait(false);
 
-		firstTen.Should().NotBeNullOrEmpty();
+		_ = firstTen.Should().NotBeNullOrEmpty();
 
 		var first = firstTen[0];
 		var firstChild = first["child"];
-		firstChild.Should().NotBeNull();
+		_ = firstChild.Should().NotBeNull();
 
 		var childSysId = firstChild!["value"];
-		childSysId.Should().NotBeNull();
+		_ = childSysId.Should().NotBeNull();
 
 		var list = await Client
 			.GetAllByQueryAsync("cmdb_rel_ci", $"child={childSysId}")
 			.ConfigureAwait(false);
 
 		var relationship = list.FirstOrDefault();
-		relationship.Should().NotBeNull();
+		_ = relationship.Should().NotBeNull();
 	}
 }

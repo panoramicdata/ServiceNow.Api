@@ -23,7 +23,7 @@ public class AttachmentTests : ServiceNowTest
 		Assert.NotNull(request);
 		var attachments = await Client.GetAttachmentsAsync(request!).ConfigureAwait(false);
 		Assert.NotNull(attachments);
-		Assert.Single(attachments);
+		_ = Assert.Single(attachments);
 		var localPath = await Client.DownloadAttachmentAsync(attachments[0], Path.GetTempPath()).ConfigureAwait(false);
 		Assert.NotNull(localPath);
 	}

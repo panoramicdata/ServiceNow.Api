@@ -7,7 +7,7 @@
 		<AnalysisMode>Recommended</AnalysisMode>
 		<AnalysisLevel>latest-recommended</AnalysisLevel>
 		<TargetFramework>net7.0</TargetFramework>
-		<Copyright>Copyright (C) 2020,2022 Panoramic Data Limited</Copyright>
+		<Copyright>Copyright © Panoramic Data Limited 2019-2023</Copyright>
 		<Product>ServiceNow API DiagCli</Product>
 	</PropertyGroup>
 

@@ -7,9 +7,9 @@ public class Configuration
 {
 	public static readonly string DefaultFilename = "appsettings.json";
 
-	public List<DiagnosticTest> Tests { get; set; }
+	public List<DiagnosticTest>? Tests { get; set; }
 
-	public Credentials Credentials { get; set; }
+	public Credentials? Credentials { get; set; }
 
 	internal void Validate()
 	{

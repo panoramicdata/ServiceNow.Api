@@ -185,6 +185,7 @@ public class ServiceNowClient : IDisposable
 							  && countItems <= totalExpected + _options.ValidateCountItemsReturnedTolerance;
 			message += $"{(isCountItemsOk ? "Yes - inside" : "No - outside")} the tolerance of {_options.ValidateCountItemsReturnedTolerance}.";
 		}
+
 		_logger.LogDebug(message);
 		return isCountItemsOk;
 	}
@@ -309,10 +310,8 @@ public class ServiceNowClient : IDisposable
 
 				// At this point, we can be sure that we have the paging field in the data
 				maxDateTimeRetrieved = response.Items.Max(jObject =>
-				{
 					// Parse and enforce source as being UTC (Z)
-					return DateTimeOffset.Parse((jObject[_options.PagingFieldName]?.ToString() ?? string.Empty) + "Z");
-				});
+					DateTimeOffset.Parse((jObject[_options.PagingFieldName]?.ToString() ?? string.Empty) + "Z"));
 
 				if (previousMaxDateTimeRetrieved == maxDateTimeRetrieved)
 				{
@@ -339,6 +338,7 @@ public class ServiceNowClient : IDisposable
 			{
 				unique[jObject["sys_id"]?.ToString() ?? string.Empty] = jObject;
 			}
+
 			finalResult.Items = unique.Values.ToList();
 		}
 
@@ -366,7 +366,7 @@ public class ServiceNowClient : IDisposable
 					{
 						foreach (var propertyName in propertiesToRemove)
 						{
-							item.Remove(propertyName);
+							_ = item.Remove(propertyName);
 						}
 					}
 				}
@@ -425,6 +425,7 @@ public class ServiceNowClient : IDisposable
 			var message = $"An status response of 'failure' was observed. Error Message: '{pageResult.Error?.Message}'. Error Detail: '{pageResult.Error?.Detail}'";
 			throw new ServiceNowApiException(message);
 		}
+
 		return pageResult;
 	}
 
@@ -483,7 +484,7 @@ public class ServiceNowClient : IDisposable
 	}
 
 	public Task<T> CreateAsync<T>(T @object, CancellationToken cancellationToken = default) where T : Table
-	 => CreateAsync<T>(@object, null, cancellationToken);
+		=> CreateAsync(@object, null, cancellationToken);
 
 	public async Task<T> CreateAsync<T>(T @object, string? extraQueryString = null, CancellationToken cancellationToken = default) where T : Table
 	{
@@ -492,13 +493,11 @@ public class ServiceNowClient : IDisposable
 		HttpContent content = new StringContent(serializedObject, null, "application/json");
 		var tableName = Table.GetTableName<T>();
 		using var response = await _httpClient.PostAsync(
-			$"api/now/table/{tableName}" + (string.IsNullOrWhiteSpace(extraQueryString) ? "" : "?" + extraQueryString),
-			content,
-			cancellationToken).ConfigureAwait(false);
-		if (response == null)
-		{
-			throw new Exception("Null response.");
-		}
+				$"api/now/table/{tableName}" + (string.IsNullOrWhiteSpace(extraQueryString) ? "" : "?" + extraQueryString),
+				content,
+				cancellationToken
+			).ConfigureAwait(false)
+			?? throw new Exception("Null response.");
 
 		if (!response.IsSuccessStatusCode)
 		{
@@ -519,13 +518,11 @@ public class ServiceNowClient : IDisposable
 		var serializedObject = JsonConvert.SerializeObject(jObject, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 		HttpContent content = new StringContent(serializedObject, null, "application/json");
 		using var response = await _httpClient.PostAsync(
-			$"api/now/table/{tableName}" + (string.IsNullOrWhiteSpace(extraQueryString) ? "" : "?" + extraQueryString),
-			content,
-			cancellationToken).ConfigureAwait(false);
-		if (response == null)
-		{
-			throw new Exception("Null response.");
-		}
+				$"api/now/table/{tableName}" + (string.IsNullOrWhiteSpace(extraQueryString) ? "" : "?" + extraQueryString),
+				content,
+				cancellationToken
+			).ConfigureAwait(false)
+			?? throw new Exception("Null response.");
 
 		if (!response.IsSuccessStatusCode)
 		{
@@ -543,6 +540,7 @@ public class ServiceNowClient : IDisposable
 		{
 			throw new ArgumentNullException(nameof(jObject));
 		}
+
 		if (!jObject.TryGetValue("sys_id", out var sysId))
 		{
 			throw new ArgumentException($"sys_id must be present in the {nameof(jObject)} parameter.", nameof(jObject));
@@ -551,11 +549,8 @@ public class ServiceNowClient : IDisposable
 		// https://docs.servicenow.com/bundle/kingston-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#ariaid-title6
 		var serializedObject = JsonConvert.SerializeObject(jObject, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 		HttpContent content = new StringContent(serializedObject, null, "application/json");
-		using var response = await _httpClient.PutAsync($"api/now/table/{tableName}/{sysId}", content, cancellationToken).ConfigureAwait(false);
-		if (response == null)
-		{
-			throw new Exception("Null response.");
-		}
+		using var response = await _httpClient.PutAsync($"api/now/table/{tableName}/{sysId}", content, cancellationToken).ConfigureAwait(false)
+			?? throw new Exception("Null response.");
 
 		if (!response.IsSuccessStatusCode)
 		{
@@ -579,6 +574,7 @@ public class ServiceNowClient : IDisposable
 		{
 			throw new ArgumentNullException(nameof(jObject));
 		}
+
 		if (!jObject.TryGetValue("sys_id", out var sysId))
 		{
 			throw new ArgumentException($"sys_id must be present in the {nameof(jObject)} parameter.", nameof(jObject));
@@ -587,11 +583,8 @@ public class ServiceNowClient : IDisposable
 		var serializedObject = JsonConvert.SerializeObject(jObject, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 		var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"api/now/table/{tableName}/{sysId}") { Content = new StringContent(serializedObject, null, "application/json") };
 
-		using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-		if (response == null)
-		{
-			throw new Exception("Null response.");
-		}
+		using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false)
+			?? throw new Exception("Null response.");
 
 		if (!response.IsSuccessStatusCode)
 		{
@@ -606,11 +599,8 @@ public class ServiceNowClient : IDisposable
 	public async Task DeleteAsync(string tableName, string sysId, CancellationToken cancellationToken = default)
 	{
 		// https://docs.servicenow.com/bundle/kingston-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#ariaid-title6
-		using var response = await _httpClient.DeleteAsync($"api/now/table/{tableName}/{sysId}", cancellationToken).ConfigureAwait(false);
-		if (response == null)
-		{
-			throw new Exception("Null response.");
-		}
+		using var response = await _httpClient.DeleteAsync($"api/now/table/{tableName}/{sysId}", cancellationToken).ConfigureAwait(false)
+			?? throw new Exception("Null response.");
 
 		if (!response.IsSuccessStatusCode)
 		{
@@ -623,11 +613,8 @@ public class ServiceNowClient : IDisposable
 	{
 		HttpContent content = new StringContent(JsonConvert.SerializeObject(@object), null, "application/json");
 		var tableName = Table.GetTableName<T>();
-		using var response = await _httpClient.PutAsync($"api/now/table/{tableName}/{@object.SysId}", content, cancellationToken).ConfigureAwait(false);
-		if (response == null)
-		{
-			throw new Exception("Null response.");
-		}
+		using var response = await _httpClient.PutAsync($"api/now/table/{tableName}/{@object.SysId}", content, cancellationToken).ConfigureAwait(false)
+			?? throw new Exception("Null response.");
 
 		if (!response.IsSuccessStatusCode)
 		{
@@ -639,11 +626,9 @@ public class ServiceNowClient : IDisposable
 	public async Task DeleteAsync<T>(string sysId, CancellationToken cancellationToken = default) where T : Table
 	{
 		var tableName = Table.GetTableName<T>();
-		using var response = await _httpClient.DeleteAsync($"api/now/table/{tableName}/{sysId}", cancellationToken).ConfigureAwait(false);
-		if (response == null)
-		{
-			throw new Exception("Null response.");
-		}
+
+		using var response = await _httpClient.DeleteAsync($"api/now/table/{tableName}/{sysId}", cancellationToken).ConfigureAwait(false)
+			?? throw new Exception("Null response.");
 
 		if (!response.IsSuccessStatusCode)
 		{
@@ -707,7 +692,7 @@ public class ServiceNowClient : IDisposable
 				}
 			}
 
-			return deserializeObject;
+			return deserializeObject!;
 		}
 		catch (Exception e)
 		{

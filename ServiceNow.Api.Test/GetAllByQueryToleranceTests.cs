@@ -44,7 +44,9 @@ public class GetAllByQueryToleranceTests : ServiceNowTest
 
 		var unique = result.GroupBy(ci => ci["sys_id"]).Select(ci => ci.First()).ToList();
 
-		Logger.LogInformation($"Found {dupes.Count} dupes - total retrieved = {result.Count} - unique = {unique.Count}");
+		Logger.LogInformation(
+			"Found {DupeCount} dupes - total retrieved = {ResultCount} - unique = {UniqueCount}",
+			dupes.Count, result.Count, unique.Count);
 
 		Assert.Empty(dupes);
 	}

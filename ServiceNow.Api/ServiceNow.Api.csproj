@@ -5,7 +5,7 @@
 		<Authors>Panoramic Data Limited</Authors>
 		<Company>Panoramic Data Limited</Company>
 		<Description>A ServiceNow REST API client</Description>
-		<Copyright>Copyright © Panoramic Data Limited 2021</Copyright>
+		<Copyright>Copyright © Panoramic Data Limited 2019-2023</Copyright>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/panoramicdata/ServiceNow.Api</PackageProjectUrl>
 		<PackageIcon>Icon.png</PackageIcon>

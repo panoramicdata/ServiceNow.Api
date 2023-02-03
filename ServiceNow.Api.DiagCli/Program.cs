@@ -18,15 +18,17 @@ internal static class Program
 			var services = ConfigureServices();
 			var configuration = new ConfigurationBuilder();
 			BuildConfig(configuration, args);
-			services.AddOptions();
-			services.Configure<Configuration>(configuration.Build());
+			_ = services.AddOptions();
+			_ = services.Configure<Configuration>(configuration.Build());
 
-			var serviceProvider = services.BuildServiceProvider();
-			return await serviceProvider.GetService<DiagApplication>().RunAsync().ConfigureAwait(false);
+			var serviceProvider = services.BuildServiceProvider()
+				?? throw new Exception("Could not build ServiceProvider");
+
+			return await serviceProvider.GetRequiredService<DiagApplication>().RunAsync().ConfigureAwait(false);
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			Log.Error(e, e.Message);
+			Log.Error(ex, "{Message}", ex.Message);
 			return ExitCode.Error;
 		}
 		finally
@@ -39,19 +41,17 @@ internal static class Program
 	{
 		IServiceCollection services = new ServiceCollection();
 
-		services.AddTransient<DiagApplication>();
-		services.AddTransient<PagingDiagnostic>();
+		_ = services.AddTransient<DiagApplication>();
+		_ = services.AddTransient<PagingDiagnostic>();
 
-		services.AddLogging(loggingBuilder =>
-		{
+		_ = services.AddLogging(loggingBuilder =>
 			loggingBuilder.AddSerilog(
 				new LoggerConfiguration()
 					.MinimumLevel.Verbose()
 					.WriteTo.Console()
 					.WriteTo.File($"Log-{DateTimeOffset.UtcNow:yyyyMMddTHHmmssZ}.txt")
 					.CreateLogger(),
-				dispose: true);
-		});
+				dispose: true));
 
 		return services;
 	}
@@ -67,7 +67,7 @@ internal static class Program
 		// Convert appsettingsFilename to absolute path for the ConfigurationBuilder to be able to find it
 		appsettingsFilename = Path.GetFullPath(appsettingsFilename);
 
-		configurationBuilder
+		_ = configurationBuilder
 			.SetBasePath(Directory.GetCurrentDirectory())
 			.AddJsonFile(appsettingsFilename, false, false);
 	}

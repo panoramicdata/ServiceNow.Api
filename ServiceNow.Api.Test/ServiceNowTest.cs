@@ -56,7 +56,7 @@ public abstract class ServiceNowTest
 		}
 
 		var environment = ServiceNowEnvironment.Community;
-		Enum.TryParse(config.ServiceNowEnvironment, true, out environment);
+		_ = Enum.TryParse(config.ServiceNowEnvironment, true, out environment);
 
 		options.Environment = environment;
 

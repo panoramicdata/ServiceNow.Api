@@ -41,7 +41,7 @@ public static class Program
 		Console.WriteLine("Windows Servers:");
 		foreach (var modelResult in modelResults)
 		{
-			Console.WriteLine($"  - {modelResult.Id}: {modelResult.Name}");
+			Console.WriteLine($"  - {modelResult?.Id}: {modelResult?.Name}");
 		}
 	}
 }

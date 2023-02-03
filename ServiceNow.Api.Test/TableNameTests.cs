@@ -21,9 +21,9 @@ public class TableNameTests : ServiceNowTest
 		var stopwatch = Stopwatch.StartNew();
 		// Go and get 10 items for the type we're testing
 		var page = await Client.GetPageByQueryAsync(0, 10, tableName).ConfigureAwait(false);
-		Logger.LogInformation($"Call completed in {stopwatch.Elapsed.TotalSeconds:N0}s");
+		Logger.LogInformation("Call completed in {TotalSeconds:N0}s", stopwatch.Elapsed.TotalSeconds);
 		// Make sure that IF we have items that they have unique SysIds
-		(page?.Items.AreDistinctBy(i => i["sys_id"]) ?? true).Should().BeTrue();
+		_ = (page?.Items.AreDistinctBy(i => i["sys_id"]) ?? true).Should().BeTrue();
 	}
 
 	private async Task<List<JObject>> GetAllItems(string tableName, string query, List<string>? fieldList = null)
@@ -31,7 +31,7 @@ public class TableNameTests : ServiceNowTest
 		var stopwatch = Stopwatch.StartNew();
 		// Go and get 10 items for the type we're testing
 		var items = await Client.GetAllByQueryAsync(tableName, query, fieldList).ConfigureAwait(false);
-		Logger.LogInformation($"Call completed in {stopwatch.Elapsed.TotalSeconds:N0}s retrieved {items.Count:N0} entries.");
+		Logger.LogInformation("Call completed in {TotalSeconds:N0}s retrieved {Count:N0} entries.", stopwatch.Elapsed.TotalSeconds, items.Count);
 		// Make sure that IF we have items that they have unique SysIds
 		Assert.True(items.AreDistinctBy(i => i["sys_id"]));
 		return items;

@@ -7,6 +7,7 @@
 		<Nullable>enable</Nullable>
 		<AnalysisMode>Recommended</AnalysisMode>
 		<AnalysisLevel>latest-recommended</AnalysisLevel>
+		<Copyright>Copyright © Panoramic Data Limited 2019-2023</Copyright>
 	</PropertyGroup>
 
 	<ItemGroup>

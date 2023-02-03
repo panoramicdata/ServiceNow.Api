@@ -31,21 +31,21 @@ public class IncidentTests : ServiceNowTest
 		var createdIncident = await Client.CreateAsync(incident, System.Threading.CancellationToken.None).ConfigureAwait(false);
 
 		// Assert
-		createdIncident.Should().NotBeNull();
-		createdIncident.Description.Should().Be("Incident description: " + testId);
-		createdIncident.ShortDescription.Should().Be("Incident short description: " + testId);
-		createdIncident.SysId.Should().NotBeNullOrEmpty();
-		createdIncident.Number.Should().NotBeNullOrEmpty();
+		_ = createdIncident.Should().NotBeNull();
+		_ = createdIncident.Description.Should().Be("Incident description: " + testId);
+		_ = createdIncident.ShortDescription.Should().Be("Incident short description: " + testId);
+		_ = createdIncident.SysId.Should().NotBeNullOrEmpty();
+		_ = createdIncident.Number.Should().NotBeNullOrEmpty();
 
-		Logger.LogInformation("SysId: " + createdIncident.SysId);
-		Logger.LogInformation("Number: " + createdIncident.Number);
+		Logger.LogInformation("SysId: {SysId}", createdIncident.SysId);
+		Logger.LogInformation("Number: {Number}", createdIncident.Number);
 
 		// Update an incident //
 
 		// Arrange
 		var reFetchedIncident = await Client.GetByIdAsync<Incident>(createdIncident.SysId).ConfigureAwait(false);
-		reFetchedIncident.Should().NotBeNull();
-		reFetchedIncident!.SysId.Should().Be(createdIncident.SysId);
+		_ = reFetchedIncident.Should().NotBeNull();
+		_ = reFetchedIncident!.SysId.Should().Be(createdIncident.SysId);
 
 		// Act
 		reFetchedIncident.Comments = "Some new comment text " + testId;
@@ -55,8 +55,8 @@ public class IncidentTests : ServiceNowTest
 
 		// Assert
 		var incidentAfterUpdate = await Client.GetByIdAsync<Incident>(createdIncident.SysId).ConfigureAwait(false);
-		incidentAfterUpdate.Should().NotBeNull();
-		incidentAfterUpdate!.SysId.Should().Be(createdIncident.SysId);
+		_ = incidentAfterUpdate.Should().NotBeNull();
+		_ = incidentAfterUpdate!.SysId.Should().Be(createdIncident.SysId);
 
 		// Delete the incident //
 		await Client.DeleteAsync<Incident>(createdIncident.SysId).ConfigureAwait(false);

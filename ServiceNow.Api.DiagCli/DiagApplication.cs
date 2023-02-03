@@ -33,21 +33,23 @@ internal class DiagApplication
 		{
 			_configuration.Validate();
 		}
-		catch (ConfigurationException e)
+		catch (ConfigurationException ex)
 		{
-			_logger.LogError(e.Message);
+			_logger.LogError(ex, "{Message}", ex.Message);
 			return ExitCode.ConfigurationError;
 		}
 
 		var overallStopWatch = Stopwatch.StartNew();
 		_logger.LogInformation("Starting run...");
 
+		ArgumentNullException.ThrowIfNull(_configuration.Tests);
+
 		foreach (var test in _configuration.Tests)
 		{
 			await ExecuteTestAsync(test).ConfigureAwait(false);
 		}
 
-		_logger.LogInformation($"Run complete after {overallStopWatch.Elapsed.TotalSeconds:0.00}s.");
+		_logger.LogInformation("Run complete after {TotalSeconds:0.00}s.", overallStopWatch.Elapsed.TotalSeconds);
 		return ExitCode.Success;
 	}
 

@@ -8,7 +8,7 @@ namespace LogicMonitor.Api.Test.Logging;
 
 public class XunitLogger : ILogger
 {
-	private static readonly string[] NewLineChars = new[] { Environment.NewLine };
+	private static readonly string[] _newLineChars = new[] { Environment.NewLine };
 	private readonly string _category;
 	private readonly LogLevel _minLogLevel;
 	private readonly ITestOutputHelper _output;
@@ -24,8 +24,8 @@ public class XunitLogger : ILogger
 		LogLevel logLevel,
 		EventId eventId,
 		TState state,
-		Exception exception,
-		Func<TState, Exception, string> formatter)
+		Exception? exception,
+		Func<TState, Exception?, string> formatter)
 	{
 		if (!IsEnabled(logLevel))
 		{
@@ -36,22 +36,22 @@ public class XunitLogger : ILogger
 		var messageBuilder = new StringBuilder();
 
 		var firstLinePrefix = $"| {_category} {logLevel}: ";
-		var lines = formatter(state, exception).Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
-		messageBuilder.AppendLine(firstLinePrefix + lines.FirstOrDefault() ?? string.Empty);
+		var lines = formatter(state, exception).Split(_newLineChars, StringSplitOptions.RemoveEmptyEntries);
+		_ = messageBuilder.AppendLine(firstLinePrefix + lines.FirstOrDefault() ?? string.Empty);
 
 		var additionalLinePrefix = "|" + new string(' ', firstLinePrefix.Length - 1);
 		foreach (var line in lines.Skip(1))
 		{
-			messageBuilder.Append(additionalLinePrefix).AppendLine(line);
+			_ = messageBuilder.Append(additionalLinePrefix).AppendLine(line);
 		}
 
 		if (exception != null)
 		{
-			lines = exception.ToString().Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
+			lines = exception.ToString().Split(_newLineChars, StringSplitOptions.RemoveEmptyEntries);
 			additionalLinePrefix = "| ";
 			foreach (var line in lines.Skip(1))
 			{
-				messageBuilder.Append(additionalLinePrefix).AppendLine(line);
+				_ = messageBuilder.Append(additionalLinePrefix).AppendLine(line);
 			}
 		}
 
@@ -59,7 +59,7 @@ public class XunitLogger : ILogger
 		var message = messageBuilder.ToString();
 		if (message.EndsWith(Environment.NewLine))
 		{
-			message = message.Substring(0, message.Length - Environment.NewLine.Length);
+			message = message[..^Environment.NewLine.Length];
 		}
 
 		try
@@ -78,7 +78,7 @@ public class XunitLogger : ILogger
 	public bool IsEnabled(LogLevel logLevel)
 		=> logLevel >= _minLogLevel;
 
-	public IDisposable BeginScope<TState>(TState state)
+	public IDisposable BeginScope<TState>(TState state) where TState : notnull
 		=> new NullScope();
 
 	private class NullScope : IDisposable
@@ -92,7 +92,7 @@ public class XunitLogger : ILogger
 public class XunitLogger<T> : ILogger<T>, IDisposable
 {
 	private readonly ITestOutputHelper _output;
-	private bool disposedValue;
+	private bool _disposedValue;
 
 	public XunitLogger(ITestOutputHelper output)
 	{
@@ -103,19 +103,19 @@ public class XunitLogger<T> : ILogger<T>, IDisposable
 		LogLevel logLevel,
 		EventId eventId,
 		TState state,
-		Exception exception,
-		Func<TState, Exception, string> formatter)
+		Exception? exception,
+		Func<TState, Exception?, string> formatter)
 		=> _output.WriteLine(state?.ToString() ?? string.Empty);
 
 	public bool IsEnabled(LogLevel logLevel) => true;
 
-	public IDisposable BeginScope<TState>(TState state) => this;
+	public IDisposable BeginScope<TState>(TState state) where TState : notnull => this;
 
 	protected virtual void Dispose(bool disposing)
 	{
-		if (!disposedValue)
+		if (!_disposedValue)
 		{
-			disposedValue = true;
+			_disposedValue = true;
 		}
 	}
 
