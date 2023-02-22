@@ -62,7 +62,13 @@ public class GetAllByQueryToleranceTests : ServiceNowTest
 		var fieldList = new List<string>();
 		const string? extraQueryString = null;
 
-		var result = await Client.GetAllByQueryAsync("u_view_websites", query, fieldList, extraQueryString, "wss_created_on", default).ConfigureAwait(false);
+		var result = await Client.GetAllByQueryAsync(
+			"u_view_websites",
+			query,
+			fieldList,
+			extraQueryString,
+			"wss_sys_updated_on",
+			default).ConfigureAwait(false);
 		Assert.NotNull(result);
 		Assert.NotEmpty(result);
 		Assert.True(result[0].ContainsKey("sys_id"));

@@ -252,6 +252,7 @@ public class ServiceNowClient : IDisposable
 						 $", {nameof(query)}: {query ?? "<not set>"}" +
 						 $", {nameof(fieldList)}: {(fieldList?.Any() == true ? string.Join(", ", fieldList) : "<not set>")}" +
 						 $", {nameof(extraQueryString)}: {(string.IsNullOrWhiteSpace(extraQueryString) ? "<not set>" : extraQueryString)}" +
+						 $", {nameof(orderByField)}: {(string.IsNullOrWhiteSpace(orderByField) ? "<not set>" : orderByField)}" +
 						 $", PageSize: {pageSize}" +
 						 ".");
 
