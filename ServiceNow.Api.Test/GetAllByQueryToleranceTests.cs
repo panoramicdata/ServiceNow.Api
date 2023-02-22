@@ -68,6 +68,7 @@ public class GetAllByQueryToleranceTests : ServiceNowTest
 			fieldList,
 			extraQueryString,
 			"wss_sys_updated_on",
+			3,
 			default).ConfigureAwait(false);
 		Assert.NotNull(result);
 		Assert.NotEmpty(result);

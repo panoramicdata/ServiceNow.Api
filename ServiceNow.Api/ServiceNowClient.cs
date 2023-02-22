@@ -206,6 +206,7 @@ public class ServiceNowClient : IDisposable
 		List<string>? fieldList = null,
 		string? extraQueryString = null,
 		string? customOrderByField = null,
+		int? pageSize = null,
 		CancellationToken cancellationToken = default)
 	{
 		_logger.LogDebug($"Calling {nameof(GetAllByQueryAsync)}" +
@@ -227,7 +228,7 @@ public class ServiceNowClient : IDisposable
 			query,
 			fieldList,
 			extraQueryString,
-			_options.PageSize,
+			pageSize ?? _options.PageSize,
 			customOrderByField,
 			cancellationToken
 			).ConfigureAwait(false);
