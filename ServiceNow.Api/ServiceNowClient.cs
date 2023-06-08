@@ -247,9 +247,16 @@ public class ServiceNowClient : IDisposable
 			? _options.PagingFieldName
 			: customOrderByField;
 
-		var orderByCommand = orderByField.StartsWith("-", StringComparison.Ordinal)
-			? "ORDERBYDESC"
-			: "ORDERBY";
+		string orderByCommand;
+		if (orderByField?.StartsWith("-", StringComparison.Ordinal) ?? false)
+		{
+			orderByCommand = "ORDERBYDESC";
+			orderByField = orderByField.Substring(1);
+		}
+		else
+		{
+			orderByCommand = "ORDERBY";
+		}
 
 		_logger.LogTrace($"Entered {nameof(GetAllByQueryInternalJObjectAsync)}" +
 						 $" type: {typeof(JObject)}" +
