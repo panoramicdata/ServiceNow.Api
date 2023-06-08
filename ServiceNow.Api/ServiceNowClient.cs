@@ -247,6 +247,10 @@ public class ServiceNowClient : IDisposable
 			? _options.PagingFieldName
 			: customOrderByField;
 
+		var orderByCommand = orderByField.StartsWith("-", StringComparison.Ordinal)
+			? "ORDERBYDESC"
+			: "ORDERBY";
+
 		_logger.LogTrace($"Entered {nameof(GetAllByQueryInternalJObjectAsync)}" +
 						 $" type: {typeof(JObject)}" +
 						 $", {nameof(tableName)}: {tableName}" +
@@ -290,11 +294,11 @@ public class ServiceNowClient : IDisposable
 		// Set the ordering default
 		if (query == null)
 		{
-			query = $"ORDERBY{orderByField}";
+			query = $"{orderByCommand}{orderByField}";
 		}
 		else
 		{
-			query += $"^ORDERBY{orderByField}";
+			query += $"^{orderByCommand}{orderByField}";
 		}
 
 		// Strategy: We're ordering by the sys_created_on (by default, unless set to something else), so get the first page without limits and then subsequent pages based on >= the max time we got to make sure we don't miss any, need to remove duplicates
