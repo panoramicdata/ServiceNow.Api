@@ -28,9 +28,29 @@ public class ServiceNowClient : IDisposable
 	private readonly Options _options;
 
 	public ServiceNowClient(
-		 string account,
-		 string username,
-		 string password,
+		string account,
+		string username,
+		string password,
+		Options? options = null)
+		: this(
+			account,
+			new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}"))),
+			options)
+	{
+		if (username == null)
+		{
+			throw new ArgumentNullException(nameof(username));
+		}
+
+		if (password == null)
+		{
+			throw new ArgumentNullException(nameof(password));
+		}
+	}
+
+	public ServiceNowClient(
+		string account,
+		AuthenticationHeaderValue authHeader,
 		Options? options = null)
 	{
 		_options = options ?? new();
@@ -42,16 +62,6 @@ public class ServiceNowClient : IDisposable
 		if (account == null)
 		{
 			throw new ArgumentNullException(nameof(account));
-		}
-
-		if (username == null)
-		{
-			throw new ArgumentNullException(nameof(username));
-		}
-
-		if (password == null)
-		{
-			throw new ArgumentNullException(nameof(password));
 		}
 
 		var baseAddress = _options.Environment switch
@@ -68,7 +78,7 @@ public class ServiceNowClient : IDisposable
 				Accept = {new MediaTypeWithQualityHeaderValue("application/json")},
 			}
 		};
-		_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}")));
+		_httpClient.DefaultRequestHeaders.Authorization = authHeader;
 		_logger.LogDebug("Created ServiceNowClient instance.");
 	}
 
