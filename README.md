@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/24dcf171dd8540a192635ed46eeb1ea3)](https://www.codacy.com/gh/panoramicdata/ServiceNow.Api/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=panoramicdata/ServiceNow.Api&amp;utm_campaign=Badge_Grade)
 
-# Usage
+## Usage
 
 To create a simple command line app that uses the ServiceNow REST API:
 

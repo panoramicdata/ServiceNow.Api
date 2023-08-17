@@ -55,11 +55,10 @@ internal class DiagApplication
 
 	private async Task ExecuteTestAsync(DiagnosticTest test)
 	{
-		IDiagnostic diagnostic = test.Type switch
-		{
-			DiagnosticType.Paging => _serviceProvider.GetRequiredService<PagingDiagnostic>(),
-			_ => throw new NotSupportedException($"Test type {test.Type} is not supported."),
-		};
+
+		IDiagnostic diagnostic = test.Type == DiagnosticType.Paging
+			? _serviceProvider.GetRequiredService<PagingDiagnostic>()
+			: throw new NotSupportedException($"Test type {test.Type} is not supported.");
 		await diagnostic.ExecuteAsync(test).ConfigureAwait(false);
 	}
 }

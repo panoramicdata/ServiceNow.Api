@@ -27,13 +27,10 @@ public class QueryTests : ServiceNowTest
 		Assert.NotNull(result);
 		Assert.NotEmpty(result);
 		Assert.True(result[0].ContainsKey("sys_id"));
-		// Not expecting the u_value field to be present as we asked for sys_id only
-		//Assert.False(result[0].ContainsKey("u_value"));
 
 		// There should only be the properties requested, even though sys_id and sys_created_on are used internally for paging
 		// (sys_created_on is used unless the paging field has been set in options passed to the client, which would be used instead)
-		var actualProperties = result[0].Properties().Select(p => p.Name).ToList();
-		//Assert.Equal(fieldList.OrderBy(name => name), actualProperties.OrderBy(name => name));
+		_ = result[0].Properties().Select(p => p.Name).ToList();
 
 		// Check for dupes
 		var dupes = result.GroupBy(ci => ci["sys_id"]).Where(g => g.Count() > 1).Select(g => new { Id = g.First()["sys_id"], Count = g.Count() }).ToList();

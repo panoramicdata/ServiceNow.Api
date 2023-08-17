@@ -27,7 +27,7 @@ public class DeleteTests : ServiceNowTest
 				.GetAllByQueryAsync("incident", $"sys_id={sysId}", default)
 				.ConfigureAwait(false);
 
-			var incident = incidents.SingleOrDefault() ?? throw new Exception($"Incident {sysId} not found");
+			_ = incidents.SingleOrDefault() ?? throw new Exception($"Incident {sysId} not found");
 
 			List<JObject> workNotes;
 			try
