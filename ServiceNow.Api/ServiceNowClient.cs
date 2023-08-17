@@ -481,7 +481,11 @@ public class ServiceNowClient : IDisposable
 	/// <typeparam name="T">The type of object</typeparam>
 	/// <param name="table">The object itself</param>
 	/// <returns>A list of attachments</returns>
-	public async Task<List<Attachment>> GetAttachmentsAsync<T>(T table, CancellationToken cancellationToken = default) where T : Table
+
+	public async Task<List<Attachment>> GetAttachmentsAsync<T>(T table) where T : Table
+		=> await GetAttachmentsAsync(table, default);
+
+	public async Task<List<Attachment>> GetAttachmentsAsync<T>(T table, CancellationToken cancellationToken) where T : Table
 		=> (await GetInternalAsync<RestResponse<List<Attachment>>>($"api/now/attachment?sysparm_query=table_name={Table.GetTableName<T>()}^table_sys_id={table.SysId}", cancellationToken).ConfigureAwait(false)).Item ?? new();
 
 	/// <summary>
@@ -520,7 +524,11 @@ public class ServiceNowClient : IDisposable
 		return fileToWriteTo;
 	}
 
-	public Task<T> CreateAsync<T>(T @object, CancellationToken cancellationToken = default) where T : Table
+
+	public Task<T> CreateAsync<T>(T @object) where T : Table
+		=> CreateAsync(@object, null, default);
+
+	public Task<T> CreateAsync<T>(T @object, CancellationToken cancellationToken) where T : Table
 		=> CreateAsync(@object, null, cancellationToken);
 
 	public async Task<T> CreateAsync<T>(T @object, string? extraQueryString = null, CancellationToken cancellationToken = default) where T : Table
@@ -546,7 +554,11 @@ public class ServiceNowClient : IDisposable
 		return deserializeObject.Item!;
 	}
 
-	public Task<JObject> CreateAsync(string tableName, JObject jObject, CancellationToken cancellationToken = default)
+
+	public Task<JObject> CreateAsync(string tableName, JObject jObject)
+		=> CreateAsync(tableName, jObject, null, default);
+
+	public Task<JObject> CreateAsync(string tableName, JObject jObject, CancellationToken cancellationToken)
 		=> CreateAsync(tableName, jObject, null, cancellationToken);
 
 	public async Task<JObject> CreateAsync(string tableName, JObject jObject, string? extraQueryString = null, CancellationToken cancellationToken = default)
@@ -571,7 +583,11 @@ public class ServiceNowClient : IDisposable
 		return deserializeObject.Item!;
 	}
 
-	public async Task<JObject> UpdateAsync(string tableName, JObject jObject, CancellationToken cancellationToken = default)
+
+	public async Task<JObject> UpdateAsync(string tableName, JObject jObject)
+		=> await UpdateAsync(tableName, jObject, default);
+
+	public async Task<JObject> UpdateAsync(string tableName, JObject jObject, CancellationToken cancellationToken)
 	{
 		if (jObject == null)
 		{
@@ -605,7 +621,11 @@ public class ServiceNowClient : IDisposable
 	/// <param name="tableName">The table to update an entry in</param>
 	/// <param name="jObject">The object details, sys_id must be set</param>
 	/// <param name="cancellationToken"></param>
-	public async Task<JObject> PatchAsync(string tableName, JObject jObject, CancellationToken cancellationToken = default)
+
+	public async Task<JObject> PatchAsync(string tableName, JObject jObject)
+		=> await PatchAsync(tableName, jObject, default);
+
+	public async Task<JObject> PatchAsync(string tableName, JObject jObject, CancellationToken cancellationToken)
 	{
 		if (jObject == null)
 		{
@@ -633,7 +653,11 @@ public class ServiceNowClient : IDisposable
 		return deserializeObject.Item!;
 	}
 
-	public async Task DeleteAsync(string tableName, string sysId, CancellationToken cancellationToken = default)
+
+	public async Task DeleteAsync(string tableName, string sysId)
+		=> await DeleteAsync(tableName, sysId, default);
+
+	public async Task DeleteAsync(string tableName, string sysId, CancellationToken cancellationToken)
 	{
 		// https://docs.servicenow.com/bundle/kingston-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#ariaid-title6
 		using var response = await _httpClient.DeleteAsync($"api/now/table/{tableName}/{sysId}", cancellationToken).ConfigureAwait(false)
@@ -646,7 +670,11 @@ public class ServiceNowClient : IDisposable
 		}
 	}
 
-	public async Task UpdateAsync<T>(T @object, CancellationToken cancellationToken = default) where T : Table
+	public async Task UpdateAsync<T>(T @object) where T : Table
+		=> await UpdateAsync(@object, default);
+
+
+	public async Task UpdateAsync<T>(T @object, CancellationToken cancellationToken) where T : Table
 	{
 		HttpContent content = new StringContent(JsonConvert.SerializeObject(@object), null, "application/json");
 		var tableName = Table.GetTableName<T>();
@@ -660,7 +688,11 @@ public class ServiceNowClient : IDisposable
 		}
 	}
 
-	public async Task DeleteAsync<T>(string sysId, CancellationToken cancellationToken = default) where T : Table
+
+	public async Task DeleteAsync<T>(string sysId) where T : Table
+		=> await DeleteAsync<T>(sysId, default);
+
+	public async Task DeleteAsync<T>(string sysId, CancellationToken cancellationToken) where T : Table
 	{
 		var tableName = Table.GetTableName<T>();
 
@@ -674,7 +706,11 @@ public class ServiceNowClient : IDisposable
 		}
 	}
 
-	public Task<RestResponse<MetaDataResult>> GetMetaForClassAsync(string className, CancellationToken cancellationToken = default)
+
+	public Task<RestResponse<MetaDataResult>> GetMetaForClassAsync(string className)
+		=> GetMetaForClassAsync(className, default);
+
+	public Task<RestResponse<MetaDataResult>> GetMetaForClassAsync(string className, CancellationToken cancellationToken)
 		=> GetInternalAsync<RestResponse<MetaDataResult>>($"api/now/cmdb/meta/{className}", cancellationToken);
 
 	private async Task<T> GetInternalAsync<T>(string subUrl, CancellationToken cancellationToken)
@@ -737,7 +773,10 @@ public class ServiceNowClient : IDisposable
 		}
 	}
 
-	public async Task<JObject?> GetLinkedEntityAsync(string link, List<string> fieldList, CancellationToken cancellationToken = default)
+	public async Task<JObject?> GetLinkedEntityAsync(string link, List<string> fieldList)
+				=> await GetLinkedEntityAsync(link, fieldList, default);
+
+	public async Task<JObject?> GetLinkedEntityAsync(string link, List<string> fieldList, CancellationToken cancellationToken)
 	{
 		var linkWithFields = link.Substring(link.IndexOf("/api/", StringComparison.Ordinal) + 1);
 		if (fieldList?.Any() == true)
