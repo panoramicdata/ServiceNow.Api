@@ -525,10 +525,7 @@ public class ServiceNowClient : IDisposable
 	}
 
 
-	public Task<T> CreateAsync<T>(T @object) where T : Table
-		=> CreateAsync(@object, null, default);
-
-	public Task<T> CreateAsync<T>(T @object, CancellationToken cancellationToken) where T : Table
+	public Task<T> CreateAsync<T>(T @object, CancellationToken cancellationToken = default) where T : Table
 		=> CreateAsync(@object, null, cancellationToken);
 
 	public async Task<T> CreateAsync<T>(T @object, string? extraQueryString = null, CancellationToken cancellationToken = default) where T : Table
@@ -555,10 +552,7 @@ public class ServiceNowClient : IDisposable
 	}
 
 
-	public Task<JObject> CreateAsync(string tableName, JObject jObject)
-		=> CreateAsync(tableName, jObject, null, default);
-
-	public Task<JObject> CreateAsync(string tableName, JObject jObject, CancellationToken cancellationToken)
+	public Task<JObject> CreateAsync(string tableName, JObject jObject, CancellationToken cancellationToken = default)
 		=> CreateAsync(tableName, jObject, null, cancellationToken);
 
 	public async Task<JObject> CreateAsync(string tableName, JObject jObject, string? extraQueryString = null, CancellationToken cancellationToken = default)
