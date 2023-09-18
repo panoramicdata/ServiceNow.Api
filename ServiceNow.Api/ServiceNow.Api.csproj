@@ -16,7 +16,7 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>latest</LangVersion>
 
-		<PackageReleaseNotes>Updated Create to allow specifying extra query string.</PackageReleaseNotes>
+		<PackageReleaseNotes>Added missing ResourceLinkConverter</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>
