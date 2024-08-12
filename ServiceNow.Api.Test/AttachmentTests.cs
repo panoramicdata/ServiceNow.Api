@@ -1,14 +1,14 @@
-﻿using ServiceNow.Api.Tables;
+﻿using Microsoft.Extensions.Logging;
+using ServiceNow.Api.Tables;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
 public class AttachmentTests : ServiceNowTest
 {
-	public AttachmentTests(ITestOutputHelper iTestOutputHelper) : base(iTestOutputHelper)
+	public AttachmentTests(ILogger<AddRemoveWinServerTests> logger) : base(logger)
 	{
 	}
 
@@ -18,13 +18,13 @@ public class AttachmentTests : ServiceNowTest
 	public async Task GetAllAttachments()
 	{
 		// Go and get 10 items for the type we're testing
-		var request = await Client.GetByIdAsync<Request>("2c8e0e3b4f20130003d03b718110c762").ConfigureAwait(false);
+		var request = await Client.GetByIdAsync<Request>("2c8e0e3b4f20130003d03b718110c762");
 		// Make sure that something was returned
 		Assert.NotNull(request);
-		var attachments = await Client.GetAttachmentsAsync(request!).ConfigureAwait(false);
+		var attachments = await Client.GetAttachmentsAsync(request!);
 		Assert.NotNull(attachments);
 		_ = Assert.Single(attachments);
-		var localPath = await Client.DownloadAttachmentAsync(attachments[0], Path.GetTempPath()).ConfigureAwait(false);
+		var localPath = await Client.DownloadAttachmentAsync(attachments[0], Path.GetTempPath());
 		Assert.NotNull(localPath);
 	}
 }

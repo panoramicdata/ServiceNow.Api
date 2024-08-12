@@ -5,13 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
 public class QueryTests : ServiceNowTest
 {
-	public QueryTests(ITestOutputHelper output) : base(output, "appsettings.ntt.dev.json", new Options { ValidateCountItemsReturned = true, ValidateCountItemsReturnedTolerance = 0, PageSize = 1000 })
+	public QueryTests(ILogger<QueryTests> logger) : base(logger, "appsettings.ntt.dev.json", new Options { ValidateCountItemsReturned = true, ValidateCountItemsReturnedTolerance = 0, PageSize = 1000 })
 	{
 	}
 
@@ -23,7 +22,7 @@ public class QueryTests : ServiceNowTest
 		var fieldList = new List<string> { "sys_id", "sys_updated_on", "u_name", "u_value", "sys_created_on" };
 		const string? extraQueryString = null;
 
-		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default).ConfigureAwait(false);
+		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default);
 		Assert.NotNull(result);
 		Assert.NotEmpty(result);
 		Assert.True(result[0].ContainsKey("sys_id"));
@@ -56,7 +55,7 @@ public class QueryTests : ServiceNowTest
 		var fieldList = new List<string>();
 		const string? extraQueryString = null;
 
-		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default).ConfigureAwait(false);
+		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default);
 		Assert.NotNull(result);
 		Assert.NotEmpty(result);
 		Assert.True(result[0].ContainsKey("sys_id"));
@@ -77,33 +76,33 @@ public class QueryTests : ServiceNowTest
 	[Fact]
 	public async Task Incident()
 	{
-		var page = await Client.GetPageByQueryAsync<Incident>(0, 10).ConfigureAwait(false);
+		var page = await Client.GetPageByQueryAsync<Incident>(0, 10);
 		_ = page.Should().NotBeNull();
 		_ = page.Items.Should().NotBeNullOrEmpty();
 		var firstItem = page.Items[0];
 
 		// Re-fetch using SysId
-		var refetchById = await Client.GetByIdAsync<Incident>(firstItem.SysId).ConfigureAwait(false);
+		var refetchById = await Client.GetByIdAsync<Incident>(firstItem.SysId);
 		_ = refetchById.Should().NotBeNull();
-		_ = firstItem.SysId.Should().Equals(refetchById!.SysId);
+		_ = firstItem.SysId.Should().Be(refetchById!.SysId);
 
 		// Re-fetch using SysId
-		var refetchByQuery = (await Client.GetPageByQueryAsync<Incident>(0, 1, $"sys_id={firstItem.SysId}").ConfigureAwait(false))?.Items.FirstOrDefault();
+		var refetchByQuery = (await Client.GetPageByQueryAsync<Incident>(0, 1, $"sys_id={firstItem.SysId}"))?.Items.FirstOrDefault();
 		_ = refetchByQuery.Should().NotBeNull();
-		_ = firstItem.SysId.Should().Equals(refetchByQuery!.SysId);
+		_ = firstItem.SysId.Should().Be(refetchByQuery!.SysId);
 	}
 
 	[Fact]
 	public async Task GetLinkedEntity_Succeeds()
 	{
-		var server = (await Client.GetAllByQueryAsync("cmdb_ci_win_server", null, new List<string> { "sys_id", "name", "company" }).ConfigureAwait(false)).FirstOrDefault();
+		var server = (await Client.GetAllByQueryAsync("cmdb_ci_win_server", null, new List<string> { "sys_id", "name", "company" })).FirstOrDefault();
 		_ = server.Should().NotBeNull();
 		_ = server!["company"].Should().NotBeNull();
 		_ = server!["company"]!["link"].Should().NotBeNull();
 
 		var companyLink = server!["company"]!["link"]!.ToString();
 
-		var company = await Client.GetLinkedEntityAsync(companyLink, new List<string> { "name" }).ConfigureAwait(false);
+		var company = await Client.GetLinkedEntityAsync(companyLink, new List<string> { "name" });
 
 		_ = company.Should().NotBeNull();
 		_ = company!["name"].Should().NotBeNull();
@@ -114,7 +113,7 @@ public class QueryTests : ServiceNowTest
 	{
 		var firstTen = await Client
 			.GetAllByQueryAsync("cmdb_rel_ci", extraQueryString: "sysparm_limit=10")
-			.ConfigureAwait(false);
+			;
 
 		_ = firstTen.Should().NotBeNullOrEmpty();
 
@@ -127,7 +126,7 @@ public class QueryTests : ServiceNowTest
 
 		var list = await Client
 			.GetAllByQueryAsync("cmdb_rel_ci", $"child={childSysId}")
-			.ConfigureAwait(false);
+			;
 
 		var relationship = list.FirstOrDefault();
 		_ = relationship.Should().NotBeNull();

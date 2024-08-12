@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
 public class GetAllByQueryToleranceTests : ServiceNowTest
 {
-	public GetAllByQueryToleranceTests(ITestOutputHelper output)
-		: base(
-			output,
+	public GetAllByQueryToleranceTests(ILogger<GetAllByQueryToleranceTests> logger) :
+		base(logger,
 			"appsettings.ntt.dev.json",
 			new Options
 			{
@@ -22,7 +20,7 @@ public class GetAllByQueryToleranceTests : ServiceNowTest
 	{
 	}
 
-	[Fact]
+	[Fact(Skip = "This user table does not exist in all test systems")]
 	public async Task PagingTestAsync()
 	{
 		// A repeat of another test but with tolerance defined in the client
@@ -32,7 +30,7 @@ public class GetAllByQueryToleranceTests : ServiceNowTest
 		var fieldList = new List<string>();
 		const string? extraQueryString = null;
 
-		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default).ConfigureAwait(false);
+		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default);
 		Assert.NotNull(result);
 		Assert.NotEmpty(result);
 		Assert.True(result[0].ContainsKey("sys_id"));
@@ -52,7 +50,7 @@ public class GetAllByQueryToleranceTests : ServiceNowTest
 	}
 
 
-	[Fact]
+	[Fact(Skip = "This user table does not exist in all test systems")]
 	public async Task AnotherPagingTestAsync()
 	{
 		// A repeat of another test but with tolerance defined in the client
@@ -69,7 +67,7 @@ public class GetAllByQueryToleranceTests : ServiceNowTest
 			extraQueryString,
 			"wss_sys_updated_on",
 			3,
-			default).ConfigureAwait(false);
+			default);
 		Assert.NotNull(result);
 		Assert.NotEmpty(result);
 		Assert.True(result[0].ContainsKey("sys_id"));

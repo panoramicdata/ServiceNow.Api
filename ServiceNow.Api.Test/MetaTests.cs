@@ -1,12 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
 public class MetaTests : ServiceNowTest
 {
-	public MetaTests(ITestOutputHelper iTestOutputHelper) : base(iTestOutputHelper)
+	public MetaTests(ILogger<MetaTests> logger) : base(logger)
 	{
 	}
 
@@ -14,7 +14,7 @@ public class MetaTests : ServiceNowTest
 	public async Task MetaData_Get_ValidResult()
 	{
 		const string className = "cmdb_ci_server";
-		var result = await Client.GetMetaForClassAsync(className).ConfigureAwait(false);
+		var result = await Client.GetMetaForClassAsync(className);
 		Assert.NotNull(result);
 		Assert.NotNull(result.Item);
 		Assert.Equal("cmdb_ci_computer", result.Item!.Parent);

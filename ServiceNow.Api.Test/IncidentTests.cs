@@ -4,17 +4,16 @@ using ServiceNow.Api.Tables;
 using System;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
 public class IncidentTests : ServiceNowTest
 {
-	public IncidentTests(ITestOutputHelper iTestOutputHelper) : base(iTestOutputHelper)
+	public IncidentTests(ILogger<AddRemoveWinServerTests> logger) : base(logger)
 	{
 	}
 
-	[Fact]
+	[Fact(Skip = "Cannot perform Create, Update or Delete in all test systems")]
 	public async Task IncidentCrud()
 	{
 		// Create an incident //
@@ -28,7 +27,7 @@ public class IncidentTests : ServiceNowTest
 		};
 
 		// Act
-		var createdIncident = await Client.CreateAsync(incident, System.Threading.CancellationToken.None).ConfigureAwait(false);
+		var createdIncident = await Client.CreateAsync(incident, System.Threading.CancellationToken.None);
 
 		// Assert
 		_ = createdIncident.Should().NotBeNull();
@@ -43,22 +42,22 @@ public class IncidentTests : ServiceNowTest
 		// Update an incident //
 
 		// Arrange
-		var reFetchedIncident = await Client.GetByIdAsync<Incident>(createdIncident.SysId).ConfigureAwait(false);
+		var reFetchedIncident = await Client.GetByIdAsync<Incident>(createdIncident.SysId);
 		_ = reFetchedIncident.Should().NotBeNull();
 		_ = reFetchedIncident!.SysId.Should().Be(createdIncident.SysId);
 
 		// Act
 		reFetchedIncident.Comments = "Some new comment text " + testId;
-		await Client.UpdateAsync(reFetchedIncident).ConfigureAwait(false);
+		await Client.UpdateAsync(reFetchedIncident);
 		reFetchedIncident.Comments = "Some other comment text " + testId;
-		await Client.UpdateAsync(reFetchedIncident).ConfigureAwait(false);
+		await Client.UpdateAsync(reFetchedIncident);
 
 		// Assert
-		var incidentAfterUpdate = await Client.GetByIdAsync<Incident>(createdIncident.SysId).ConfigureAwait(false);
+		var incidentAfterUpdate = await Client.GetByIdAsync<Incident>(createdIncident.SysId);
 		_ = incidentAfterUpdate.Should().NotBeNull();
 		_ = incidentAfterUpdate!.SysId.Should().Be(createdIncident.SysId);
 
 		// Delete the incident //
-		await Client.DeleteAsync<Incident>(createdIncident.SysId).ConfigureAwait(false);
+		await Client.DeleteAsync<Incident>(createdIncident.SysId);
 	}
 }

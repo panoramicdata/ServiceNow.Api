@@ -5,17 +5,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
 public class DeleteTests : ServiceNowTest
 {
-	public DeleteTests(ITestOutputHelper output) : base(output, "appsettings.edinburghAirport.json", new Options { ValidateCountItemsReturned = true, ValidateCountItemsReturnedTolerance = 0, PageSize = 1000 })
+	public DeleteTests(ILogger<DeleteTests> logger) : base(logger, "appsettings.edinburghAirport.json", new Options { ValidateCountItemsReturned = true, ValidateCountItemsReturnedTolerance = 0, PageSize = 1000 })
 	{
 	}
 
-	[Fact]
+	[Fact(Skip = "Cannot perform deletes in all test systems")]
 	public async Task Delete_FromList_Succeeds()
 	{
 		foreach (var sysIdToPhrase in IncidentSysIds)
@@ -25,7 +24,7 @@ public class DeleteTests : ServiceNowTest
 
 			var incidents = await Client
 				.GetAllByQueryAsync("incident", $"sys_id={sysId}", default)
-				.ConfigureAwait(false);
+				;
 
 			var incident = incidents.SingleOrDefault() ?? throw new Exception($"Incident {sysId} not found");
 
@@ -34,7 +33,7 @@ public class DeleteTests : ServiceNowTest
 			{
 				workNotes = await Client
 					.GetAllByQueryAsync("sys_journal_field", $"element=work_notes^name=incident^sys_created_on>2022-05-13^sys_created_by.name==ConnectMagic^valueSTARTSWITHAutoTask Time Entry: ^element_id={sysId}", default)
-					.ConfigureAwait(false);
+					;
 			}
 			catch (Exception e)
 			{
@@ -52,7 +51,7 @@ public class DeleteTests : ServiceNowTest
 				{
 					Logger.LogInformation("{Index} of {Count}", ++index, count);
 					var sysIdToDelete = relevantWorkNote["sys_id"]?.Value<string>() ?? throw new InvalidOperationException("No sys_id");
-					await Client.DeleteAsync("sys_journal_field", sysIdToDelete, default).ConfigureAwait(false);
+					await Client.DeleteAsync("sys_journal_field", sysIdToDelete, default);
 					Logger.LogInformation("Done.");
 				}
 				catch (Exception e)
