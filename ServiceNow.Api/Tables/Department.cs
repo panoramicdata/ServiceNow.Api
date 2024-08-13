@@ -8,7 +8,7 @@ namespace ServiceNow.Api.Tables;
 public class Department : CmdbCi
 {
 	[DataMember(Name = "parent")]
-	public string? Parent { get; set; }
+	public ResourceLink<Department>? Parent { get; set; }
 
 	[DataMember(Name = "description")]
 	public string? Description { get; set; }

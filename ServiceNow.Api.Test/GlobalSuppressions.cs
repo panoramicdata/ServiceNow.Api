@@ -9,3 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 	"CA1707:Identifiers should not contain underscores",
 	Justification = "Underscores form part of the default three-part naming convention for unit tests",
 	Scope = "module")]
+[assembly: SuppressMessage("Style",
+	"IDE0058:Expression value is never used",
+	Justification = "Fluent assertion takes this form",
+	Scope = "module")]

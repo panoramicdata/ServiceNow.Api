@@ -1,4 +1,4 @@
-﻿namespace ServiceNow.Api.Tables;
+﻿namespace ServiceNow.Api.Interfaces;
 
 public interface IResourceLink
 {

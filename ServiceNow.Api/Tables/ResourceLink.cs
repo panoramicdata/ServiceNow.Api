@@ -1,12 +1,13 @@
 ﻿using Newtonsoft.Json;
 using ServiceNow.Api.Converters;
+using ServiceNow.Api.Interfaces;
 using System.Runtime.Serialization;
 
 namespace ServiceNow.Api.Tables;
 
 [DataContract]
 [JsonConverter(typeof(ResourceLinkConverter))]
-public class ResourceLink<T>: IResourceLink
+public class ResourceLink<T> : IResourceLink
 {
 	[DataMember(Name = "link")]
 	public string? Link { get; set; } // REST URL for child record

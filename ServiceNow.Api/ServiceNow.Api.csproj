@@ -16,7 +16,9 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>latest</LangVersion>
 
-		<PackageReleaseNotes>Added missing ResourceLinkConverter</PackageReleaseNotes>
+		<PackageReleaseNotes>Added missing ResourceLinkConverter to resolve serialization issues.
+		Includes updated object definitions related to Resource Links.
+		</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>

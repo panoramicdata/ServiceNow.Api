@@ -14,7 +14,7 @@ public class Company : Table
 	public string? Country { get; set; }
 
 	[DataMember(Name = "parent")]
-	public string? Parent { get; set; }
+	public ResourceLink<Company>? Parent { get; set; }
 
 	[DataMember(Name = "notes")]
 	public string? Notes { get; set; }
@@ -71,7 +71,7 @@ public class Company : Table
 	public string? Vendor { get; set; }
 
 	[DataMember(Name = "contact")]
-	public string? Contact { get; set; }
+	public ResourceLink<User>? Contact { get; set; }
 
 	[DataMember(Name = "lat_long_error")]
 	public string? LatLongError { get; set; }
