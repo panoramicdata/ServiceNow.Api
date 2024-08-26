@@ -47,6 +47,22 @@ public class QueryTests : ServiceNowTest
 		Assert.Empty(dupes);
 	}
 
+	[Theory]
+	[InlineData(null, "core_company")]
+	[InlineData("sysparm_display_value=all", "core_company")]
+	public async Task DisplayValueAllTestAsync(string? extraQueryString, string tableName)
+	{
+		// This test fails if the sysparm_display_value=all is specified since the
+		// property value is an object and not something that can parse as a DateTimeOffset
+		const string query = "";
+		const string customOrderByField = "sys_created_on";
+		var fieldList = new List<string> { };
+
+		var result = await Client.GetAllByQueryAsync(tableName, query, fieldList, extraQueryString, customOrderByField).ConfigureAwait(false);
+		Assert.NotNull(result);
+		Assert.NotEmpty(result);
+	}
+
 	[Fact]
 	public async Task PagingTestAsync()
 	{

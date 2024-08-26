@@ -9,6 +9,7 @@ using ServiceNow.Api.Tables;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -243,12 +244,12 @@ public class ServiceNowClient : IDisposable
 		string? customOrderByField,
 		CancellationToken cancellationToken)
 	{
-		var orderByField = string.IsNullOrWhiteSpace(customOrderByField)
+		var orderByField = (string.IsNullOrWhiteSpace(customOrderByField)
 			? _options.PagingFieldName
-			: customOrderByField;
-
+			: customOrderByField)
+			?? throw new ServiceNowApiException("value for PagingFieldName option is required");
 		string orderByCommand;
-		if (orderByField?.StartsWith("-", StringComparison.Ordinal) ?? false)
+		if (orderByField.StartsWith("-", StringComparison.Ordinal))
 		{
 			orderByCommand = "ORDERBYDESC";
 			orderByField = orderByField.Substring(1);
@@ -346,9 +347,7 @@ public class ServiceNowClient : IDisposable
 				}
 
 				// At this point, we can be sure that we have the paging field in the data
-				maxDateTimeRetrieved = response.Items.Max(jObject =>
-					// Parse and enforce source as being UTC (Z)
-					DateTimeOffset.Parse((jObject[orderByField]?.ToString() ?? string.Empty) + "Z"));
+				maxDateTimeRetrieved = response.Items.Max(jObject => ParseDateTimeOffsetField(jObject, orderByField));
 
 				if (previousMaxDateTimeRetrieved == maxDateTimeRetrieved)
 				{
@@ -413,6 +412,54 @@ public class ServiceNowClient : IDisposable
 		_logger.LogDebug($"Retrieved {finalResult.Items.Count:N0} items from ServiceNow.");
 		return finalResult.Items;
 	}
+
+	private DateTimeOffset ParseDateTimeOffsetField(JObject jObject, string orderByField)
+	{
+		if (jObject.TryGetValue(orderByField, out var jtoken) == false)
+		{
+			// field was not found
+			return DateTimeOffset.MinValue;
+		}
+
+		var jtokenToParse = GetJTokenToParse(jtoken);
+		var stringValue = jtokenToParse.ToObject<string>();
+		var parsed = DateTimeOffset.TryParse(stringValue, null, DateTimeStyles.AssumeUniversal, out DateTimeOffset result);
+		return parsed ? result : DateTimeOffset.MinValue;
+	}
+
+	private JToken GetJTokenToParse(JToken jtoken)
+	{
+		if (jtoken.Type == JTokenType.Object)
+		{
+			var jobject = jtoken.ToObject<JObject>();
+			return GetJTokenForObject(jobject);
+		}
+
+		// anything not an object we'll just parse directly
+		return jtoken;
+	}
+
+	private static JToken GetJTokenForObject(JObject? jobject)
+	{
+		if (jobject == null)
+		{
+			return string.Empty;
+		}
+
+		// needed to handle the case of passing extraQueryString of sysparm_display_value=all where the
+		// response values are objects with keys of "value" and "display_value"
+		if (jobject.TryGetValue("value", out var propValue))
+		{
+			// this is the expected case, a value property should be present
+			return propValue;
+		}
+
+		// use display_value property as a fallback, then whatever property we can find
+		return jobject.TryGetValue("display_value", out propValue)
+			? propValue
+			: jobject.First ?? string.Empty;
+	}
+
 
 	public Task<Page<JObject>> GetPageByQueryAsync(
 		int skip,
