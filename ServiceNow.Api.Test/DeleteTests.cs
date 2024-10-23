@@ -23,7 +23,7 @@ public class DeleteTests : ServiceNowTest
 			var phrase = sysIdToPhrase.Value;
 
 			var incidents = await Client
-				.GetAllByQueryAsync("incident", $"sys_id={sysId}", default)
+				.GetAllByQueryAsync("incident", $"sys_id={sysId}")
 				;
 
 			var incident = incidents.SingleOrDefault() ?? throw new Exception($"Incident {sysId} not found");
@@ -32,7 +32,7 @@ public class DeleteTests : ServiceNowTest
 			try
 			{
 				workNotes = await Client
-					.GetAllByQueryAsync("sys_journal_field", $"element=work_notes^name=incident^sys_created_on>2022-05-13^sys_created_by.name==ConnectMagic^valueSTARTSWITHAutoTask Time Entry: ^element_id={sysId}", default)
+					.GetAllByQueryAsync("sys_journal_field", $"element=work_notes^name=incident^sys_created_on>2022-05-13^sys_created_by.name==ConnectMagic^valueSTARTSWITHAutoTask Time Entry: ^element_id={sysId}")
 					;
 			}
 			catch (Exception e)

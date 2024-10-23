@@ -85,7 +85,17 @@ public class ServiceNowClient : IServiceNowClient
 
 	public void Dispose() => _httpClient?.Dispose();
 
-	public Task<List<T>> GetAllByQueryAsync<T>(string? query = null, CancellationToken cancellationToken = default) where T : Table
+	#region GetAllByQueryAsync<T>
+	public Task<List<T>> GetAllByQueryAsync<T>() where T : Table
+	=> GetAllByQueryAsync<T>(null, default);
+
+	public Task<List<T>> GetAllByQueryAsync<T>(CancellationToken cancellationToken) where T : Table
+		=> GetAllByQueryAsync<T>(null, cancellationToken);
+
+	public Task<List<T>> GetAllByQueryAsync<T>(string query) where T : Table
+		=> GetAllByQueryAsync<T>(query, default);
+
+	public Task<List<T>> GetAllByQueryAsync<T>(string? query, CancellationToken cancellationToken) where T : Table
 	{
 		_logger.LogDebug($"Calling {nameof(GetAllByQueryAsync)}" +
 						 $" type: {typeof(T)}" +
@@ -164,7 +174,8 @@ public class ServiceNowClient : IServiceNowClient
 		}
 
 		return finalResult.Items;
-	}
+	} 
+	#endregion
 
 	private bool ItemsReturnedInsideTolerance(int countItems, int totalExpected)
 	{
@@ -190,6 +201,36 @@ public class ServiceNowClient : IServiceNowClient
 		return isCountItemsOk;
 	}
 
+	#region GetAllByQueryAsync
+	public Task<List<JObject>> GetAllByQueryAsync(string tableName)
+		=> GetAllByQueryAsync(tableName, null, null, null, null, null, default);
+
+	public Task<List<JObject>> GetAllByQueryAsync(string tableName, CancellationToken cancellationToken)
+		=> GetAllByQueryAsync(tableName, null, null, null, null, null, cancellationToken);
+
+	public Task<List<JObject>> GetAllByQueryAsync(string tableName, string query)
+		=> GetAllByQueryAsync(tableName, query, null, null, null, null, default);
+	public Task<List<JObject>> GetAllByQueryAsync(string tableName, string query, CancellationToken cancellationToken)
+		=> GetAllByQueryAsync(tableName, query, null, null, null, null, cancellationToken);
+
+	public Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList)
+		=> GetAllByQueryAsync(tableName, query, fieldList, null, null, null, default);
+
+	public Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, CancellationToken cancellationToken)
+		=> GetAllByQueryAsync(tableName, query, fieldList, null, null, null, cancellationToken);
+
+	public Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string? extraQueryString)
+		=> GetAllByQueryAsync(tableName, query, fieldList, extraQueryString, null, null, default);
+
+	public Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string? extraQueryString, CancellationToken cancellationToken)
+		=> GetAllByQueryAsync(tableName, query, fieldList, extraQueryString, null, null, cancellationToken);
+
+	public Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string? extraQueryString, string? customOrderByField)
+		=> GetAllByQueryAsync(tableName, query, fieldList, extraQueryString, customOrderByField, null, default);
+
+	public Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string? extraQueryString, string? customOrderByField, int? pageSize)
+		=> GetAllByQueryAsync(tableName, query, fieldList, extraQueryString, customOrderByField, pageSize, default);
+
 	/// <summary>
 	/// Get data by query
 	/// </summary>
@@ -202,12 +243,12 @@ public class ServiceNowClient : IServiceNowClient
 	/// <returns></returns>
 	public async Task<List<JObject>> GetAllByQueryAsync(
 		string tableName,
-		string? query = null,
-		List<string>? fieldList = null,
-		string? extraQueryString = null,
-		string? customOrderByField = null,
-		int? pageSize = null,
-		CancellationToken cancellationToken = default)
+		string? query,
+		List<string>? fieldList,
+		string? extraQueryString,
+		string? customOrderByField,
+		int? pageSize,
+		CancellationToken cancellationToken)
 	{
 		_logger.LogDebug($"Calling {nameof(GetAllByQueryAsync)}" +
 						 $" {nameof(tableName)}: {tableName}" +
@@ -413,22 +454,56 @@ public class ServiceNowClient : IServiceNowClient
 		_logger.LogDebug($"Retrieved {finalResult.Items.Count:N0} items from ServiceNow.");
 		return finalResult.Items;
 	}
+	#endregion
+
+	#region GetPageByQueryAsync
+	public Task<Page<JObject>> GetPageByQueryAsync(int skip, int take, string tableName)
+		=> GetPageByQueryAsync(skip, take, tableName, null, null, null, default);
+
+	public Task<Page<JObject>> GetPageByQueryAsync(int skip, int take, string tableName, CancellationToken cancellationToken)
+		=> GetPageByQueryAsync(skip, take, tableName, null, null, null, cancellationToken);
+
+	public Task<Page<JObject>> GetPageByQueryAsync(int skip, int take, string tableName, string query)
+		=> GetPageByQueryAsync(skip, take, tableName, query, null, null, default);
+
+	public Task<Page<JObject>> GetPageByQueryAsync(int skip, int take, string tableName, string query, CancellationToken cancellationToken)
+		=> GetPageByQueryAsync(skip, take, tableName, query, null, null, default);
+
+	public Task<Page<JObject>> GetPageByQueryAsync(int skip, int take, string tableName, string? query, List<string> fieldList)
+		=> GetPageByQueryAsync(skip, take, tableName, query, fieldList, null, default);
+
+	public Task<Page<JObject>> GetPageByQueryAsync(int skip, int take, string tableName, string? query, List<string> fieldList, CancellationToken cancellationToken)
+		=> GetPageByQueryAsync(skip, take, tableName, query, fieldList, null, cancellationToken);
+
+	public Task<Page<JObject>> GetPageByQueryAsync(int skip, int take, string tableName, string? query, List<string>? fieldList, string extraQueryString)
+		=> GetPageByQueryAsync(skip, take, tableName, query, fieldList, extraQueryString, default);
 
 	public Task<Page<JObject>> GetPageByQueryAsync(
 		int skip,
 		int take,
 		string tableName,
-		string? query = null,
-		List<string>? fieldList = null,
-		string? extraQueryString = null,
-		CancellationToken cancellationToken = default)
+		string? query,
+		List<string>? fieldList,
+		string? extraQueryString,
+		CancellationToken cancellationToken)
 		=> GetPageByQueryInternalAsync<JObject>(skip, take, tableName, query, fieldList, extraQueryString, cancellationToken);
+	#endregion
+
+	#region GetPageByQueryAsync<T>
+	public Task<Page<T>> GetPageByQueryAsync<T>(int skip, int take) where T : Table
+		=> GetPageByQueryAsync<T>(skip, take, null, default);
+
+	public Task<Page<T>> GetPageByQueryAsync<T>(int skip, int take, CancellationToken cancellationToken) where T : Table
+		=> GetPageByQueryAsync<T>(skip, take, null, cancellationToken);
+
+	public Task<Page<T>> GetPageByQueryAsync<T>(int skip, int take, string query) where T : Table
+		=> GetPageByQueryAsync<T>(skip, take, query, default);
 
 	public Task<Page<T>> GetPageByQueryAsync<T>(
 		int skip,
 		int take,
-		string? query = null,
-		CancellationToken cancellationToken = default) where T : Table
+		string? query,
+		CancellationToken cancellationToken) where T : Table
 		=> GetPageByQueryInternalAsync<T>(skip, take, Table.GetTableName<T>(), query, null, null, cancellationToken);
 
 	private async Task<Page<T>> GetPageByQueryInternalAsync<T>(
@@ -465,15 +540,30 @@ public class ServiceNowClient : IServiceNowClient
 
 		return pageResult;
 	}
+	#endregion
 
 	private static string? BuildFieldListQueryParameter(List<string>? fieldList)
 		=> fieldList?.Any() == true ? $"sysparm_fields={HttpUtility.UrlEncode(string.Join(",", fieldList))}" : null;
 
-	public async Task<T?> GetByIdAsync<T>(string sysId, CancellationToken cancellationToken = default) where T : Table
-		=> (await GetInternalAsync<RestResponse<T>>($"api/now/table/{Table.GetTableName<T>()}/{sysId}", cancellationToken).ConfigureAwait(false)).Item;
+	#region GetByIdAsync<T>
+	public Task<T?> GetByIdAsync<T>(string sysId) where T : Table
+		=> GetByIdAsync<T>(sysId, default);
+
+	public async Task<T?> GetByIdAsync<T>(string sysId, CancellationToken cancellationToken) where T : Table
+		=> (await GetInternalAsync<RestResponse<T>>($"api/now/table/{Table.GetTableName<T>()}/{sysId}", cancellationToken).ConfigureAwait(false)).Item; 
+	#endregion
+
+	#region GetByIdAsync
+	public Task<JObject?> GetByIdAsync(string tableName, string sysId)
+		=> GetByIdAsync(tableName, sysId, default);
 
 	public async Task<JObject?> GetByIdAsync(string tableName, string sysId, CancellationToken cancellationToken = default)
-		=> (await GetInternalAsync<RestResponse<JObject>>($"api/now/table/{tableName}/{sysId}", cancellationToken).ConfigureAwait(false)).Item;
+		=> (await GetInternalAsync<RestResponse<JObject>>($"api/now/table/{tableName}/{sysId}", cancellationToken).ConfigureAwait(false)).Item; 
+	#endregion
+
+	#region GetAttachmentsAsync<T>
+	public Task<List<Attachment>> GetAttachmentsAsync<T>(T table) where T : Table
+		=> GetAttachmentsAsync<T>(table, default);
 
 	/// <summary>
 	/// Get attachments for a given Table based entry
@@ -481,8 +571,13 @@ public class ServiceNowClient : IServiceNowClient
 	/// <typeparam name="T">The type of object</typeparam>
 	/// <param name="table">The object itself</param>
 	/// <returns>A list of attachments</returns>
-	public async Task<List<Attachment>> GetAttachmentsAsync<T>(T table, CancellationToken cancellationToken = default) where T : Table
+	public async Task<List<Attachment>> GetAttachmentsAsync<T>(T table, CancellationToken cancellationToken) where T : Table
 		=> (await GetInternalAsync<RestResponse<List<Attachment>>>($"api/now/attachment?sysparm_query=table_name={Table.GetTableName<T>()}^table_sys_id={table.SysId}", cancellationToken).ConfigureAwait(false)).Item ?? new();
+	#endregion
+
+	#region GetAttachmentsAsync
+	public Task<List<Attachment>> GetAttachmentsAsync(string tableName, string tableSysId)
+		=> GetAttachmentsAsync(tableName, tableSysId, default);
 
 	/// <summary>
 	/// Get attachments for a given Table based entry
@@ -493,8 +588,19 @@ public class ServiceNowClient : IServiceNowClient
 	public async Task<List<Attachment>> GetAttachmentsAsync(
 		string tableName,
 		string tableSysId,
-		CancellationToken cancellationToken = default)
+		CancellationToken cancellationToken)
 		=> (await GetInternalAsync<RestResponse<List<Attachment>>>($"api/now/attachment?sysparm_query=table_name={tableName}^table_sys_id={tableSysId}", cancellationToken).ConfigureAwait(false)).Item ?? new();
+	#endregion
+
+	#region DownloadAttachmentAsync
+	public Task<string> DownloadAttachmentAsync(Attachment attachment, string outputPath)
+		=> DownloadAttachmentAsync(attachment, outputPath, null, default);
+
+	public Task<string> DownloadAttachmentAsync(Attachment attachment, string outputPath, CancellationToken cancellationToken)
+		=> DownloadAttachmentAsync(attachment, outputPath, null, cancellationToken);
+
+	public Task<string> DownloadAttachmentAsync(Attachment attachment, string outputPath, string filename)
+		=> DownloadAttachmentAsync(attachment, outputPath, filename, default);
 
 	/// <summary>
 	/// Download a specified attachment to the local file system
@@ -506,8 +612,8 @@ public class ServiceNowClient : IServiceNowClient
 	public async Task<string> DownloadAttachmentAsync(
 		Attachment attachment,
 		string outputPath,
-		string? filename = null,
-		CancellationToken cancellationToken = default)
+		string? filename,
+		CancellationToken cancellationToken)
 	{
 		filename ??= attachment.FileName;
 		var fileToWriteTo = Path.Combine(outputPath, filename);
@@ -518,12 +624,20 @@ public class ServiceNowClient : IServiceNowClient
 		response.Content = null;
 
 		return fileToWriteTo;
-	}
+	} 
+	#endregion
 
-	public Task<T> CreateAsync<T>(T @object, CancellationToken cancellationToken = default) where T : Table
+	#region CreateAsync<T>
+	public Task<T> CreateAsync<T>(T @object) where T : Table
+		=> CreateAsync(@object, null, default);
+
+	public Task<T> CreateAsync<T>(T @object, CancellationToken cancellationToken) where T : Table
 		=> CreateAsync(@object, null, cancellationToken);
 
-	public async Task<T> CreateAsync<T>(T @object, string? extraQueryString = null, CancellationToken cancellationToken = default) where T : Table
+	public Task<T> CreateAsync<T>(T @object, string extraQueryString) where T : Table
+		=> CreateAsync(@object, extraQueryString, default);
+
+	public async Task<T> CreateAsync<T>(T @object, string? extraQueryString, CancellationToken cancellationToken) where T : Table
 	{
 		// https://docs.servicenow.com/bundle/kingston-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#ariaid-title6
 		var serializedObject = JsonConvert.SerializeObject(@object, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
@@ -544,12 +658,20 @@ public class ServiceNowClient : IServiceNowClient
 
 		var deserializeObject = await GetDeserializedObjectFromResponse<RestResponse<T>>(response, Guid.NewGuid()).ConfigureAwait(false);
 		return deserializeObject.Item!;
-	}
+	} 
+	#endregion
 
-	public Task<JObject> CreateAsync(string tableName, JObject jObject, CancellationToken cancellationToken = default)
+	#region CreateAsync
+	public Task<JObject> CreateAsync(string tableName, JObject jObject)
+		=> CreateAsync(tableName, jObject, null, default);
+
+	public Task<JObject> CreateAsync(string tableName, JObject jObject, CancellationToken cancellationToken)
 		=> CreateAsync(tableName, jObject, null, cancellationToken);
 
-	public async Task<JObject> CreateAsync(string tableName, JObject jObject, string? extraQueryString = null, CancellationToken cancellationToken = default)
+	public Task<JObject> CreateAsync(string tableName, JObject jObject, string extraQueryString)
+		=> CreateAsync(tableName, jObject, extraQueryString, default);
+
+	public async Task<JObject> CreateAsync(string tableName, JObject jObject, string? extraQueryString, CancellationToken cancellationToken)
 	{
 		// https://docs.servicenow.com/bundle/kingston-application-development/page/integrate/inbound-rest/concept/c_TableAPI.html#ariaid-title6
 		var serializedObject = JsonConvert.SerializeObject(jObject, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
@@ -570,8 +692,13 @@ public class ServiceNowClient : IServiceNowClient
 		var deserializeObject = await GetDeserializedObjectFromResponse<RestResponse<JObject>>(response, Guid.NewGuid()).ConfigureAwait(false);
 		return deserializeObject.Item!;
 	}
+	#endregion
 
-	public async Task<JObject> UpdateAsync(string tableName, JObject jObject, CancellationToken cancellationToken = default)
+	#region UpdateAsync<T>
+	public Task UpdateAsync<T>(T @object) where T : Table
+		=> UpdateAsync(@object, default);
+
+	public async Task<JObject> UpdateAsync(string tableName, JObject jObject, CancellationToken cancellationToken)
 	{
 		if (jObject == null)
 		{
@@ -597,7 +724,12 @@ public class ServiceNowClient : IServiceNowClient
 
 		var deserializeObject = await GetDeserializedObjectFromResponse<RestResponse<JObject>>(response, Guid.NewGuid()).ConfigureAwait(false);
 		return deserializeObject.Item!;
-	}
+	} 
+	#endregion
+
+	#region PatchAsync
+	public Task<JObject> PatchAsync(string tableName, JObject jObject)
+		=> PatchAsync(tableName, jObject, default);
 
 	/// <summary>
 	/// Patches an existing entry. jObject must contain sys_id
@@ -605,7 +737,7 @@ public class ServiceNowClient : IServiceNowClient
 	/// <param name="tableName">The table to update an entry in</param>
 	/// <param name="jObject">The object details, sys_id must be set</param>
 	/// <param name="cancellationToken"></param>
-	public async Task<JObject> PatchAsync(string tableName, JObject jObject, CancellationToken cancellationToken = default)
+	public async Task<JObject> PatchAsync(string tableName, JObject jObject, CancellationToken cancellationToken)
 	{
 		if (jObject == null)
 		{
@@ -631,7 +763,12 @@ public class ServiceNowClient : IServiceNowClient
 
 		var deserializeObject = await GetDeserializedObjectFromResponse<RestResponse<JObject>>(response, Guid.NewGuid()).ConfigureAwait(false);
 		return deserializeObject.Item!;
-	}
+	} 
+	#endregion
+
+	#region DeleteAsync
+	public Task DeleteAsync(string tableName, string sysId)
+		=> DeleteAsync(tableName, sysId, default);
 
 	public async Task DeleteAsync(string tableName, string sysId, CancellationToken cancellationToken = default)
 	{
@@ -645,8 +782,13 @@ public class ServiceNowClient : IServiceNowClient
 			throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
 		}
 	}
+	#endregion
 
-	public async Task UpdateAsync<T>(T @object, CancellationToken cancellationToken = default) where T : Table
+	#region UpdateAsync
+	public Task<JObject> UpdateAsync(string tableName, JObject jObject)
+		=> UpdateAsync(tableName, jObject, default);
+
+	public async Task UpdateAsync<T>(T @object, CancellationToken cancellationToken) where T : Table
 	{
 		HttpContent content = new StringContent(JsonConvert.SerializeObject(@object), null, "application/json");
 		var tableName = Table.GetTableName<T>();
@@ -658,9 +800,14 @@ public class ServiceNowClient : IServiceNowClient
 			var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 			throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
 		}
-	}
+	} 
+	#endregion
 
-	public async Task DeleteAsync<T>(string sysId, CancellationToken cancellationToken = default) where T : Table
+	#region DeleteAsync<T>
+	public Task DeleteAsync<T>(string sysId) where T : Table
+		=> DeleteAsync<T>(sysId, default);
+
+	public async Task DeleteAsync<T>(string sysId, CancellationToken cancellationToken) where T : Table
 	{
 		var tableName = Table.GetTableName<T>();
 
@@ -673,9 +820,15 @@ public class ServiceNowClient : IServiceNowClient
 			throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
 		}
 	}
+	#endregion
 
-	public Task<RestResponse<MetaDataResult>> GetMetaForClassAsync(string className, CancellationToken cancellationToken = default)
-		=> GetInternalAsync<RestResponse<MetaDataResult>>($"api/now/cmdb/meta/{className}", cancellationToken);
+	#region GetMetaForClassAsync
+	public Task<RestResponse<MetaDataResult>> GetMetaForClassAsync(string className)
+		=> GetMetaForClassAsync(className, default);
+
+	public Task<RestResponse<MetaDataResult>> GetMetaForClassAsync(string className, CancellationToken cancellationToken)
+		=> GetInternalAsync<RestResponse<MetaDataResult>>($"api/now/cmdb/meta/{className}", cancellationToken); 
+	#endregion
 
 	private async Task<T> GetInternalAsync<T>(string subUrl, CancellationToken cancellationToken)
 	{
@@ -737,7 +890,11 @@ public class ServiceNowClient : IServiceNowClient
 		}
 	}
 
-	public async Task<JObject?> GetLinkedEntityAsync(string link, List<string> fieldList, CancellationToken cancellationToken = default)
+	#region GetLinkedEntityAsync
+	public Task<JObject?> GetLinkedEntityAsync(string link, List<string> fieldList)
+		=> GetLinkedEntityAsync(link, fieldList, default);
+
+	public async Task<JObject?> GetLinkedEntityAsync(string link, List<string> fieldList, CancellationToken cancellationToken)
 	{
 		var linkWithFields = link.Substring(link.IndexOf("/api/", StringComparison.Ordinal) + 1);
 		if (fieldList?.Any() == true)
@@ -746,5 +903,7 @@ public class ServiceNowClient : IServiceNowClient
 		}
 
 		return (await GetInternalAsync<RestResponse<JObject>>(linkWithFields, cancellationToken).ConfigureAwait(false)).Item;
-	}
+	} 
+	#endregion
+
 }

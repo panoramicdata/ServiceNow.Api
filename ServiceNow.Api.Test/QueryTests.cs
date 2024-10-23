@@ -22,7 +22,7 @@ public class QueryTests : ServiceNowTest
 		var fieldList = new List<string> { "sys_id", "sys_updated_on", "u_name", "u_value", "sys_created_on" };
 		const string? extraQueryString = null;
 
-		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default);
+		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString);
 		Assert.NotNull(result);
 		Assert.NotEmpty(result);
 		Assert.True(result[0].ContainsKey("sys_id"));
@@ -55,7 +55,7 @@ public class QueryTests : ServiceNowTest
 		var fieldList = new List<string>();
 		const string? extraQueryString = null;
 
-		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default);
+		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString);
 		Assert.NotNull(result);
 		Assert.NotEmpty(result);
 		Assert.True(result[0].ContainsKey("sys_id"));
@@ -112,7 +112,7 @@ public class QueryTests : ServiceNowTest
 	public async Task GetRelationshipByChild_Succeeds()
 	{
 		var firstTen = await Client
-			.GetAllByQueryAsync("cmdb_rel_ci", extraQueryString: "sysparm_limit=10")
+			.GetAllByQueryAsync("cmdb_rel_ci", null, null, extraQueryString: "sysparm_limit=10")
 			;
 
 		_ = firstTen.Should().NotBeNullOrEmpty();

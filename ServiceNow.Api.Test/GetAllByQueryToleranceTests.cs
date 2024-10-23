@@ -30,7 +30,7 @@ public class GetAllByQueryToleranceTests : ServiceNowTest
 		var fieldList = new List<string>();
 		const string? extraQueryString = null;
 
-		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default);
+		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString);
 		Assert.NotNull(result);
 		Assert.NotEmpty(result);
 		Assert.True(result[0].ContainsKey("sys_id"));
