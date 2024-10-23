@@ -21,7 +21,7 @@ using System.Web;
 
 namespace ServiceNow.Api;
 
-public class ServiceNowClient : IDisposable
+public class ServiceNowClient : IServiceNowClient
 {
 	private readonly ILogger _logger;
 	private readonly HttpClient _httpClient;
