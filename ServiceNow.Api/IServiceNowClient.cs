@@ -23,12 +23,12 @@ public interface IServiceNowClient : IDisposable
 	Task DeleteAsync(string tableName, string sysId, CancellationToken cancellationToken);
 
 	Task DeleteAsync<T>(string sysId) where T : Table;
-	Task DeleteAsync<T>(string sysId, CancellationToken cancellationToken = default) where T : Table;
+	Task DeleteAsync<T>(string sysId, CancellationToken cancellationToken) where T : Table;
 
 	Task<string> DownloadAttachmentAsync(Attachment attachment, string outputPath);
 	Task<string> DownloadAttachmentAsync(Attachment attachment, string outputPath, CancellationToken cancellationToken);
 	Task<string> DownloadAttachmentAsync(Attachment attachment, string outputPath, string filename);
-	Task<string> DownloadAttachmentAsync(Attachment attachment, string outputPath, string? filename, CancellationToken cancellationToken = default);
+	Task<string> DownloadAttachmentAsync(Attachment attachment, string outputPath, string? filename, CancellationToken cancellationToken);
 
 	Task<List<JObject>> GetAllByQueryAsync(string tableName);
 	Task<List<JObject>> GetAllByQueryAsync(string tableName, CancellationToken cancellationToken);
