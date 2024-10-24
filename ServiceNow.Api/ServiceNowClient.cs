@@ -225,8 +225,14 @@ public class ServiceNowClient : IServiceNowClient
 	public Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string? extraQueryString, CancellationToken cancellationToken)
 		=> GetAllByQueryAsync(tableName, query, fieldList, extraQueryString, null, null, cancellationToken);
 
-	public Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string? extraQueryString, string? customOrderByField)
+	public Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string? extraQueryString, string customOrderByField)
 		=> GetAllByQueryAsync(tableName, query, fieldList, extraQueryString, customOrderByField, null, default);
+
+	public Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string? extraQueryString, string customOrderByField, CancellationToken cancellationToken)
+		=> GetAllByQueryAsync(tableName, query, fieldList, extraQueryString, customOrderByField, null, cancellationToken);
+
+	public Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string? extraQueryString, string customOrderByField, int pageSize)
+		=> GetAllByQueryAsync(tableName, query, fieldList, extraQueryString, customOrderByField, pageSize, default);
 
 	public Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string? extraQueryString, string? customOrderByField, int? pageSize)
 		=> GetAllByQueryAsync(tableName, query, fieldList, extraQueryString, customOrderByField, pageSize, default);

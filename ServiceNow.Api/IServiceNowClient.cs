@@ -37,8 +37,10 @@ public interface IServiceNowClient : IDisposable
 	Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string> fieldList);
 	Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string> fieldList, CancellationToken cancellationToken);
 	Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string extraQueryString, CancellationToken cancellationToken);
-	Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string? extraQueryString, string? customOrderByField);
-	Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string? extraQueryString, string? customOrderByField, int? pageSize, CancellationToken cancellationToken);
+	Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string? extraQueryString, string customOrderByField);
+	Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string? extraQueryString, string customOrderByField, CancellationToken cancellationToken);
+	Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string? extraQueryString, string customOrderByField, int pageSize);
+	Task<List<JObject>> GetAllByQueryAsync(string tableName, string? query, List<string>? fieldList, string? extraQueryString, string customOrderByField, int? pageSize, CancellationToken cancellationToken);
 
 	Task<List<T>> GetAllByQueryAsync<T>() where T : Table;
 	Task<List<T>> GetAllByQueryAsync<T>(CancellationToken cancellationToken) where T : Table;
