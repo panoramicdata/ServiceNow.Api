@@ -4,15 +4,12 @@ using ServiceNow.Api.Tables;
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
-public class IncidentTests : ServiceNowTest
+public class IncidentTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : ServiceNowTest(iTestOutputHelper, fixture)
 {
-	public IncidentTests(ILogger<AddRemoveWinServerTests> logger) : base(logger)
-	{
-	}
-
 	[Fact(Skip = "Cannot perform Create, Update or Delete in all test systems")]
 	public async Task IncidentCrud()
 	{

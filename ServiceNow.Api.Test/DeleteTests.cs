@@ -5,15 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
-public class DeleteTests : ServiceNowTest
+public class DeleteTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : ServiceNowTest(iTestOutputHelper, fixture)
 {
-	public DeleteTests(ILogger<DeleteTests> logger) : base(logger, "appsettings.edinburghAirport.json", new Options { ValidateCountItemsReturned = true, ValidateCountItemsReturnedTolerance = 0, PageSize = 1000 })
-	{
-	}
-
 	[Fact(Skip = "Cannot perform deletes in all test systems")]
 	public async Task Delete_FromList_Succeeds()
 	{

@@ -1,15 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
-public class MetaTests : ServiceNowTest
+public class MetaTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : ServiceNowTest(iTestOutputHelper, fixture)
 {
-	public MetaTests(ILogger<MetaTests> logger) : base(logger)
-	{
-	}
-
 	[Fact]
 	public async Task MetaData_Get_ValidResult()
 	{

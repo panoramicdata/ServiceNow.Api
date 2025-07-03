@@ -6,15 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
-public class TableNameTests : ServiceNowTest
+public class TableNameTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : ServiceNowTest(iTestOutputHelper, fixture)
 {
-	public TableNameTests(ILogger<TableNameTests> logger) : base(logger)
-	{
-	}
-
 	private async Task GetItems(string tableName)
 	{
 		var stopwatch = Stopwatch.StartNew();

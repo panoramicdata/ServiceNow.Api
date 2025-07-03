@@ -1,17 +1,13 @@
 ﻿using AwesomeAssertions;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using ServiceNow.Api.Tables;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test.Converters;
 
-public class ResourceLinkConverterTests : ServiceNowTest
+public class ResourceLinkConverterTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : ServiceNowTest(iTestOutputHelper, fixture)
 {
-	public ResourceLinkConverterTests(ILogger<ResourceLinkConverterTests> logger) : base(logger)
-	{
-	}
-
 	[Fact]
 	public void CanConvert_ApplicationLink_ConfirmsResponsibility()
 	{

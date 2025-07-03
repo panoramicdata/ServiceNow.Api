@@ -6,19 +6,12 @@ using Xunit.Abstractions;
 
 namespace LogicMonitor.Api.Test.Logging;
 
-public class XunitLogger : ILogger
+public class XunitLogger(ITestOutputHelper output, string category, LogLevel minLogLevel) : ILogger
 {
 	private static readonly string[] _newLineChars = new[] { Environment.NewLine };
-	private readonly string _category;
-	private readonly LogLevel _minLogLevel;
-	private readonly ITestOutputHelper _output;
-
-	public XunitLogger(ITestOutputHelper output, string category, LogLevel minLogLevel)
-	{
-		_minLogLevel = minLogLevel;
-		_category = category;
-		_output = output;
-	}
+	private readonly string _category = category;
+	private readonly LogLevel _minLogLevel = minLogLevel;
+	private readonly ITestOutputHelper _output = output;
 
 	public void Log<TState>(
 		LogLevel logLevel,
@@ -89,15 +82,10 @@ public class XunitLogger : ILogger
 	}
 }
 
-public class XunitLogger<T> : ILogger<T>, IDisposable
+public class XunitLogger<T>(ITestOutputHelper output) : ILogger<T>, IDisposable
 {
-	private readonly ITestOutputHelper _output;
+	private readonly ITestOutputHelper _output = output;
 	private bool _disposedValue;
-
-	public XunitLogger(ITestOutputHelper output)
-	{
-		_output = output;
-	}
 
 	public void Log<TState>(
 		LogLevel logLevel,

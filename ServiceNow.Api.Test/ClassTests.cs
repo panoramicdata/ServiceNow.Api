@@ -1,17 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
-using ServiceNow.Api.Tables;
+﻿using ServiceNow.Api.Tables;
 using ServiceNow.Api.Test.Extensions;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
-public class ClassTests : ServiceNowTest
+public class ClassTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : ServiceNowTest(iTestOutputHelper, fixture)
 {
-	public ClassTests(ILogger<ClassTests> logger) : base(logger)
-	{
-	}
-
 	private async Task GetItemsAsync<T>() where T : Table
 	{
 		// Go and get 10 items for the type we're testing
@@ -31,17 +27,13 @@ public class ClassTests : ServiceNowTest
 	[Fact]
 	public async Task Agreement() => await GetItemsAsync<Agreement>();
 
-#pragma warning disable xUnit1004 // Test methods should not be skipped
 	[Fact(Skip = "This table doesn't seem to exist in the dev systems")]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
 	public async Task AmazonWebService() => await GetItemsAsync<AmazonWebService>();
 
 	[Fact]
 	public async Task Application() => await GetItemsAsync<Application>();
 
-#pragma warning disable xUnit1004 // Test methods should not be skipped
 	[Fact(Skip = "This table doesn't seem to exist in the dev systems")]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
 	public async Task AzureVirtualMachineInstance() => await GetItemsAsync<AzureVirtualMachineInstance>();
 
 	[Fact]

@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit.Microsoft.DependencyInjection;
@@ -34,7 +33,6 @@ public class Fixture : TestBedFixture
 	protected override IEnumerable<TestAppSettings> GetTestAppSettings()
 	{
 		_configuration = new ConfigurationBuilder()
-			 .SetBasePath(Directory.GetCurrentDirectory())
 			 .AddUserSecrets<Fixture>()
 			 .Build();
 

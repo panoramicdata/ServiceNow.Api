@@ -1,20 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
-using ServiceNow.Api.Tables;
+﻿using ServiceNow.Api.Tables;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
-public class AttachmentTests : ServiceNowTest
+public class AttachmentTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : ServiceNowTest(iTestOutputHelper, fixture)
 {
-	public AttachmentTests(ILogger<AddRemoveWinServerTests> logger) : base(logger)
-	{
-	}
 
-#pragma warning disable xUnit1004 // Test methods should not be skipped
 	[Fact(Skip = "Needs a request with an attachment")]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
 	public async Task GetAllAttachments()
 	{
 		// Go and get 10 items for the type we're testing

@@ -3,23 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
-public class GetAllByQueryToleranceTests : ServiceNowTest
+public class GetAllByQueryToleranceTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : ServiceNowTest(iTestOutputHelper, fixture)
 {
-	public GetAllByQueryToleranceTests(ILogger<GetAllByQueryToleranceTests> logger) :
-		base(logger,
-			"appsettings.ntt.dev.json",
-			new Options
-			{
-				ValidateCountItemsReturned = true,
-				ValidateCountItemsReturnedTolerance = 5,
-				PageSize = 1000
-			})
-	{
-	}
-
 	[Fact(Skip = "This user table does not exist in all test systems")]
 	public async Task PagingTestAsync()
 	{

@@ -5,15 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
-public class QueryTests : ServiceNowTest
+public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : ServiceNowTest(iTestOutputHelper, fixture)
 {
-	public QueryTests(ILogger<QueryTests> logger) : base(logger, "appsettings.ntt.dev.json", new Options { ValidateCountItemsReturned = true, ValidateCountItemsReturnedTolerance = 0, PageSize = 1000 })
-	{
-	}
-
 	[Fact]
 	public async Task InternalPagingTestAsync()
 	{

@@ -4,20 +4,14 @@ using Xunit.Abstractions;
 
 namespace LogicMonitor.Api.Test.Logging;
 
-public class XunitLoggerProvider : ILoggerProvider
+public class XunitLoggerProvider(ITestOutputHelper output, LogLevel minLevel) : ILoggerProvider
 {
-	private readonly ITestOutputHelper _output;
-	private readonly LogLevel _minLevel;
+	private readonly ITestOutputHelper _output = output;
+	private readonly LogLevel _minLevel = minLevel;
 
 	public XunitLoggerProvider(ITestOutputHelper output)
 		: this(output, LogLevel.Trace)
 	{
-	}
-
-	public XunitLoggerProvider(ITestOutputHelper output, LogLevel minLevel)
-	{
-		_output = output;
-		_minLevel = minLevel;
 	}
 
 	public ILogger CreateLogger(string categoryName)

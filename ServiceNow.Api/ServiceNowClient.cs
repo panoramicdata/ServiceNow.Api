@@ -68,7 +68,8 @@ public class ServiceNowClient : IDisposable
 				Accept = {new MediaTypeWithQualityHeaderValue("application/json")},
 			}
 		};
-		_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}")));
+		var basicString = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}"));
+		_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", basicString);
 		_logger.LogDebug("Created ServiceNowClient instance.");
 	}
 

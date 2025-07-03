@@ -1,17 +1,13 @@
-﻿using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
-public class AddRemoveWinServerTests : ServiceNowTest
+public class AddRemoveWinServerTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : ServiceNowTest(iTestOutputHelper, fixture)
 {
-	public AddRemoveWinServerTests(ILogger<AddRemoveWinServerTests> logger) : base(logger)
-	{
-	}
-
 	[Fact(Skip = "Cannot run updates on all test systems")]
 	public async Task AddUpdateAndDeleteServer_BehavesAsExpected()
 	{
