@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -16,12 +15,12 @@ public class MetaTests : ServiceNowTest
 	{
 		const string className = "cmdb_ci_server";
 		var result = await Client.GetMetaForClassAsync(className);
-		Assert.IsNotNull(result);
-		Assert.IsNotNull(result.Item);
-		Assert.AreEqual("cmdb_ci_computer", result.Item!.Parent);
-		Assert.IsNotNull(result.Item.Attributes);
-		Assert.IsNotEmpty(result.Item.Attributes);
-		Assert.IsNotNull(result.Item.Children);
-		Assert.IsNotEmpty(result.Item.Children);
+		Assert.NotNull(result);
+		Assert.NotNull(result.Item);
+		Assert.Equal("cmdb_ci_computer", result.Item!.Parent);
+		Assert.NotNull(result.Item.Attributes);
+		Assert.NotEmpty(result.Item.Attributes);
+		Assert.NotNull(result.Item.Children);
+		Assert.NotEmpty(result.Item.Children);
 	}
 }

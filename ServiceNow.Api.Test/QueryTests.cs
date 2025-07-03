@@ -1,6 +1,5 @@
 ﻿using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceNow.Api.Tables;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,14 +18,14 @@ public class QueryTests : ServiceNowTest
 	public async Task InternalPagingTestAsync()
 	{
 		// This test fails if not ordering by ORDERBYsys_id
-		const string query = "u_nameISNOTEMPTY";
+		const string query = "u_nameNotEmpty";
 		var fieldList = new List<string> { "sys_id", "sys_updated_on", "u_name", "u_value", "sys_created_on" };
 		const string? extraQueryString = null;
 
 		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default);
-		Assert.IsNotNull(result);
-		Assert.IsNotEmpty(result);
-		Assert.IsTrue(result[0].ContainsKey("sys_id"));
+		Assert.NotNull(result);
+		Assert.NotEmpty(result);
+		Assert.True(result[0].ContainsKey("sys_id"));
 		// Not expecting the u_value field to be present as we asked for sys_id only
 		//Assert.False(result[0].ContainsKey("u_value"));
 
@@ -45,7 +44,7 @@ public class QueryTests : ServiceNowTest
 			result.Count,
 			unique.Count);
 
-		Assert.IsEmpty(dupes);
+		Assert.Empty(dupes);
 	}
 
 	[Fact]
@@ -57,11 +56,11 @@ public class QueryTests : ServiceNowTest
 		const string? extraQueryString = null;
 
 		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default);
-		Assert.IsNotNull(result);
-		Assert.IsNotEmpty(result);
-		Assert.IsTrue(result[0].ContainsKey("sys_id"));
+		Assert.NotNull(result);
+		Assert.NotEmpty(result);
+		Assert.True(result[0].ContainsKey("sys_id"));
 		// Expecting the u_value field to be present as we didn't limit the fields to be retrieved
-		Assert.IsTrue(result[0].ContainsKey("u_value"));
+		Assert.True(result[0].ContainsKey("u_value"));
 
 		// Check for dupes
 		var dupes = result.GroupBy(ci => ci["sys_id"]).Where(g => g.Count() > 1).Select(g => new { Id = g.First()["sys_id"], Count = g.Count() }).ToList();
@@ -71,7 +70,7 @@ public class QueryTests : ServiceNowTest
 		Logger.LogInformation("Found {DupesCount} dupes - total retrieved = {ResultCount} - unique = {UniqueCount}",
 			dupes.Count, result.Count, unique.Count);
 
-		Assert.IsEmpty(dupes);
+		Assert.Empty(dupes);
 	}
 
 	[Fact]

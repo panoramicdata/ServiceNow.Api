@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ServiceNow.Api.Tables;
 using ServiceNow.Api.Test.Extensions;
 using System.Threading.Tasks;
@@ -18,7 +17,7 @@ public class ClassTests : ServiceNowTest
 		// Go and get 10 items for the type we're testing
 		var page = await Client.GetPageByQueryAsync<T>(0, 10);
 		// Make sure that IF we have items that they have unique SysIds
-		Assert.IsTrue(page?.Items.AreDistinctBy(i => i.SysId) ?? true);
+		Assert.True(page?.Items.AreDistinctBy(i => i.SysId) ?? true);
 	}
 
 	[Fact]
@@ -26,7 +25,7 @@ public class ClassTests : ServiceNowTest
 	{
 		var allItems = await Client.GetAllByQueryAsync<Server>("firewall_status=Intranet");
 		// Check that the total count matches the count of items
-		Assert.IsNotNull(allItems);
+		Assert.NotNull(allItems);
 	}
 
 	[Fact]
