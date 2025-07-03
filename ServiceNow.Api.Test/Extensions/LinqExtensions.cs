@@ -22,7 +22,7 @@ internal static class LinqExtensions
 	internal static bool AreDistinctBy<TSource, TKey>
 		(this IEnumerable<TSource> source, Func<TSource, TKey> keySelector)
 	{
-		var enumerable = source as TSource[] ?? source.ToArray();
+		var enumerable = source as TSource[] ?? [.. source];
 		return enumerable.DistinctBy(keySelector).Count() == enumerable.Length;
 	}
 }

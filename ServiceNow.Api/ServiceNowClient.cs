@@ -376,7 +376,7 @@ public class ServiceNowClient : IDisposable
 				unique[jObject["sys_id"]?.ToString() ?? string.Empty] = jObject;
 			}
 
-			finalResult.Items = unique.Values.ToList();
+			finalResult.Items = [.. unique.Values];
 		}
 
 		// If required, double check how many we got is how many we should have
