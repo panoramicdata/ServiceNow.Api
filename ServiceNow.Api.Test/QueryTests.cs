@@ -95,14 +95,14 @@ public class QueryTests : ServiceNowTest
 	[Fact]
 	public async Task GetLinkedEntity_Succeeds()
 	{
-		var server = (await Client.GetAllByQueryAsync("cmdb_ci_win_server", null, new List<string> { "sys_id", "name", "company" })).FirstOrDefault();
+		var server = (await Client.GetAllByQueryAsync("cmdb_ci_win_server", null, ["sys_id", "name", "company"])).FirstOrDefault();
 		_ = server.Should().NotBeNull();
 		_ = server!["company"].Should().NotBeNull();
 		_ = server!["company"]!["link"].Should().NotBeNull();
 
 		var companyLink = server!["company"]!["link"]!.ToString();
 
-		var company = await Client.GetLinkedEntityAsync(companyLink, new List<string> { "name" });
+		var company = await Client.GetLinkedEntityAsync(companyLink, ["name"]);
 
 		_ = company.Should().NotBeNull();
 		_ = company!["name"].Should().NotBeNull();

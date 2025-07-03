@@ -272,7 +272,7 @@ public class ServiceNowClient : IDisposable
 		// the below, and you can set to another field name if you want
 
 		// Initialise actualFieldList from fieldList or an empty list if it was null
-		var actualFieldList = new List<string>(fieldList ?? new List<string>());
+		var actualFieldList = new List<string>(fieldList ?? []);
 
 		if (actualFieldList.Count > 0)
 		{
@@ -482,7 +482,7 @@ public class ServiceNowClient : IDisposable
 	/// <param name="table">The object itself</param>
 	/// <returns>A list of attachments</returns>
 	public async Task<List<Attachment>> GetAttachmentsAsync<T>(T table, CancellationToken cancellationToken = default) where T : Table
-		=> (await GetInternalAsync<RestResponse<List<Attachment>>>($"api/now/attachment?sysparm_query=table_name={Table.GetTableName<T>()}^table_sys_id={table.SysId}", cancellationToken).ConfigureAwait(false)).Item ?? new();
+		=> (await GetInternalAsync<RestResponse<List<Attachment>>>($"api/now/attachment?sysparm_query=table_name={Table.GetTableName<T>()}^table_sys_id={table.SysId}", cancellationToken).ConfigureAwait(false)).Item ?? [];
 
 	/// <summary>
 	/// Get attachments for a given Table based entry
@@ -494,7 +494,7 @@ public class ServiceNowClient : IDisposable
 		string tableName,
 		string tableSysId,
 		CancellationToken cancellationToken = default)
-		=> (await GetInternalAsync<RestResponse<List<Attachment>>>($"api/now/attachment?sysparm_query=table_name={tableName}^table_sys_id={tableSysId}", cancellationToken).ConfigureAwait(false)).Item ?? new();
+		=> (await GetInternalAsync<RestResponse<List<Attachment>>>($"api/now/attachment?sysparm_query=table_name={tableName}^table_sys_id={tableSysId}", cancellationToken).ConfigureAwait(false)).Item ?? [];
 
 	/// <summary>
 	/// Download a specified attachment to the local file system

@@ -7,5 +7,5 @@ namespace ServiceNow.Api;
 public class Page<T> : RestListResponseBase
 {
 	[DataMember(Name = "result")]
-	public List<T> Items { get; set; } = new List<T>();
+	public List<T> Items { get; set; } = [];
 }

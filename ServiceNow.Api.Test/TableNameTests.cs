@@ -49,11 +49,11 @@ public class TableNameTests : ServiceNowTest
 	/// </summary>
 	[Fact]
 	public async Task ServersAll()
-		=> await GetAllItems("cmdb_ci_server", "install_status!=7^firewall_status=intranet", new List<string> { "sys_id", "name" });
+		=> await GetAllItems("cmdb_ci_server", "install_status!=7^firewall_status=intranet", ["sys_id", "name"]);
 
 	[Fact]
 	public async Task ServersAllWithFieldLimit()
-		=> await GetAllItems("cmdb_ci_server", "install_status!=7", new List<string> { "sys_updated_on", "name", "sys_id", "sys_class_name" });
+		=> await GetAllItems("cmdb_ci_server", "install_status!=7", ["sys_updated_on", "name", "sys_id", "sys_class_name"]);
 
 	[Fact]
 	public async Task Requests() => await GetItems("sc_request");
@@ -61,11 +61,11 @@ public class TableNameTests : ServiceNowTest
 	[Fact]
 	public async Task Choices()
 	{
-		var serverChoices = await GetAllItems("sys_choice", "name=cmdb_ci_server^element=os^inactive=false", new List<string> { "sys_id", "label", "value" });
+		var serverChoices = await GetAllItems("sys_choice", "name=cmdb_ci_server^element=os^inactive=false", ["sys_id", "label", "value"]);
 		Assert.NotNull(serverChoices);
 		Assert.Empty(serverChoices);
 
-		var computerChoices = await GetAllItems("sys_choice", "name=cmdb_ci_computer^element=os^inactive=false", new List<string> { "sys_id", "label", "value" });
+		var computerChoices = await GetAllItems("sys_choice", "name=cmdb_ci_computer^element=os^inactive=false", ["sys_id", "label", "value"]);
 		Assert.NotNull(computerChoices);
 		Assert.NotEmpty(computerChoices);
 	}

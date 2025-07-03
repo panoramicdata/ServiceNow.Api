@@ -12,5 +12,5 @@ public class DiagnosticTest
 
 	public string? Query { get; set; }
 
-	public List<string> Fields { get; set; } = new List<string> { "sys_id" };
+	public List<string> Fields { get; set; } = ["sys_id"];
 }
