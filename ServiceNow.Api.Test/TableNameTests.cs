@@ -1,5 +1,6 @@
-﻿using FluentAssertions;
+﻿using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using ServiceNow.Api.Test.Extensions;
 using System.Collections.Generic;
@@ -32,7 +33,7 @@ public class TableNameTests : ServiceNowTest
 		var items = await Client.GetAllByQueryAsync(tableName, query, fieldList);
 		Logger.LogInformation("Call completed in {TotalSeconds:N0}s retrieved {Count:N0} entries.", stopwatch.Elapsed.TotalSeconds, items.Count);
 		// Make sure that IF we have items that they have unique SysIds
-		Assert.True(items.AreDistinctBy(i => i["sys_id"]));
+		Assert.IsTrue(items.AreDistinctBy(i => i["sys_id"]));
 		return items;
 	}
 
@@ -62,11 +63,11 @@ public class TableNameTests : ServiceNowTest
 	public async Task Choices()
 	{
 		var serverChoices = await GetAllItems("sys_choice", "name=cmdb_ci_server^element=os^inactive=false", ["sys_id", "label", "value"]);
-		Assert.NotNull(serverChoices);
-		Assert.Empty(serverChoices);
+		Assert.IsNotNull(serverChoices);
+		Assert.IsEmpty(serverChoices);
 
 		var computerChoices = await GetAllItems("sys_choice", "name=cmdb_ci_computer^element=os^inactive=false", ["sys_id", "label", "value"]);
-		Assert.NotNull(computerChoices);
-		Assert.NotEmpty(computerChoices);
+		Assert.IsNotNull(computerChoices);
+		Assert.IsNotEmpty(computerChoices);
 	}
 }

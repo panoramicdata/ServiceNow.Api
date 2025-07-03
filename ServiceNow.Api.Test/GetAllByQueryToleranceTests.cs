@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,11 +32,11 @@ public class GetAllByQueryToleranceTests : ServiceNowTest
 		const string? extraQueryString = null;
 
 		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default);
-		Assert.NotNull(result);
-		Assert.NotEmpty(result);
-		Assert.True(result[0].ContainsKey("sys_id"));
+		Assert.IsNotNull(result);
+		Assert.IsNotEmpty(result);
+		Assert.IsTrue(result[0].ContainsKey("sys_id"));
 		// Expecting the u_value field to be present as we didn't limit the fields to be retrieved
-		Assert.True(result[0].ContainsKey("u_value"));
+		Assert.IsTrue(result[0].ContainsKey("u_value"));
 
 		// Check for dupes
 		var dupes = result.GroupBy(ci => ci["sys_id"]).Where(g => g.Count() > 1).Select(g => new { Id = g.First()["sys_id"], Count = g.Count() }).ToList();
@@ -46,7 +47,7 @@ public class GetAllByQueryToleranceTests : ServiceNowTest
 			"Found {DupeCount} dupes - total retrieved = {ResultCount} - unique = {UniqueCount}",
 			dupes.Count, result.Count, unique.Count);
 
-		Assert.Empty(dupes);
+		Assert.IsEmpty(dupes);
 	}
 
 
@@ -68,11 +69,11 @@ public class GetAllByQueryToleranceTests : ServiceNowTest
 			"wss_sys_updated_on",
 			3,
 			default);
-		Assert.NotNull(result);
-		Assert.NotEmpty(result);
-		Assert.True(result[0].ContainsKey("sys_id"));
+		Assert.IsNotNull(result);
+		Assert.IsNotEmpty(result);
+		Assert.IsTrue(result[0].ContainsKey("sys_id"));
 		// Expecting the u_value field to be present as we didn't limit the fields to be retrieved
-		Assert.True(result[0].ContainsKey("u_value"));
+		Assert.IsTrue(result[0].ContainsKey("u_value"));
 
 		// Check for dupes
 		var dupes = result.GroupBy(ci => ci["sys_id"]).Where(g => g.Count() > 1).Select(g => new { Id = g.First()["sys_id"], Count = g.Count() }).ToList();
@@ -83,6 +84,6 @@ public class GetAllByQueryToleranceTests : ServiceNowTest
 			"Found {DupeCount} dupes - total retrieved = {ResultCount} - unique = {UniqueCount}",
 			dupes.Count, result.Count, unique.Count);
 
-		Assert.Empty(dupes);
+		Assert.IsEmpty(dupes);
 	}
 }

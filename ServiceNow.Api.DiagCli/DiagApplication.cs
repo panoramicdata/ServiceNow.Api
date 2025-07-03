@@ -9,25 +9,16 @@ using System.Threading.Tasks;
 
 namespace ServiceNow.Api.DiagCli;
 
-internal class DiagApplication
+internal class DiagApplication(
+	ILogger<DiagApplication> logger,
+	IOptions<Configuration> options,
+	IServiceProvider serviceProvider)
 {
-	private readonly ILogger<DiagApplication> _logger;
-	private readonly Configuration _configuration;
-	private readonly IServiceProvider _serviceProvider;
-
-	public DiagApplication(
-		ILogger<DiagApplication> logger,
-		IOptions<Configuration> options,
-		IServiceProvider serviceProvider)
-	{
-		_logger = logger;
-		_configuration = options.Value;
-		_serviceProvider = serviceProvider;
-	}
+	private readonly Configuration _configuration = options.Value;
 
 	public async Task<int> RunAsync()
 	{
-		_logger.LogInformation($"ServiceNow API Diagnostics v{ThisAssembly.AssemblyFileVersion}");
+		logger.LogInformation($"ServiceNow API Diagnostics v{ThisAssembly.AssemblyFileVersion}");
 
 		try
 		{
@@ -35,12 +26,12 @@ internal class DiagApplication
 		}
 		catch (ConfigurationException ex)
 		{
-			_logger.LogError(ex, "{Message}", ex.Message);
+			logger.LogError(ex, "{Message}", ex.Message);
 			return ExitCode.ConfigurationError;
 		}
 
 		var overallStopWatch = Stopwatch.StartNew();
-		_logger.LogInformation("Starting run...");
+		logger.LogInformation("Starting run...");
 
 		ArgumentNullException.ThrowIfNull(_configuration.Tests);
 
@@ -49,7 +40,7 @@ internal class DiagApplication
 			await ExecuteTestAsync(test).ConfigureAwait(false);
 		}
 
-		_logger.LogInformation("Run complete after {TotalSeconds:0.00}s.", overallStopWatch.Elapsed.TotalSeconds);
+		logger.LogInformation("Run complete after {TotalSeconds:0.00}s.", overallStopWatch.Elapsed.TotalSeconds);
 		return ExitCode.Success;
 	}
 
@@ -57,7 +48,7 @@ internal class DiagApplication
 	{
 		IDiagnostic diagnostic = test.Type switch
 		{
-			DiagnosticType.Paging => _serviceProvider.GetRequiredService<PagingDiagnostic>(),
+			DiagnosticType.Paging => serviceProvider.GetRequiredService<PagingDiagnostic>(),
 			_ => throw new NotSupportedException($"Test type {test.Type} is not supported."),
 		};
 		await diagnostic.ExecuteAsync(test).ConfigureAwait(false);
