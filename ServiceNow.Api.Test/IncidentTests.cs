@@ -4,7 +4,6 @@ using ServiceNow.Api.Tables;
 using System;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
@@ -24,7 +23,7 @@ public class IncidentTests(ITestOutputHelper iTestOutputHelper, Fixture fixture)
 		};
 
 		// Act
-		var createdIncident = await Client.CreateAsync(incident, System.Threading.CancellationToken.None);
+		var createdIncident = await Client.CreateAsync(incident, CancellationToken);
 
 		// Assert
 		_ = createdIncident.Should().NotBeNull();
@@ -39,22 +38,22 @@ public class IncidentTests(ITestOutputHelper iTestOutputHelper, Fixture fixture)
 		// Update an incident //
 
 		// Arrange
-		var reFetchedIncident = await Client.GetByIdAsync<Incident>(createdIncident.SysId);
+		var reFetchedIncident = await Client.GetByIdAsync<Incident>(createdIncident.SysId, CancellationToken);
 		_ = reFetchedIncident.Should().NotBeNull();
 		_ = reFetchedIncident!.SysId.Should().Be(createdIncident.SysId);
 
 		// Act
 		reFetchedIncident.Comments = "Some new comment text " + testId;
-		await Client.UpdateAsync(reFetchedIncident);
+		await Client.UpdateAsync(reFetchedIncident, CancellationToken);
 		reFetchedIncident.Comments = "Some other comment text " + testId;
-		await Client.UpdateAsync(reFetchedIncident);
+		await Client.UpdateAsync(reFetchedIncident, CancellationToken);
 
 		// Assert
-		var incidentAfterUpdate = await Client.GetByIdAsync<Incident>(createdIncident.SysId);
+		var incidentAfterUpdate = await Client.GetByIdAsync<Incident>(createdIncident.SysId, CancellationToken);
 		_ = incidentAfterUpdate.Should().NotBeNull();
 		_ = incidentAfterUpdate!.SysId.Should().Be(createdIncident.SysId);
 
 		// Delete the incident //
-		await Client.DeleteAsync<Incident>(createdIncident.SysId);
+		await Client.DeleteAsync<Incident>(createdIncident.SysId, CancellationToken);
 	}
 }

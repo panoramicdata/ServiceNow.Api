@@ -1,5 +1,4 @@
-﻿
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -39,20 +38,11 @@ public class ServiceNowClient : IDisposable
 		_logger = _options.Logger ?? new NullLogger<ServiceNowClient>();
 
 		AccountName = account;
-		if (account == null)
-		{
-			throw new ArgumentNullException(nameof(account));
-		}
+		ArgumentNullException.ThrowIfNull(account);
 
-		if (username == null)
-		{
-			throw new ArgumentNullException(nameof(username));
-		}
+		ArgumentNullException.ThrowIfNull(username);
 
-		if (password == null)
-		{
-			throw new ArgumentNullException(nameof(password));
-		}
+		ArgumentNullException.ThrowIfNull(password);
 
 		var baseAddress = _options.Environment switch
 		{
@@ -84,14 +74,15 @@ public class ServiceNowClient : IDisposable
 
 	public string AccountName { get; } = string.Empty;
 
-	public void Dispose() => _httpClient?.Dispose();
+	public void Dispose()
+	{
+		_httpClient?.Dispose();
+		GC.SuppressFinalize(this);
+	}
 
 	public Task<List<T>> GetAllByQueryAsync<T>(string? query = null, CancellationToken cancellationToken = default) where T : Table
 	{
-		_logger.LogDebug($"Calling {nameof(GetAllByQueryAsync)}" +
-						 $" type: {typeof(T)}" +
-						 $", {nameof(query)}:{query ?? "<not set>"}" +
-						 ".");
+		_logger.LogDebug($"Calling {nameof(GetAllByQueryAsync)} type: {typeof(T)}, {nameof(query)}:{query ?? "<not set>"}.");
 		return GetAllByQueryInternalAsync<T>(Table.GetTableName<T>(), query, null, null, _options.PageSize, cancellationToken);
 	}
 
@@ -103,13 +94,7 @@ public class ServiceNowClient : IDisposable
 		int take,
 		CancellationToken cancellationToken)
 	{
-		_logger.LogTrace($"Entered {nameof(GetAllByQueryInternalAsync)}" +
-						 $" type: {typeof(T)}" +
-						 $", {nameof(tableName)}: {tableName}" +
-						 $", {nameof(query)}: {query ?? "<not set>"}" +
-						 $", {nameof(fieldList)}: {(fieldList?.Any() == true ? string.Join(", ", fieldList) : "<not set>")}" +
-						 $", {nameof(extraQueryString)}: {(string.IsNullOrWhiteSpace(extraQueryString) ? "<not set>" : extraQueryString)}" +
-						 ".");
+		_logger.LogTrace($"Entered {nameof(GetAllByQueryInternalAsync)} type: {typeof(T)}, {nameof(tableName)}: {tableName}, {nameof(query)}: {query ?? "<not set>"}, {nameof(fieldList)}: {(fieldList?.Any() == true ? string.Join(", ", fieldList) : "<not set>")}, {nameof(extraQueryString)}: {(string.IsNullOrWhiteSpace(extraQueryString) ? "<not set>" : extraQueryString)}.");
 		// To avoid issues with duplicates we should sort by something.
 		// Does the query contain an ORDERBY?
 		if (query?.Contains("ORDERBY") != true)
@@ -249,15 +234,18 @@ public class ServiceNowClient : IDisposable
 			: customOrderByField;
 
 		string orderByCommand;
-		if (orderByField?.StartsWith("-", StringComparison.Ordinal) ?? false)
+		if (orderByField?.StartsWith('-') ?? false)
 		{
 			orderByCommand = "ORDERBYDESC";
-			orderByField = orderByField.Substring(1);
+			orderByField = orderByField[1..];
 		}
 		else
 		{
 			orderByCommand = "ORDERBY";
 		}
+
+		// Ensure orderByField is not null for subsequent operations
+		orderByField ??= _options.PagingFieldName;
 
 		_logger.LogTrace($"Entered {nameof(GetAllByQueryInternalJObjectAsync)}" +
 						 $" type: {typeof(JObject)}" +
@@ -278,7 +266,7 @@ public class ServiceNowClient : IDisposable
 		if (actualFieldList.Count > 0)
 		{
 			// Field list is provided so we need to make sure it includes the fields we need
-			if (!actualFieldList.Contains(orderByField))
+			if (!string.IsNullOrEmpty(orderByField) && !actualFieldList.Contains(orderByField))
 			{
 				actualFieldList.Add(orderByField);
 			}
@@ -310,7 +298,7 @@ public class ServiceNowClient : IDisposable
 		}
 
 		// Strategy: We're ordering by the sys_created_on (by default, unless set to something else), so get the first page without limits and then subsequent pages based on >= the max time we got to make sure we don't miss any, need to remove duplicates
-		DateTimeOffset maxDateTimeRetrieved;
+		var maxDateTimeRetrieved = DateTimeOffset.MinValue;
 		DateTimeOffset previousMaxDateTimeRetrieved;
 		// This will be our final response
 		var finalResult = new Page<JObject>();
@@ -338,7 +326,7 @@ public class ServiceNowClient : IDisposable
 			{
 				previousMaxDateTimeRetrieved = maxDateTimeRetrieved;
 
-				if (response.Items.All(item => item[orderByField] is null))
+				if (response.Items.All(item => item[orderByField!] is null))
 				{
 					// We cannot determine the paging based on this field name (which MAY NOT EXIST!)
 					throw new ServiceNowApiException(
@@ -349,7 +337,7 @@ public class ServiceNowClient : IDisposable
 				// At this point, we can be sure that we have the paging field in the data
 				maxDateTimeRetrieved = response.Items.Max(jObject =>
 					// Parse and enforce source as being UTC (Z)
-					DateTimeOffset.Parse((jObject[orderByField]?.ToString() ?? string.Empty) + "Z"));
+					DateTimeOffset.Parse((jObject[orderByField!]?.ToString() ?? string.Empty) + "Z"));
 
 				if (previousMaxDateTimeRetrieved == maxDateTimeRetrieved)
 				{
@@ -510,12 +498,12 @@ public class ServiceNowClient : IDisposable
 		string? filename = null,
 		CancellationToken cancellationToken = default)
 	{
-		filename ??= attachment.FileName;
-		var fileToWriteTo = Path.Combine(outputPath, filename);
+		var actualFilename = filename ?? attachment.FileName ?? throw new ArgumentException("Filename must be provided or available from attachment", nameof(filename));
+		var fileToWriteTo = Path.Combine(outputPath, actualFilename);
 		using var response = await _httpClient.GetAsync(attachment.DownloadLink, cancellationToken).ConfigureAwait(false);
-		using var streamToReadFrom = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+		using var streamToReadFrom = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 		using Stream streamToWriteTo = File.Open(fileToWriteTo, FileMode.Create);
-		await streamToReadFrom.CopyToAsync(streamToWriteTo).ConfigureAwait(false);
+		await streamToReadFrom.CopyToAsync(streamToWriteTo, cancellationToken).ConfigureAwait(false);
 		response.Content = null;
 
 		return fileToWriteTo;
@@ -539,7 +527,7 @@ public class ServiceNowClient : IDisposable
 
 		if (!response.IsSuccessStatusCode)
 		{
-			var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+			var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 			throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
 		}
 
@@ -564,7 +552,7 @@ public class ServiceNowClient : IDisposable
 
 		if (!response.IsSuccessStatusCode)
 		{
-			var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+			var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 			throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
 		}
 
@@ -574,10 +562,7 @@ public class ServiceNowClient : IDisposable
 
 	public async Task<JObject> UpdateAsync(string tableName, JObject jObject, CancellationToken cancellationToken = default)
 	{
-		if (jObject == null)
-		{
-			throw new ArgumentNullException(nameof(jObject));
-		}
+		ArgumentNullException.ThrowIfNull(jObject);
 
 		if (!jObject.TryGetValue("sys_id", out var sysId))
 		{
@@ -592,7 +577,7 @@ public class ServiceNowClient : IDisposable
 
 		if (!response.IsSuccessStatusCode)
 		{
-			var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+			var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 			throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
 		}
 
@@ -608,10 +593,7 @@ public class ServiceNowClient : IDisposable
 	/// <param name="cancellationToken"></param>
 	public async Task<JObject> PatchAsync(string tableName, JObject jObject, CancellationToken cancellationToken = default)
 	{
-		if (jObject == null)
-		{
-			throw new ArgumentNullException(nameof(jObject));
-		}
+		ArgumentNullException.ThrowIfNull(jObject);
 
 		if (!jObject.TryGetValue("sys_id", out var sysId))
 		{
@@ -626,7 +608,7 @@ public class ServiceNowClient : IDisposable
 
 		if (!response.IsSuccessStatusCode)
 		{
-			var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+			var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 			throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
 		}
 
@@ -642,7 +624,7 @@ public class ServiceNowClient : IDisposable
 
 		if (!response.IsSuccessStatusCode)
 		{
-			var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+			var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 			throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
 		}
 	}
@@ -656,7 +638,7 @@ public class ServiceNowClient : IDisposable
 
 		if (!response.IsSuccessStatusCode)
 		{
-			var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+			var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 			throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
 		}
 	}
@@ -670,7 +652,7 @@ public class ServiceNowClient : IDisposable
 
 		if (!response.IsSuccessStatusCode)
 		{
-			var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+			var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 			throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
 		}
 	}
@@ -681,10 +663,10 @@ public class ServiceNowClient : IDisposable
 	private async Task<T> GetInternalAsync<T>(string subUrl, CancellationToken cancellationToken)
 	{
 		var requestId = Guid.NewGuid();
-		_logger.LogTrace($"Request {requestId}: Entered {nameof(GetInternalAsync)} {nameof(subUrl)}: {subUrl}");
+		_logger.LogTrace("Request {RequestId}: Entered {MethodName} {ParamName}: {SubUrl}", requestId, nameof(GetInternalAsync), nameof(subUrl), subUrl);
 		var sw = Stopwatch.StartNew();
 		using var response = await _httpClient.GetAsync(subUrl, cancellationToken).ConfigureAwait(false);
-		_logger.LogTrace($"Request {requestId}: GetAsync took {sw.Elapsed}");
+		_logger.LogTrace("Request {RequestId}: GetAsync took {Elapsed}", requestId, sw.Elapsed);
 
 		if (response == null)
 		{
@@ -693,7 +675,7 @@ public class ServiceNowClient : IDisposable
 
 		if (!response.IsSuccessStatusCode)
 		{
-			var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+			var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 			throw new Exception($"Server error {response.StatusCode} ({(int)response.StatusCode}): {response.ReasonPhrase} - {responseContent}.");
 		}
 
@@ -740,7 +722,7 @@ public class ServiceNowClient : IDisposable
 
 	public async Task<JObject?> GetLinkedEntityAsync(string link, List<string> fieldList, CancellationToken cancellationToken = default)
 	{
-		var linkWithFields = link.Substring(link.IndexOf("/api/", StringComparison.Ordinal) + 1);
+		var linkWithFields = link[(link.IndexOf("/api/", StringComparison.Ordinal) + 1)..];
 		if (fieldList?.Any() == true)
 		{
 			linkWithFields += "?" + BuildFieldListQueryParameter(fieldList);

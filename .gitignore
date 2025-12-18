@@ -243,6 +243,7 @@ ModelManifest.xml
 
 # Solution specific
 nuget-api-key.txt
+nuget-key.txt
 
 # Command line arguments etc.
 launchSettings.json

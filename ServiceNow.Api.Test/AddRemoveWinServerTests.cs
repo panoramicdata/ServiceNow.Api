@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using AwesomeAssertions;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
@@ -12,24 +12,24 @@ public class AddRemoveWinServerTests(ITestOutputHelper iTestOutputHelper, Fixtur
 	public async Task AddUpdateAndDeleteServer_BehavesAsExpected()
 	{
 		var createDictionary = new Dictionary<string, string> { { "name", "bob" } };
-		var newServer = await Client.CreateAsync("cmdb_ci_win_server", JObject.FromObject(createDictionary), System.Threading.CancellationToken.None);
-		Assert.NotNull(newServer);
-		Assert.Equal("bob", newServer["name"]?.ToString());
-		Assert.Equal(string.Empty, newServer["short_description"]?.ToString());
+		var newServer = await Client.CreateAsync("cmdb_ci_win_server", JObject.FromObject(createDictionary), CancellationToken);
+		newServer.Should().NotBeNull();
+		(newServer["name"]?.ToString()).Should().Be("bob");
+		(newServer["short_description"]?.ToString()).Should().Be(string.Empty);
 
 		var sysId = newServer["sys_id"]!.ToString();
 		var updateDictionary = new Dictionary<string, string> { { "sys_id", sysId! }, { "short_description", "we updated it" } };
-		var updatedServer = await Client.UpdateAsync("cmdb_ci_win_server", JObject.FromObject(updateDictionary));
-		Assert.NotNull(updatedServer);
-		Assert.Equal(sysId, updatedServer["sys_id"]?.ToString());
-		Assert.Equal("bob", updatedServer["name"]?.ToString());
-		Assert.Equal("we updated it", updatedServer["short_description"]?.ToString());
+		var updatedServer = await Client.UpdateAsync("cmdb_ci_win_server", JObject.FromObject(updateDictionary), CancellationToken);
+		updatedServer.Should().NotBeNull();
+		(updatedServer["sys_id"]?.ToString()).Should().Be(sysId);
+		(updatedServer["name"]?.ToString()).Should().Be("bob");
+		(updatedServer["short_description"]?.ToString()).Should().Be("we updated it");
 
-		await Client.DeleteAsync("cmdb_ci_win_server", sysId);
+		await Client.DeleteAsync("cmdb_ci_win_server", sysId, CancellationToken);
 
-		var exception = Record.ExceptionAsync(async () => await Client.GetByIdAsync("cmdb_ci_win_server", sysId));
-		Assert.NotNull(exception);
-		var message = exception.Result.Message;
-		Assert.True(message.StartsWith("Server error NotFound (404): Not Found", System.StringComparison.Ordinal));
+		var act = async () => await Client.GetByIdAsync("cmdb_ci_win_server", sysId, CancellationToken);
+
+		await act.Should().ThrowExactlyAsync<System.Exception>()
+			.WithMessage("Server error NotFound (404): Not Found*");
 	}
 }

@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="nuget-key.txt" />
+    <File Path="README.md" />
+    <File Path="version.json" />
+  </Folder>
+  <Project Path="ServiceNow.Api.DiagCli/ServiceNow.Api.DiagCli.csproj" />
+  <Project Path="ServiceNow.Api.Example/ServiceNow.Api.Example.csproj" />
+  <Project Path="ServiceNow.Api.Test/ServiceNow.Api.Test.csproj" />
+  <Project Path="ServiceNow.Api/ServiceNow.Api.csproj" />
+</Solution>

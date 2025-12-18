@@ -25,11 +25,11 @@ internal class ResourceLinkConverter : JsonConverter
 			string? value = null;
 			while (reader.TokenType != JsonToken.EndObject)
 			{
-				if (reader.Value is not null && reader.Value.ToString().Equals("link", StringComparison.InvariantCultureIgnoreCase))
+				if (reader.Value is not null && reader.Value.ToString()!.Equals("link", StringComparison.InvariantCultureIgnoreCase))
 				{
 					link = reader.ReadAsString();
 				}
-				else if (reader.Value is not null && reader.Value.ToString().Equals("value", StringComparison.InvariantCultureIgnoreCase))
+				else if (reader.Value is not null && reader.Value.ToString()!.Equals("value", StringComparison.InvariantCultureIgnoreCase))
 				{
 					value = reader.ReadAsString();
 				}
@@ -39,7 +39,12 @@ internal class ResourceLinkConverter : JsonConverter
 				}
 			}
 
-			var resourceLink = (IResourceLink)Activator.CreateInstance(objectType);
+			var resourceLink = (IResourceLink?)Activator.CreateInstance(objectType);
+			if (resourceLink is null)
+			{
+				return null;
+			}
+
 			resourceLink.Link = link;
 			resourceLink.Value = value;
 			return resourceLink;

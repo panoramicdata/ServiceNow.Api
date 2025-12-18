@@ -2,13 +2,13 @@
 using System;
 using System.Linq;
 using System.Text;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace LogicMonitor.Api.Test.Logging;
 
 public class XunitLogger(ITestOutputHelper output, string category, LogLevel minLogLevel) : ILogger
 {
-	private static readonly string[] _newLineChars = new[] { Environment.NewLine };
+	private static readonly string[] _newLineChars = [Environment.NewLine];
 	private readonly string _category = category;
 	private readonly LogLevel _minLogLevel = minLogLevel;
 	private readonly ITestOutputHelper _output = output;
@@ -50,7 +50,7 @@ public class XunitLogger(ITestOutputHelper output, string category, LogLevel min
 
 		// Remove the last line-break, because ITestOutputHelper only has WriteLine.
 		var message = messageBuilder.ToString();
-		if (message.EndsWith(Environment.NewLine))
+		if (message.EndsWith(Environment.NewLine, StringComparison.Ordinal))
 		{
 			message = message[..^Environment.NewLine.Length];
 		}
@@ -74,7 +74,7 @@ public class XunitLogger(ITestOutputHelper output, string category, LogLevel min
 	public IDisposable BeginScope<TState>(TState state) where TState : notnull
 		=> new NullScope();
 
-	private class NullScope : IDisposable
+	private sealed class NullScope : IDisposable
 	{
 		public void Dispose()
 		{

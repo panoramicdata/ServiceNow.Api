@@ -14,5 +14,5 @@ public abstract class CmdbEntity
 	public string SysId { get; set; } = null!;
 
 	public static string? GetApiName<T>() where T : CmdbEntity
-		=> ((ApiNameAttribute)Attribute.GetCustomAttribute(typeof(T), typeof(ApiNameAttribute)))?.ApiName;
+		=> (Attribute.GetCustomAttribute(typeof(T), typeof(ApiNameAttribute)) as ApiNameAttribute)?.ApiName;
 }

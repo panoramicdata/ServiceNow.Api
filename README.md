@@ -9,14 +9,14 @@
 
 To create a simple command line app that uses the ServiceNow REST API:
 
-1. Create a .NET Core 7.0 Console project in Visual Studio
+1. Create a .NET Core 10.0 Console project in Visual Studio
 2. Ensure that you have specified &lt;LangVersion&gt;latest&lt;/LangVersion&gt; in the csproj file, e.g.:
 ```` xml
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net7.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
 		<AnalysisMode>Recommended</AnalysisMode>

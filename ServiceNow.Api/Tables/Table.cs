@@ -12,5 +12,5 @@ namespace ServiceNow.Api.Tables;
 public abstract class Table : CmdbEntity
 {
 	public static string GetTableName<T>() where T : Table
-		=> ((TableNameAttribute)Attribute.GetCustomAttribute(typeof(T), typeof(TableNameAttribute)))?.TableName ?? string.Empty;
+		=> (Attribute.GetCustomAttribute(typeof(T), typeof(TableNameAttribute)) as TableNameAttribute)?.TableName ?? string.Empty;
 }

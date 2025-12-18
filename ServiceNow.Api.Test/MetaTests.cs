@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using AwesomeAssertions;
+using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
@@ -10,13 +10,13 @@ public class MetaTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : S
 	public async Task MetaData_Get_ValidResult()
 	{
 		const string className = "cmdb_ci_server";
-		var result = await Client.GetMetaForClassAsync(className);
-		Assert.NotNull(result);
-		Assert.NotNull(result.Item);
-		Assert.Equal("cmdb_ci_computer", result.Item!.Parent);
-		Assert.NotNull(result.Item.Attributes);
+		var result = await Client.GetMetaForClassAsync(className, CancellationToken);
+		result.Should().NotBeNull();
+		result.Item.Should().NotBeNull();
+		result.Item!.Parent.Should().Be("cmdb_ci_computer");
+		result.Item.Attributes.Should().NotBeNull();
 		Assert.NotEmpty(result.Item.Attributes);
-		Assert.NotNull(result.Item.Children);
+		result.Item.Children.Should().NotBeNull();
 		Assert.NotEmpty(result.Item.Children);
 	}
 }

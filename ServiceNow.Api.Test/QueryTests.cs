@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
@@ -19,10 +18,10 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 		var fieldList = new List<string> { "sys_id", "sys_updated_on", "u_name", "u_value", "sys_created_on" };
 		const string? extraQueryString = null;
 
-		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default);
-		Assert.NotNull(result);
+		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, cancellationToken: CancellationToken);
+		result.Should().NotBeNull();
 		Assert.NotEmpty(result);
-		Assert.True(result[0].ContainsKey("sys_id"));
+		result[0].ContainsKey("sys_id").Should().BeTrue();
 		// Not expecting the u_value field to be present as we asked for sys_id only
 		//Assert.False(result[0].ContainsKey("u_value"));
 
@@ -41,7 +40,7 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 			result.Count,
 			unique.Count);
 
-		Assert.Empty(dupes);
+		dupes.Should().BeEmpty();
 	}
 
 	[Fact]
@@ -52,12 +51,12 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 		var fieldList = new List<string>();
 		const string? extraQueryString = null;
 
-		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default);
-		Assert.NotNull(result);
+		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, cancellationToken: CancellationToken);
+		result.Should().NotBeNull();
 		Assert.NotEmpty(result);
-		Assert.True(result[0].ContainsKey("sys_id"));
+		result[0].ContainsKey("sys_id").Should().BeTrue();
 		// Expecting the u_value field to be present as we didn't limit the fields to be retrieved
-		Assert.True(result[0].ContainsKey("u_value"));
+		result[0].ContainsKey("u_value").Should().BeTrue();
 
 		// Check for dupes
 		var dupes = result.GroupBy(ci => ci["sys_id"]).Where(g => g.Count() > 1).Select(g => new { Id = g.First()["sys_id"], Count = g.Count() }).ToList();
@@ -67,24 +66,24 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 		Logger.LogInformation("Found {DupesCount} dupes - total retrieved = {ResultCount} - unique = {UniqueCount}",
 			dupes.Count, result.Count, unique.Count);
 
-		Assert.Empty(dupes);
+		dupes.Should().BeEmpty();
 	}
 
 	[Fact]
 	public async Task Incident()
 	{
-		var page = await Client.GetPageByQueryAsync<Incident>(0, 10);
+		var page = await Client.GetPageByQueryAsync<Incident>(0, 10, cancellationToken: CancellationToken);
 		_ = page.Should().NotBeNull();
 		_ = page.Items.Should().NotBeNullOrEmpty();
 		var firstItem = page.Items[0];
 
 		// Re-fetch using SysId
-		var refetchById = await Client.GetByIdAsync<Incident>(firstItem.SysId);
+		var refetchById = await Client.GetByIdAsync<Incident>(firstItem.SysId, CancellationToken);
 		_ = refetchById.Should().NotBeNull();
 		_ = firstItem.SysId.Should().Be(refetchById!.SysId);
 
 		// Re-fetch using SysId
-		var refetchByQuery = (await Client.GetPageByQueryAsync<Incident>(0, 1, $"sys_id={firstItem.SysId}"))?.Items.FirstOrDefault();
+		var refetchByQuery = (await Client.GetPageByQueryAsync<Incident>(0, 1, $"sys_id={firstItem.SysId}", CancellationToken))?.Items.FirstOrDefault();
 		_ = refetchByQuery.Should().NotBeNull();
 		_ = firstItem.SysId.Should().Be(refetchByQuery!.SysId);
 	}
@@ -92,14 +91,14 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 	[Fact]
 	public async Task GetLinkedEntity_Succeeds()
 	{
-		var server = (await Client.GetAllByQueryAsync("cmdb_ci_win_server", null, ["sys_id", "name", "company"])).FirstOrDefault();
+		var server = (await Client.GetAllByQueryAsync("cmdb_ci_win_server", null, ["sys_id", "name", "company"], cancellationToken: CancellationToken)).FirstOrDefault();
 		_ = server.Should().NotBeNull();
 		_ = server!["company"].Should().NotBeNull();
 		_ = server!["company"]!["link"].Should().NotBeNull();
 
 		var companyLink = server!["company"]!["link"]!.ToString();
 
-		var company = await Client.GetLinkedEntityAsync(companyLink, ["name"]);
+		var company = await Client.GetLinkedEntityAsync(companyLink, ["name"], CancellationToken);
 
 		_ = company.Should().NotBeNull();
 		_ = company!["name"].Should().NotBeNull();
@@ -109,7 +108,7 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 	public async Task GetRelationshipByChild_Succeeds()
 	{
 		var firstTen = await Client
-			.GetAllByQueryAsync("cmdb_rel_ci", extraQueryString: "sysparm_limit=10")
+			.GetAllByQueryAsync("cmdb_rel_ci", extraQueryString: "sysparm_limit=10", cancellationToken: CancellationToken)
 			;
 
 		_ = firstTen.Should().NotBeNullOrEmpty();
@@ -122,7 +121,7 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 		_ = childSysId.Should().NotBeNull();
 
 		var list = await Client
-			.GetAllByQueryAsync("cmdb_rel_ci", $"child={childSysId}")
+			.GetAllByQueryAsync("cmdb_rel_ci", $"child={childSysId}", cancellationToken: CancellationToken)
 			;
 
 		var relationship = list.FirstOrDefault();

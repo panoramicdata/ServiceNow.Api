@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
@@ -29,7 +28,7 @@ public class TableNameTests(ITestOutputHelper iTestOutputHelper, Fixture fixture
 		var items = await Client.GetAllByQueryAsync(tableName, query, fieldList);
 		Logger.LogInformation("Call completed in {TotalSeconds:N0}s retrieved {Count:N0} entries.", stopwatch.Elapsed.TotalSeconds, items.Count);
 		// Make sure that IF we have items that they have unique SysIds
-		Assert.True(items.AreDistinctBy(i => i["sys_id"]));
+		items.AreDistinctBy(i => i["sys_id"]).Should().BeTrue();
 		return items;
 	}
 
@@ -59,11 +58,11 @@ public class TableNameTests(ITestOutputHelper iTestOutputHelper, Fixture fixture
 	public async Task Choices()
 	{
 		var serverChoices = await GetAllItems("sys_choice", "name=cmdb_ci_server^element=os^inactive=false", ["sys_id", "label", "value"]);
-		Assert.NotNull(serverChoices);
-		Assert.Empty(serverChoices);
+		serverChoices.Should().NotBeNull();
+		serverChoices.Should().BeEmpty();
 
 		var computerChoices = await GetAllItems("sys_choice", "name=cmdb_ci_computer^element=os^inactive=false", ["sys_id", "label", "value"]);
-		Assert.NotNull(computerChoices);
+		computerChoices.Should().NotBeNull();
 		Assert.NotEmpty(computerChoices);
 	}
 }

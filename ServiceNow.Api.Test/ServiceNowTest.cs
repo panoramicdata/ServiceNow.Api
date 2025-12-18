@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using Xunit.Abstractions;
+using System.Threading;
+using Xunit;
 using Xunit.Microsoft.DependencyInjection.Abstracts;
 
 namespace ServiceNow.Api.Test;
@@ -9,6 +10,8 @@ namespace ServiceNow.Api.Test;
 public abstract class ServiceNowTest : TestBed<Fixture>
 {
 	protected ILogger Logger { get; }
+
+	protected static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
 
 	/// <summary>
 	///   Constructs a ServiceNowClient
@@ -31,8 +34,9 @@ public abstract class ServiceNowTest : TestBed<Fixture>
 
 		var options = testConfigurationOptions.Value;
 
-		var environment = ServiceNowEnvironment.Community;
-		_ = Enum.TryParse(options.ServiceNowEnvironment, true, out environment);
+		var environment = Enum.TryParse<ServiceNowEnvironment>(options.ServiceNowEnvironment, true, out var parsed)
+			? parsed
+			: ServiceNowEnvironment.Community;
 
 		Client = new ServiceNowClient(
 			options.ServiceNowAccount ?? string.Empty,

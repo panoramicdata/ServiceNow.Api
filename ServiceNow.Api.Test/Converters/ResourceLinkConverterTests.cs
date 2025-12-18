@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using ServiceNow.Api.Tables;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test.Converters;
 

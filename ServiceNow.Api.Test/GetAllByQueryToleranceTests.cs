@@ -1,9 +1,9 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AwesomeAssertions;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
@@ -19,12 +19,12 @@ public class GetAllByQueryToleranceTests(ITestOutputHelper iTestOutputHelper, Fi
 		var fieldList = new List<string>();
 		const string? extraQueryString = null;
 
-		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, default);
-		Assert.NotNull(result);
+		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, cancellationToken: CancellationToken);
+		result.Should().NotBeNull();
 		Assert.NotEmpty(result);
-		Assert.True(result[0].ContainsKey("sys_id"));
+		result[0].ContainsKey("sys_id").Should().BeTrue();
 		// Expecting the u_value field to be present as we didn't limit the fields to be retrieved
-		Assert.True(result[0].ContainsKey("u_value"));
+		result[0].ContainsKey("u_value").Should().BeTrue();
 
 		// Check for dupes
 		var dupes = result.GroupBy(ci => ci["sys_id"]).Where(g => g.Count() > 1).Select(g => new { Id = g.First()["sys_id"], Count = g.Count() }).ToList();
@@ -35,9 +35,8 @@ public class GetAllByQueryToleranceTests(ITestOutputHelper iTestOutputHelper, Fi
 			"Found {DupeCount} dupes - total retrieved = {ResultCount} - unique = {UniqueCount}",
 			dupes.Count, result.Count, unique.Count);
 
-		Assert.Empty(dupes);
+		dupes.Should().BeEmpty();
 	}
-
 
 	[Fact(Skip = "This user table does not exist in all test systems")]
 	public async Task AnotherPagingTestAsync()
@@ -56,12 +55,12 @@ public class GetAllByQueryToleranceTests(ITestOutputHelper iTestOutputHelper, Fi
 			extraQueryString,
 			"wss_sys_updated_on",
 			3,
-			default);
-		Assert.NotNull(result);
+			CancellationToken);
+		result.Should().NotBeNull();
 		Assert.NotEmpty(result);
-		Assert.True(result[0].ContainsKey("sys_id"));
+		result[0].ContainsKey("sys_id").Should().BeTrue();
 		// Expecting the u_value field to be present as we didn't limit the fields to be retrieved
-		Assert.True(result[0].ContainsKey("u_value"));
+		result[0].ContainsKey("u_value").Should().BeTrue();
 
 		// Check for dupes
 		var dupes = result.GroupBy(ci => ci["sys_id"]).Where(g => g.Count() > 1).Select(g => new { Id = g.First()["sys_id"], Count = g.Count() }).ToList();
@@ -72,6 +71,6 @@ public class GetAllByQueryToleranceTests(ITestOutputHelper iTestOutputHelper, Fi
 			"Found {DupeCount} dupes - total retrieved = {ResultCount} - unique = {UniqueCount}",
 			dupes.Count, result.Count, unique.Count);
 
-		Assert.Empty(dupes);
+		dupes.Should().BeEmpty();
 	}
 }

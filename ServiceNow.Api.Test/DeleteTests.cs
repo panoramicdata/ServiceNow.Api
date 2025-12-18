@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
@@ -20,16 +19,16 @@ public class DeleteTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) :
 			var phrase = sysIdToPhrase.Value;
 
 			var incidents = await Client
-				.GetAllByQueryAsync("incident", $"sys_id={sysId}", default)
+				.GetAllByQueryAsync("incident", $"sys_id={sysId}", cancellationToken: CancellationToken)
 				;
 
-			var incident = incidents.SingleOrDefault() ?? throw new Exception($"Incident {sysId} not found");
+			var incident = incidents.SingleOrDefault() ?? throw new InvalidOperationException($"Incident {sysId} not found");
 
 			List<JObject> workNotes;
 			try
 			{
 				workNotes = await Client
-					.GetAllByQueryAsync("sys_journal_field", $"element=work_notes^name=incident^sys_created_on>2022-05-13^sys_created_by.name==ConnectMagic^valueSTARTSWITHAutoTask Time Entry: ^element_id={sysId}", default)
+					.GetAllByQueryAsync("sys_journal_field", $"element=work_notes^name=incident^sys_created_on>2022-05-13^sys_created_by.name==ConnectMagic^valueSTARTSWITHAutoTask Time Entry: ^element_id={sysId}", cancellationToken: CancellationToken)
 					;
 			}
 			catch (Exception e)
@@ -48,7 +47,7 @@ public class DeleteTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) :
 				{
 					Logger.LogInformation("{Index} of {Count}", ++index, count);
 					var sysIdToDelete = relevantWorkNote["sys_id"]?.Value<string>() ?? throw new InvalidOperationException("No sys_id");
-					await Client.DeleteAsync("sys_journal_field", sysIdToDelete, default);
+					await Client.DeleteAsync("sys_journal_field", sysIdToDelete, CancellationToken);
 					Logger.LogInformation("Done.");
 				}
 				catch (Exception e)

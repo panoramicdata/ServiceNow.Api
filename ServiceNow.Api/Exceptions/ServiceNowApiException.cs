@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.Serialization;
 
 namespace ServiceNow.Api.Exceptions;
 
@@ -14,10 +13,6 @@ public class ServiceNowApiException : Exception
 	}
 
 	public ServiceNowApiException()
-	{
-	}
-
-	protected ServiceNowApiException(SerializationInfo info, StreamingContext context) : base(info, context)
 	{
 	}
 }

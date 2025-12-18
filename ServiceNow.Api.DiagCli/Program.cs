@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using ServiceNow.Api.DiagCli.Exceptions;
 using ServiceNow.Api.DiagCli.Models;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -12,7 +14,7 @@ internal static class Program
 {
 	private static async Task<int> Main(string[] args)
 	{
-		Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateLogger();
+		Log.Logger = new LoggerConfiguration().WriteTo.Console(formatProvider: CultureInfo.InvariantCulture).CreateLogger();
 		try
 		{
 			var services = ConfigureServices();
@@ -22,7 +24,7 @@ internal static class Program
 			_ = services.Configure<Configuration>(configuration.Build());
 
 			var serviceProvider = services.BuildServiceProvider()
-				?? throw new Exception("Could not build ServiceProvider");
+				?? throw new InvalidOperationException("Could not build ServiceProvider");
 
 			return await serviceProvider.GetRequiredService<DiagApplication>().RunAsync().ConfigureAwait(false);
 		}
@@ -48,8 +50,8 @@ internal static class Program
 			loggingBuilder.AddSerilog(
 				new LoggerConfiguration()
 					.MinimumLevel.Verbose()
-					.WriteTo.Console()
-					.WriteTo.File($"Log-{DateTimeOffset.UtcNow:yyyyMMddTHHmmssZ}.txt")
+					.WriteTo.Console(formatProvider: CultureInfo.InvariantCulture)
+					.WriteTo.File($"Log-{DateTimeOffset.UtcNow:yyyyMMddTHHmmssZ}.txt", formatProvider: CultureInfo.InvariantCulture)
 					.CreateLogger(),
 				dispose: true));
 

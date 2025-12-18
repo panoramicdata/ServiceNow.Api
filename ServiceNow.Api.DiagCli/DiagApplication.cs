@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ServiceNow.Api.DiagCli;
 
-internal class DiagApplication(
+internal sealed class DiagApplication(
 	ILogger<DiagApplication> logger,
 	IOptions<Configuration> options,
 	IServiceProvider serviceProvider)
@@ -46,7 +46,7 @@ internal class DiagApplication(
 
 	private async Task ExecuteTestAsync(DiagnosticTest test)
 	{
-		IDiagnostic diagnostic = test.Type switch
+		var diagnostic = test.Type switch
 		{
 			DiagnosticType.Paging => serviceProvider.GetRequiredService<PagingDiagnostic>(),
 			_ => throw new NotSupportedException($"Test type {test.Type} is not supported."),

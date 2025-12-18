@@ -1,8 +1,8 @@
-﻿using ServiceNow.Api.Tables;
+﻿using AwesomeAssertions;
+using ServiceNow.Api.Tables;
 using ServiceNow.Api.Test.Extensions;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ServiceNow.Api.Test;
 
@@ -11,17 +11,17 @@ public class ClassTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 	private async Task GetItemsAsync<T>() where T : Table
 	{
 		// Go and get 10 items for the type we're testing
-		var page = await Client.GetPageByQueryAsync<T>(0, 10);
+		var page = await Client.GetPageByQueryAsync<T>(0, 10, cancellationToken: CancellationToken);
 		// Make sure that IF we have items that they have unique SysIds
-		Assert.True(page?.Items.AreDistinctBy(i => i.SysId) ?? true);
+		(page?.Items.AreDistinctBy(i => i.SysId) ?? true).Should().BeTrue();
 	}
 
 	[Fact]
 	public async Task GetAllServers()
 	{
-		var allItems = await Client.GetAllByQueryAsync<Server>("firewall_status=Intranet");
+		var allItems = await Client.GetAllByQueryAsync<Server>("firewall_status=Intranet", CancellationToken);
 		// Check that the total count matches the count of items
-		Assert.NotNull(allItems);
+		allItems.Should().NotBeNull();
 	}
 
 	[Fact]
