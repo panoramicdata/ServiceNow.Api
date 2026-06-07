@@ -1,7 +1,6 @@
 ﻿using AwesomeAssertions;
 using ServiceNow.Api.Tables;
 using ServiceNow.Api.Test.Extensions;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace ServiceNow.Api.Test;
@@ -61,7 +60,7 @@ public class ClassTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 	public async Task Ec2VirtualMachineInstance() => await GetItemsAsync<Ec2VirtualMachineInstance>();
 
 	[Fact]
-	public async Task Environment() => await GetItemsAsync<Environment>();
+	public async Task Environment() => await GetItemsAsync<ServiceNow.Api.Tables.Environment>();
 
 	[Fact]
 	public async Task EsxServer() => await GetItemsAsync<EsxServer>();

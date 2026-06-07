@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ServiceNow.Api.Exceptions;
+﻿namespace ServiceNow.Api.Exceptions;
 
 public class ServiceNowApiException : Exception
 {

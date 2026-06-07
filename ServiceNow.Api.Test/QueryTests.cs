@@ -1,15 +1,21 @@
 ﻿using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using ServiceNow.Api.Tables;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace ServiceNow.Api.Test;
 
+/// <summary>
+/// Tests for query operations.  These tests will attempt to retrieve records from ServiceNow using various query methods and verify that the results are valid.  The tests will check for things like duplicate records, correct retrieval of linked entities, and correct retrieval of relationships based on child records.  These tests are important for ensuring that the client's query capabilities are working correctly and that it can handle the various complexities of querying data from ServiceNow.
+/// </summary>
+/// <param name="iTestOutputHelper">The test output helper used for logging test output.</param>
+/// <param name="fixture">The test fixture that provides shared services and configuration for the tests.</param>
 public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : ServiceNowTest(iTestOutputHelper, fixture)
 {
+	/// <summary>
+	/// Tests the GetAllByQueryAsync method with tolerance defined in the client.  This test will fail if the results are not ordered by ORDERBYsys_id, as this is required for the paging to work correctly with tolerance.  The test will check for duplicates in the results, which would indicate that the paging is not working correctly.
+	/// </summary>
+	/// <returns></returns>
 	[Fact]
 	public async Task InternalPagingTestAsync()
 	{
@@ -43,6 +49,10 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 		dupes.Should().BeEmpty();
 	}
 
+	/// <summary>
+	/// Another test of the GetAllByQueryAsync method with tolerance defined in the client, but against a different table.  This test will also fail if the results are not ordered by ORDERBYsys_id, as this is required for the paging to work correctly with tolerance.  The test will check for duplicates in the results, which would indicate that the paging is not working correctly.
+	/// </summary>
+	/// <returns></returns>
 	[Fact]
 	public async Task PagingTestAsync()
 	{
@@ -69,6 +79,10 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 		dupes.Should().BeEmpty();
 	}
 
+	/// <summary>
+	/// Tests the GetPageByQueryAsync method for the Incident table.  This test will
+	/// attempt to retrieve a page of incidents and verify that the results are valid.  The test will check that the items in the page have unique SysIds, and it will also attempt to re-fetch the first item using both its SysId and a query to ensure that it can be retrieved correctly using both methods.
+	/// </summary>
 	[Fact]
 	public async Task Incident()
 	{
@@ -88,6 +102,10 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 		_ = firstItem.SysId.Should().Be(refetchByQuery!.SysId);
 	}
 
+	/// <summary>
+	/// Tests the GetLinkedEntityAsync method of the ServiceNowClient.  This test will attempt to retrieve a server record from the cmdb_ci_win_server table, and then use the link provided in the company field to retrieve the related company record.  The test will verify that the linked entity is retrieved correctly and that it contains the expected fields.  This test is important for ensuring that the client can correctly follow links to retrieve related entities from ServiceNow.
+	/// </summary>
+	/// <returns></returns>
 	[Fact]
 	public async Task GetLinkedEntity_Succeeds()
 	{
@@ -104,6 +122,10 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 		_ = company!["name"].Should().NotBeNull();
 	}
 
+	/// <summary>
+	/// Tests the retrieval of relationships based on a child record.  This test will attempt to retrieve a list of relationships where a specific CI is the child, and then verify that the relationships are retrieved correctly.  The test will check that the retrieved relationships contain the expected fields and that they are related to the correct child CI.  This test is important for ensuring that the client can correctly retrieve relationships based on child records from ServiceNow.
+	/// </summary>
+	/// <returns></returns>
 	[Fact]
 	public async Task GetRelationshipByChild_Succeeds()
 	{

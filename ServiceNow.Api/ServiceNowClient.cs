@@ -5,17 +5,10 @@ using Newtonsoft.Json.Linq;
 using ServiceNow.Api.Exceptions;
 using ServiceNow.Api.MetaData;
 using ServiceNow.Api.Tables;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Web;
 
 namespace ServiceNow.Api;
@@ -184,6 +177,7 @@ public class ServiceNowClient : IDisposable
 	/// <param name="fieldList">Fields to retrieve</param>
 	/// <param name="extraQueryString">Extra query string</param>
 	/// <param name="customOrderByField">Optional field to order by when paging; default=sys_created_on</param>
+	/// <param name="pageSize">Optional page size for paging; default=1000</param>
 	/// <param name="cancellationToken">CancellationToken</param>
 	/// <returns></returns>
 	public async Task<List<JObject>> GetAllByQueryAsync(
@@ -199,6 +193,9 @@ public class ServiceNowClient : IDisposable
 						 $" {nameof(tableName)}: {tableName}" +
 						 $", {nameof(query)}: {query ?? "<not set>"}" +
 						 $", {nameof(fieldList)}: {(fieldList?.Any() == true ? string.Join(", ", fieldList) : "<not set>")}" +
+						 $", {nameof(extraQueryString)}: {(string.IsNullOrWhiteSpace(extraQueryString) ? "<not set>" : extraQueryString)}" +
+						 $", {nameof(customOrderByField)}: {(string.IsNullOrWhiteSpace(customOrderByField) ? "<not set>" : customOrderByField)}" +
+						 $", {nameof(pageSize)}: {(pageSize.HasValue ? pageSize.Value.ToString() : "<not set>")}" +
 						 ".");
 
 		// Has the user constrained by sysparm_limit?
@@ -469,6 +466,7 @@ public class ServiceNowClient : IDisposable
 	/// </summary>
 	/// <typeparam name="T">The type of object</typeparam>
 	/// <param name="table">The object itself</param>
+	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>A list of attachments</returns>
 	public async Task<List<Attachment>> GetAttachmentsAsync<T>(T table, CancellationToken cancellationToken = default) where T : Table
 		=> (await GetInternalAsync<RestResponse<List<Attachment>>>($"api/now/attachment?sysparm_query=table_name={Table.GetTableName<T>()}^table_sys_id={table.SysId}", cancellationToken).ConfigureAwait(false)).Item ?? [];
@@ -478,6 +476,7 @@ public class ServiceNowClient : IDisposable
 	/// </summary>
 	/// <param name="tableName">The name of the table</param>
 	/// <param name="tableSysId">The sys_id of the entry in the referenced table</param>
+	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>A list of attachments</returns>
 	public async Task<List<Attachment>> GetAttachmentsAsync(
 		string tableName,
@@ -491,6 +490,7 @@ public class ServiceNowClient : IDisposable
 	/// <param name="attachment">The attachment to download</param>
 	/// <param name="outputPath">The path to store the attachment content in</param>
 	/// <param name="filename">Optional filename for the file, defaults to filename from ServiceNow if unspecified</param>
+	/// <param name="cancellationToken">A cancellation token</param>
 	/// <returns>The path of the downloaded file</returns>
 	public async Task<string> DownloadAttachmentAsync(
 		Attachment attachment,

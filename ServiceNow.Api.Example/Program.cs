@@ -1,11 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿namespace ServiceNow.Api.Example;
 
-namespace ServiceNow.Api.Example;
-
+/// <summary>
+/// This is a simple example of how to use the ServiceNowClient to query for Windows Servers in the CMDB.
+/// </summary>
 public static class Program
 {
+	/// <summary>
+	/// The main entry point of the application.  It expects three arguments:
+	/// 1. The ServiceNow account URL (e.g. "https://dev12345.service-now.com")
+	/// 2. The username to authenticate with
+	/// 3. The password to authenticate with
+	/// </summary>
+	/// <param name="args"></param>
+	/// <returns></returns>
 	public async static Task Main(string[] args)
 	{
 		var account = args[0];

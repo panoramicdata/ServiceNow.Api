@@ -1,12 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System;
-using System.Threading;
 using Xunit;
 using Xunit.Microsoft.DependencyInjection.Abstracts;
 
 namespace ServiceNow.Api.Test;
 
+/// <summary>
+/// Base class for ServiceNow API tests.  This class sets up the ServiceNowClient and provides a Logger for use in tests.  It also provides a CancellationToken that is tied to the test context, so that if the test is cancelled (e.g. due to a timeout), any ongoing operations that respect the cancellation token will be cancelled as well.  The client is configured using options from the test configuration, which should be provided in the test fixture.  The logger is configured to write to the xUnit test output, which allows you to see log messages in the context of the test run.
+/// </summary>
 public abstract class ServiceNowTest : TestBed<Fixture>
 {
 	protected ILogger Logger { get; }
@@ -16,9 +17,8 @@ public abstract class ServiceNowTest : TestBed<Fixture>
 	/// <summary>
 	///   Constructs a ServiceNowClient
 	/// </summary>
-	/// <param name="iTestOutputHelper"></param>
-	/// <param name="appsettingsFilename"></param>
-	/// <param name="options"></param>
+	/// <param name="testOutputHelper">The xUnit output helper for the current test.</param>
+	/// <param name="fixture">The shared test fixture.</param>
 	protected ServiceNowTest(ITestOutputHelper testOutputHelper, Fixture fixture) : base(testOutputHelper, fixture)
 	{
 		ArgumentNullException.ThrowIfNull(testOutputHelper);
@@ -51,7 +51,7 @@ public abstract class ServiceNowTest : TestBed<Fixture>
 	}
 
 	/// <summary>
-	///    the client used by the test
+	/// The client used by the test
 	/// </summary>
 	protected ServiceNowClient Client { get; }
 }

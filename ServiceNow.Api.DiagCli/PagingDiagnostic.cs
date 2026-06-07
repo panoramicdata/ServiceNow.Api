@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ServiceNow.Api.DiagCli.Models;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace ServiceNow.Api.DiagCli;
 

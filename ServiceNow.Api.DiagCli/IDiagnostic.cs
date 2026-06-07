@@ -1,5 +1,4 @@
 ﻿using ServiceNow.Api.DiagCli.Models;
-using System.Threading.Tasks;
 
 namespace ServiceNow.Api.DiagCli;
 

@@ -1,8 +1,6 @@
 ﻿using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using ServiceNow.Api.Tables;
-using System;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace ServiceNow.Api.Test;

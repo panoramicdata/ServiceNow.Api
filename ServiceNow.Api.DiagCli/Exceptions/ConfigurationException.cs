@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ServiceNow.Api.DiagCli.Exceptions;
+﻿namespace ServiceNow.Api.DiagCli.Exceptions;
 
 [Serializable]
 public class ConfigurationException : Exception

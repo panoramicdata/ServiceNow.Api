@@ -1,5 +1,4 @@
 ﻿using ServiceNow.Api.Attributes;
-using System;
 using System.Runtime.Serialization;
 
 namespace ServiceNow.Api;

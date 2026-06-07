@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using ServiceNow.Api.Interfaces;
-using System;
 
 namespace ServiceNow.Api.Converters;
 

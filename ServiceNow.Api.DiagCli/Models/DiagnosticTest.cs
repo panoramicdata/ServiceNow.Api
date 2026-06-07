@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace ServiceNow.Api.DiagCli.Models;
+﻿namespace ServiceNow.Api.DiagCli.Models;
 
 public class DiagnosticTest
 {

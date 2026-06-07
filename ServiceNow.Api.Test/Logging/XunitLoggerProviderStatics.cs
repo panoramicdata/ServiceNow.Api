@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Xunit;
 
-namespace LogicMonitor.Api.Test.Logging;
+namespace ServiceNow.Api.Test.Logging;
 
  public static class XunitLoggerProviderStatics
  {

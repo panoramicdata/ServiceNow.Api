@@ -8,6 +8,7 @@
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <UserSecretsId>763fddfe-91b3-47c4-be59-ff4b1b5cd005</UserSecretsId>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);CA1873;CS1591</NoWarn>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>

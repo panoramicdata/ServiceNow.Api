@@ -1,7 +1,5 @@
 ﻿using AwesomeAssertions;
 using ServiceNow.Api.Tables;
-using System.IO;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace ServiceNow.Api.Test;

@@ -1,12 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using ServiceNow.Api.DiagCli.Exceptions;
 using ServiceNow.Api.DiagCli.Models;
-using System;
 using System.Globalization;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace ServiceNow.Api.DiagCli;
 

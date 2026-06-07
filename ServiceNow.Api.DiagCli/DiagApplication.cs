@@ -3,9 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ServiceNow.Api.DiagCli.Exceptions;
 using ServiceNow.Api.DiagCli.Models;
-using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace ServiceNow.Api.DiagCli;
 

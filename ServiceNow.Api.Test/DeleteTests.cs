@@ -1,15 +1,19 @@
 ﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace ServiceNow.Api.Test;
 
+/// <summary>
+/// Tests for delete operations.  These tests are designed to be run against a test system where it is safe to perform deletes, and they will attempt to delete specific records based on their sys_id.  The tests will log the progress of the deletes, and any errors that occur during the process.  Note that these tests are skipped by default, as they cannot be run against all test systems without potentially causing issues.  If you want to run these tests, you should ensure that you have a safe test environment and that the records being deleted are appropriate for deletion in that environment.
+/// </summary>
+/// <param name="iTestOutputHelper">The xUnit output helper for the current test.</param>
+/// <param name="fixture">The shared test fixture.</param>
 public class DeleteTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : ServiceNowTest(iTestOutputHelper, fixture)
 {
+	/// <summary>
+	/// Tests deleting records from a list of sys_ids.  For each sys_id, the test will attempt to retrieve the corresponding incident record and its related work notes, filter the work notes based on a specific phrase, and then delete all but the first relevant work note.  The test will log the progress of the deletes and any errors that occur during the process.
+	/// </summary>
 	[Fact(Skip = "Cannot perform deletes in all test systems")]
 	public async Task Delete_FromList_Succeeds()
 	{
@@ -62,6 +66,5 @@ public class DeleteTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) :
 	{
 		{ "ee679ffa9701e110c65770771153af23", "Gi3/0/24 E105/411 * cem 01d connected 1087 a-full a-100 10/100/1000BaseTX" },
 		{ "2b39a31c1b4ae5500cb88551f54bcbf9", "E040AB05 is patched to G103-a-fe-c9k3-1 Gi1/0/17" },
-	}
-	;
+	};
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ServiceNow.Api.Attributes;
+﻿namespace ServiceNow.Api.Attributes;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
 public class TableNameAttribute : Attribute

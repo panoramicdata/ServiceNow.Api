@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace ServiceNow.Api.Test.Extensions;
+﻿namespace ServiceNow.Api.Test.Extensions;
 
 internal static class LinqExtensions
 {

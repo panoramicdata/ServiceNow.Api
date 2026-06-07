@@ -1,5 +1,4 @@
 ﻿using ServiceNow.Api.DiagCli.Exceptions;
-using System.Collections.Generic;
 
 namespace ServiceNow.Api.DiagCli.Models;
 
