@@ -130,7 +130,7 @@ public class ServiceNowClient : IDisposable
 			finalResult.TotalCount = response.TotalCount;
 			if (!ItemsReturnedInsideTolerance(finalResult.Items.Count, finalResult.TotalCount))
 			{
-				throw new Exception($"Expected {finalResult.TotalCount} entries but only retrieved {finalResult.Items.Count} which is not within the {_options.ValidateCountItemsReturnedTolerance} tolerance");
+				throw new Exception($"Expected {finalResult.TotalCount:N0} items but only retrieved {finalResult.Items.Count:N0}, which is not within the {_options.ValidateCountItemsReturnedTolerance} tolerance.");
 			}
 		}
 
@@ -370,7 +370,7 @@ public class ServiceNowClient : IDisposable
 		_logger.LogTrace($"Initial reported TotalCount from API: {apiReportedTotalCount}");
 		if (!ItemsReturnedInsideTolerance(finalResult.Items.Count, finalResult.TotalCount))
 		{
-			throw new Exception($"Expected {finalResult.TotalCount:N0} {typeof(JObject)} but retrieved {finalResult.Items.Count:N0}");
+			throw new Exception($"Expected {finalResult.TotalCount:N0} items but retrieved {finalResult.Items.Count:N0}, which is not within the {_options.ValidateCountItemsReturnedTolerance} tolerance.");
 		}
 
 		// Are there any results
