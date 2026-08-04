@@ -15,9 +15,17 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <PackageReleaseNotes>Added missing ResourceLinkConverter to resolve serialization issues.
-		Includes updated object definitions related to Resource Links.
-		</PackageReleaseNotes>
+    <PackageReleaseNotes>Fixes silent truncation of paged queries.
+
+ServiceNow applies read ACLs after sysparm_limit is applied, so a request for 1,000 rows can legitimately return fewer while a great deal of data still follows. GetAllByQueryAsync treated any short page as the end of the result set and stopped there. Measured against a live instance, a query covering roughly 86,550 rows returned only 48,724: a 44% loss, silent, with no error raised.
+
+Paging now continues until a genuinely empty page is returned. The "paging window has not increased" error is retained, but now fires only when a full page cannot advance the window, which is the real case for increasing the page size. A trailing page containing only the boundary record re-read by the '&gt;=' window now ends paging cleanly.
+
+Count validation now enforces only a shortfall. The expected total is a snapshot taken on the first page, and a long walk over a live table legitimately gains records while it runs, so retrieving more rows than expected is no longer treated as an error. Retrieving fewer still is, since that is the data-loss signal.
+
+Note for upgraders: queries that previously terminated early will now return substantially more rows, which may increase runtime and memory use for large result sets.
+
+Also improves the count mismatch error message, which previously printed a raw .NET type name.</PackageReleaseNotes>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <ImplicitUsings>enable</ImplicitUsings>
