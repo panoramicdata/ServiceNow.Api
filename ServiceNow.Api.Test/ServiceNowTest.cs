@@ -32,23 +32,56 @@ public abstract class ServiceNowTest : TestBed<Fixture>
 			.GetService<IOptions<TestConfiguration>>(testOutputHelper)
 			?? throw new InvalidOperationException("TestConfiguration is null");
 
-		var options = testConfigurationOptions.Value;
+		Configuration = testConfigurationOptions.Value;
 
-		var environment = Enum.TryParse<ServiceNowEnvironment>(options.ServiceNowEnvironment, true, out var parsed)
+		// Fail fast with an actionable message rather than letting an empty account reach
+		// the client, where it surfaces as "Invalid URI: The hostname could not be parsed".
+		AssertConfigured(Configuration.ServiceNowAccount, nameof(TestConfiguration.ServiceNowAccount));
+		AssertConfigured(Configuration.ServiceNowUsername, nameof(TestConfiguration.ServiceNowUsername));
+		AssertConfigured(Configuration.ServiceNowPassword, nameof(TestConfiguration.ServiceNowPassword));
+
+		Client = CreateClient(new Options
+		{
+			Logger = Logger,
+			Environment = ConfiguredEnvironment
+		});
+	}
+
+	private static void AssertConfigured(string? value, string name)
+	{
+		if (string.IsNullOrWhiteSpace(value))
+		{
+			throw new InvalidOperationException(
+				$"These tests require '{name}' in the ServiceNow.Api.Test user secrets. " +
+				$"Set it with: dotnet user-secrets set \"{name}\" \"...\" " +
+				$"--project ServiceNow.Api.Test. See userSecrets.example.json for the full shape.");
+		}
+	}
+
+	/// <summary>
+	/// The resolved test configuration, so that a test can build a client with bespoke options.
+	/// </summary>
+	protected TestConfiguration Configuration { get; }
+
+	/// <summary>
+	/// The configured ServiceNow environment.
+	/// </summary>
+	protected ServiceNowEnvironment ConfiguredEnvironment
+		=> Enum.TryParse<ServiceNowEnvironment>(Configuration.ServiceNowEnvironment, true, out var parsed)
 			? parsed
 			: ServiceNowEnvironment.Community;
 
-		Client = new ServiceNowClient(
-			options.ServiceNowAccount ?? string.Empty,
-			options.ServiceNowUsername ?? string.Empty,
-			options.ServiceNowPassword ?? string.Empty,
-			new Options
-			{
-				Logger = Logger,
-				Environment = environment
-			}
-		);
-	}
+	/// <summary>
+	/// Creates an additional client using the configured credentials, for tests that need
+	/// options differing from the shared <see cref="Client"/>. The caller owns disposal.
+	/// </summary>
+	/// <param name="options">The options to construct the client with.</param>
+	protected ServiceNowClient CreateClient(Options options)
+		=> new(
+			Configuration.ServiceNowAccount,
+			Configuration.ServiceNowUsername,
+			Configuration.ServiceNowPassword,
+			options);
 
 	/// <summary>
 	/// The client used by the test

@@ -27,8 +27,14 @@ public class Fixture : TestBedFixture
 			throw new InvalidOperationException("Configuration is null");
 		}
 
+		// Bind the configuration root first, which is the shape documented in
+		// userSecrets.example.json, then overlay a "Config" section if one is present.
+		// Binding a section that does not exist sets nothing, so flat secrets keep working
+		// and nested secrets still win. Previously only the section was bound, so secrets
+		// written in the documented flat shape silently produced empty credentials.
 		services
 			.AddScoped<CancellationTokenSource>()
+			.Configure<TestConfiguration>(_configuration)
 			.Configure<TestConfiguration>(_configuration.GetSection("Config"));
 	}
 
