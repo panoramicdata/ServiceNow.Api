@@ -8,6 +8,7 @@ namespace ServiceNow.Api.Test;
 /// <summary>
 /// Base class for ServiceNow API tests.  This class sets up the ServiceNowClient and provides a Logger for use in tests.  It also provides a CancellationToken that is tied to the test context, so that if the test is cancelled (e.g. due to a timeout), any ongoing operations that respect the cancellation token will be cancelled as well.  The client is configured using options from the test configuration, which should be provided in the test fixture.  The logger is configured to write to the xUnit test output, which allows you to see log messages in the context of the test run.
 /// </summary>
+[Trait("Category", "Integration")]
 public abstract class ServiceNowTest : TestBed<Fixture>
 {
 	protected ILogger Logger { get; }

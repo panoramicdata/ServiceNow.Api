@@ -27,8 +27,12 @@ jobs:
     - name: Build
       run: dotnet build --configuration Release --no-restore
 
+    # Integration tests talk to a real ServiceNow instance using credentials held in
+    # local user secrets, and some of them create and delete records. They must not run
+    # here. They are excluded by trait rather than skipped, so they still fail loudly with
+    # an actionable message when run without configuration.
     - name: Test
-      run: dotnet test --configuration Release --no-build --verbosity normal
+      run: dotnet test --configuration Release --no-build --verbosity normal --filter "Category!=Integration"
 
     - name: Pack
       run: dotnet pack --configuration Release --no-build --output ./artifacts
