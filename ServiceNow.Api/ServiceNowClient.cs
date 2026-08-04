@@ -65,6 +65,32 @@ public class ServiceNowClient : IDisposable
 	{
 	}
 
+	/// <summary>
+	/// Test-only constructor accepting a message handler, so that paging and count-validation
+	/// behaviour can be exercised deterministically without a live ServiceNow instance.
+	/// </summary>
+	/// <param name="httpMessageHandler">The handler to send requests through.</param>
+	/// <param name="options">Client options.</param>
+	internal ServiceNowClient(
+		HttpMessageHandler httpMessageHandler,
+		Options? options = null)
+	{
+		ArgumentNullException.ThrowIfNull(httpMessageHandler);
+
+		_options = options ?? new();
+		_logger = _options.Logger ?? new NullLogger<ServiceNowClient>();
+		AccountName = "test";
+
+		_httpClient = new HttpClient(httpMessageHandler)
+		{
+			BaseAddress = new Uri("https://test.service-now.com"),
+			DefaultRequestHeaders =
+			{
+				Accept = {new MediaTypeWithQualityHeaderValue("application/json")},
+			}
+		};
+	}
+
 	public string AccountName { get; } = string.Empty;
 
 	public void Dispose()
@@ -160,9 +186,12 @@ public class ServiceNowClient : IDisposable
 		}
 		else
 		{
-			isCountItemsOk = countItems >= totalExpected - _options.ValidateCountItemsReturnedTolerance
-							  && countItems <= totalExpected + _options.ValidateCountItemsReturnedTolerance;
-			message += $"{(isCountItemsOk ? "Yes - inside" : "No - outside")} the tolerance of {_options.ValidateCountItemsReturnedTolerance}.";
+			// Only a SHORTFALL is enforced. Retrieving more than expected is not data loss:
+			// the total is a point-in-time snapshot taken on the first page, and a walk over a
+			// large table takes minutes, during which a live system legitimately gains records.
+			// Requiring an exact match made every busy table fail intermittently.
+			isCountItemsOk = countItems >= totalExpected - _options.ValidateCountItemsReturnedTolerance;
+			message += $"{(isCountItemsOk ? "Yes - not short of" : "No - short of")} the expected total, allowing for a tolerance of {_options.ValidateCountItemsReturnedTolerance}.";
 		}
 
 		_logger.LogDebug(message);
@@ -314,40 +343,55 @@ public class ServiceNowClient : IDisposable
 				apiReportedTotalCount = response.TotalCount;
 			}
 
+			var items = response?.Items ?? [];
+
 			// Add this response to the list
-			finalResult.Items.AddRange(response.Items);
-			_logger.LogTrace($"Last request received {response?.Items?.Count.ToString() ?? "UNKNOWN"} items");
+			finalResult.Items.AddRange(items);
+			_logger.LogTrace($"Last request received {items.Count} items");
 
-			// If we got at least the number we asked for then there are probably more
-			if (response?.Items?.Count == pageSize)
+			// An EMPTY page is the only reliable end-of-data signal.
+			//
+			// A short page is NOT. ServiceNow applies read ACLs AFTER sysparm_limit, so a
+			// request for 1,000 rows can legitimately return fewer while a great deal of data
+			// still follows. This previously terminated paging early and silently dropped the
+			// remainder: on one customer query a 997-row page at position 49 of 88 ended the
+			// walk at 48,724 of 86,540 rows, a 44% loss with no error raised.
+			if (items.Count == 0)
 			{
-				previousMaxDateTimeRetrieved = maxDateTimeRetrieved;
+				break;
+			}
 
-				if (response.Items.All(item => item[orderByField!] is null))
-				{
-					// We cannot determine the paging based on this field name (which MAY NOT EXIST!)
-					throw new ServiceNowApiException(
-						$"The table / view '{tableName}' does not have the '{_options.PagingFieldName}' field " +
-						"required to automatically page all the results. You could try a paged query instead.");
-				}
+			previousMaxDateTimeRetrieved = maxDateTimeRetrieved;
 
-				// At this point, we can be sure that we have the paging field in the data
-				maxDateTimeRetrieved = response.Items.Max(jObject =>
-					// Parse and enforce source as being UTC (Z)
-					DateTimeOffset.Parse((jObject[orderByField!]?.ToString() ?? string.Empty) + "Z"));
+			if (items.All(item => item[orderByField!] is null))
+			{
+				// We cannot determine the paging based on this field name (which MAY NOT EXIST!)
+				throw new ServiceNowApiException(
+					$"The table / view '{tableName}' does not have the '{_options.PagingFieldName}' field " +
+					"required to automatically page all the results. You could try a paged query instead.");
+			}
 
-				if (previousMaxDateTimeRetrieved == maxDateTimeRetrieved)
+			// At this point, we can be sure that we have the paging field in the data
+			maxDateTimeRetrieved = items.Max(jObject =>
+				// Parse and enforce source as being UTC (Z)
+				DateTimeOffset.Parse((jObject[orderByField!]?.ToString() ?? string.Empty) + "Z"));
+
+			if (previousMaxDateTimeRetrieved == maxDateTimeRetrieved)
+			{
+				// The window cannot advance. A FULL page means genuinely more records share
+				// this one timestamp than the page size can carry, which needs a larger page.
+				if (items.Count == pageSize)
 				{
 					throw new ServiceNowApiException("Paging window has not increased, try a larger page size.");
 				}
 
-				// Update the offset for the next query
-				queryWithPagingOffset = $"{query}^{orderByField}>={maxDateTimeRetrieved.UtcDateTime:yyyy-MM-dd HH:mm:ss}";
-				continue;
+				// Otherwise this is just the boundary record being re-read by the '>=' window,
+				// so there is nothing further to collect.
+				break;
 			}
 
-			// All done
-			break;
+			// Update the offset for the next query
+			queryWithPagingOffset = $"{query}^{orderByField}>={maxDateTimeRetrieved.UtcDateTime:yyyy-MM-dd HH:mm:ss}";
 		}
 
 		// https://community.servicenow.com/community?id=community_question&sys_id=bd7f8725dbdcdbc01dcaf3231f961949
