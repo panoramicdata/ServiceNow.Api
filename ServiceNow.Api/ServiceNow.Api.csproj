@@ -15,17 +15,15 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <PackageReleaseNotes>Fixes silent truncation of paged queries.
+    <PackageReleaseNotes>Fixes paging when the ordering field is not a plain UTC string.
 
-ServiceNow applies read ACLs after sysparm_limit is applied, so a request for 1,000 rows can legitimately return fewer while a great deal of data still follows. GetAllByQueryAsync treated any short page as the end of the result set and stopped there. Measured against a live instance, a query covering roughly 86,550 rows returned only 48,724: a 44% loss, silent, with no error raised.
+Paging read the ordering field with ToString() and appended "Z" to it. With sysparm_display_value=all every field is returned as an object holding a display value and a raw value, so that produced JSON where a timestamp was expected and the query failed outright.
 
-Paging now continues until a genuinely empty page is returned. The "paging window has not increased" error is retained, but now fires only when a full page cannot advance the window, which is the real case for increasing the page size. A trailing page containing only the boundary record re-read by the '&gt;=' window now ends paging cleanly.
+Less visibly, Newtonsoft converts ISO-8601 text to a DateTime while deserialising, shifting it to the host's local timezone, and rendering that back to a string then applied the host's culture. On an en-GB machine running in UTC+7 a value of 2026-01-02T05:00:00+05:00 produced a paging window of 2026-02-01 07:00:00, a month adrift, with no error raised. Being host-dependent, this behaved differently on a build agent than on a developer machine.
 
-Count validation now enforces only a shortfall. The expected total is a snapshot taken on the first page, and a long walk over a live table legitimately gains records while it runs, so retrieving more rows than expected is no longer treated as an error. Retrieving fewer still is, since that is the data-loss signal.
+The ordering field is now taken as a date where the value already is one, the raw value is preferred over the display value, and any remaining text is parsed with the invariant culture assuming UTC rather than by appending "Z", which also corrects values that carry their own offset. An ordering field that cannot be interpreted as a date and time now raises a ServiceNowApiException naming the field and the offending value, rather than a bare FormatException.
 
-Note for upgraders: queries that previously terminated early will now return substantially more rows, which may increase runtime and memory use for large result sets.
-
-Also improves the count mismatch error message, which previously printed a raw .NET type name.</PackageReleaseNotes>
+Reported as issue #25 and restated in issue #74.</PackageReleaseNotes>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <ImplicitUsings>enable</ImplicitUsings>
