@@ -6,6 +6,7 @@ using ServiceNow.Api.Exceptions;
 using ServiceNow.Api.MetaData;
 using ServiceNow.Api.Tables;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -372,9 +373,7 @@ public class ServiceNowClient : IDisposable
 			}
 
 			// At this point, we can be sure that we have the paging field in the data
-			maxDateTimeRetrieved = items.Max(jObject =>
-				// Parse and enforce source as being UTC (Z)
-				DateTimeOffset.Parse((jObject[orderByField!]?.ToString() ?? string.Empty) + "Z"));
+			maxDateTimeRetrieved = items.Max(jObject => ParsePagingFieldValue(jObject, orderByField!, tableName));
 
 			if (previousMaxDateTimeRetrieved == maxDateTimeRetrieved)
 			{
@@ -494,6 +493,56 @@ public class ServiceNowClient : IDisposable
 		}
 
 		return pageResult;
+	}
+
+	/// <summary>
+	/// Reads the ordering field out of a returned row and converts it to a UTC DateTimeOffset, for use as the
+	/// paging window boundary.
+	/// </summary>
+	/// <remarks>
+	/// Two things make this less straightforward than it looks, both caused by sysparm_display_value.
+	///
+	/// With sysparm_display_value=all every field is returned as an object of the form
+	/// { "display_value": ..., "value": ... } rather than a scalar, so calling ToString() on it yields JSON.
+	/// The raw "value" is preferred here, because it carries the underlying UTC timestamp.
+	///
+	/// The value is also parsed with the invariant culture rather than the host's, since a display-formatted
+	/// date such as 04/08/2026 would otherwise be interpreted differently depending on where the code runs,
+	/// producing a wrong window rather than an error. AssumeUniversal replaces the previous approach of
+	/// concatenating "Z" onto the string, which corrupted any value that already carried an offset.
+	/// </remarks>
+	private static DateTimeOffset ParsePagingFieldValue(JObject jObject, string orderByField, string tableName)
+	{
+		var token = jObject[orderByField];
+
+		// sysparm_display_value=all returns { display_value, value }: prefer the raw value.
+		if (token is JObject valueObject)
+		{
+			token = valueObject["value"] ?? valueObject["display_value"];
+		}
+
+		// Newtonsoft recognises ISO-8601 text during deserialisation and converts it to a date value before
+		// we ever see it. Calling ToString() on that would render it in the HOST's culture and timezone,
+		// which then reads back wrongly: an en-GB host turns 2026-01-02T05:00:00+05:00 into "02/01/2026
+		// 07:00:00", which the invariant culture reads as 1 February. Take the value as a date directly.
+		if (token?.Type == JTokenType.Date)
+		{
+			return token.ToObject<DateTimeOffset>().ToUniversalTime();
+		}
+
+		var text = token?.ToString();
+
+		return !string.IsNullOrWhiteSpace(text)
+			&& DateTimeOffset.TryParse(
+				text,
+				CultureInfo.InvariantCulture,
+				DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+				out var parsed)
+			? parsed
+			: throw new ServiceNowApiException(
+			$"Could not interpret the paging field '{orderByField}' on table '{tableName}' as a date and time. " +
+			$"The value was '{text ?? "<null>"}'. Paging requires a date/time field, so either set the " +
+			$"{nameof(Options.PagingFieldName)} option (or the customOrderByField parameter) to one, or use a paged query instead.");
 	}
 
 	private static string? BuildFieldListQueryParameter(List<string>? fieldList)

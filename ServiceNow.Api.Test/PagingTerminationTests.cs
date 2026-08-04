@@ -2,8 +2,6 @@ using AwesomeAssertions;
 using Newtonsoft.Json.Linq;
 using ServiceNow.Api.Exceptions;
 using System.Globalization;
-using System.Net;
-using System.Text;
 using Xunit;
 
 namespace ServiceNow.Api.Test;
@@ -200,32 +198,5 @@ public class PagingTerminationTests
 		}
 
 		return page;
-	}
-
-	/// <summary>
-	/// Serves a fixed sequence of pages, and reports a fixed X-Total-Count. The query is ignored:
-	/// these tests are about the termination and validation logic, not query construction.
-	/// </summary>
-	private sealed class StubServiceNowHandler(int totalCount, IReadOnlyList<List<JObject>> pages) : HttpMessageHandler
-	{
-		private int _requestCount;
-
-		public int RequestCount => _requestCount;
-
-		protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-		{
-			var index = _requestCount++;
-			var rows = index < pages.Count ? pages[index] : [];
-
-			var payload = new JObject { ["result"] = new JArray(rows) };
-
-			var response = new HttpResponseMessage(HttpStatusCode.OK)
-			{
-				Content = new StringContent(payload.ToString(), Encoding.UTF8, "application/json")
-			};
-			response.Headers.Add("X-Total-Count", totalCount.ToString(CultureInfo.InvariantCulture));
-
-			return Task.FromResult(response);
-		}
 	}
 }
