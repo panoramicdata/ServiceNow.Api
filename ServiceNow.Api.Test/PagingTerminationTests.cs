@@ -141,6 +141,61 @@ public class PagingTerminationTests
 	}
 
 	/// <summary>
+	/// A shortfall within the configured tolerance must be accepted.
+	/// </summary>
+	/// <remarks>
+	/// The reported total can exceed the number of records the connecting user is permitted to read,
+	/// because it is not filtered by the same row-level access rules as the rows themselves. A query then
+	/// legitimately returns a handful fewer items than expected. A tolerance distinguishes that from a
+	/// genuinely incomplete result, which falls short by orders of magnitude more.
+	/// </remarks>
+	[Theory]
+	[InlineData(100, 10)]   // no shortfall at all
+	[InlineData(95, 10)]    // comfortably inside the tolerance
+	[InlineData(90, 10)]    // exactly at the tolerance boundary
+	public async Task ShortfallWithinTolerance_DoesNotThrow(int returned, int tolerance)
+	{
+		using var handler = new StubServiceNowHandler(totalCount: 100,
+		[
+			MakePage(0, returned),
+			[]
+		]);
+
+		using var client = new ServiceNowClient(handler, new Options { ValidateCountItemsReturnedTolerance = tolerance });
+
+		var result = await client
+			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
+			.ConfigureAwait(true);
+
+		result.Should().HaveCount(returned);
+	}
+
+	/// <summary>
+	/// A shortfall beyond the tolerance must still raise. A tolerance is an allowance for unreadable
+	/// records, not a way of switching the check off.
+	/// </summary>
+	[Theory]
+	[InlineData(89, 10)]    // one row past the tolerance boundary
+	[InlineData(50, 10)]    // far past it
+	public async Task ShortfallBeyondTolerance_Throws(int returned, int tolerance)
+	{
+		using var handler = new StubServiceNowHandler(totalCount: 100,
+		[
+			MakePage(0, returned),
+			[]
+		]);
+
+		using var client = new ServiceNowClient(handler, new Options { ValidateCountItemsReturnedTolerance = tolerance });
+
+		var act = async () => await client
+			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
+			.ConfigureAwait(true);
+
+		(await act.Should().ThrowAsync<Exception>().ConfigureAwait(true))
+			.WithMessage($"*{returned}*{tolerance} tolerance*", "the message should name the retrieved count and the tolerance applied");
+	}
+
+	/// <summary>
 	/// The '&gt;=' window always re-reads the boundary record. A trailing page containing only
 	/// that record must end paging cleanly rather than raising the stall error.
 	/// </summary>
