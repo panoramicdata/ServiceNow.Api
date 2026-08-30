@@ -38,9 +38,6 @@ public class Fixture : TestBedFixture
 			.Configure<TestConfiguration>(_configuration.GetSection("Config"));
 	}
 
-	protected override ValueTask DisposeAsyncCore()
-		=> default;
-
 	protected override IEnumerable<TestAppSettings> GetTestAppSettings()
 	{
 		_configuration = new ConfigurationBuilder()
