@@ -34,7 +34,9 @@ The field is now required only when records remain to be collected: a full page,
     <None Include="..\README.md" Pack="true" PackagePath="\" Link="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <!-- Floor held below the central pin: this is the minimum version consumers inherit, and
+         raising it fails restore (NU1109) for any consumer pinning an earlier 10.0.x. -->
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" VersionOverride="10.0.9" />
     <PackageReference Include="Nerdbank.GitVersioning">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
