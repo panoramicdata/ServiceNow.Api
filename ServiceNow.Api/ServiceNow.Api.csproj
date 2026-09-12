@@ -15,15 +15,11 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <PackageReleaseNotes>Fixes paging when the ordering field is not a plain UTC string.
+    <PackageReleaseNotes>Fixes querying a table or view that has no paging field.
 
-Paging read the ordering field with ToString() and appended "Z" to it. With sysparm_display_value=all every field is returned as an object holding a display value and a raw value, so that produced JSON where a timestamp was expected and the query failed outright.
+Automatic paging orders on sys_created_on. The check for that field being absent used to be reached only when a page came back full, so a small result from a view with no date/time column was served in a single request and never met it. Terminating paging on an empty page instead moved the check onto every page, and those queries began failing outright where they had always worked.
 
-Less visibly, Newtonsoft converts ISO-8601 text to a DateTime while deserialising, shifting it to the host's local timezone, and rendering that back to a string then applied the host's culture. On an en-GB machine running in UTC+7 a value of 2026-01-02T05:00:00+05:00 produced a paging window of 2026-02-01 07:00:00, a month adrift, with no error raised. Being host-dependent, this behaved differently on a build agent than on a developer machine.
-
-The ordering field is now taken as a date where the value already is one, the raw value is preferred over the display value, and any remaining text is parsed with the invariant culture assuming UTC rather than by appending "Z", which also corrects values that carry their own offset. An ordering field that cannot be interpreted as a date and time now raises a ServiceNowApiException naming the field and the offending value, rather than a bare FormatException.
-
-Reported as issue #25 and restated in issue #74.</PackageReleaseNotes>
+The field is now required only when records remain to be collected: a full page, or a retrieved count that falls short of the reported total by more than the configured tolerance. A genuine shortfall still raises rather than truncating silently, and the message now names the paging problem and the option that resolves it.</PackageReleaseNotes>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <ImplicitUsings>enable</ImplicitUsings>

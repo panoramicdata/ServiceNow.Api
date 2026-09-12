@@ -366,10 +366,22 @@ public class ServiceNowClient : IDisposable
 
 			if (items.All(item => item[orderByField!] is null))
 			{
-				// We cannot determine the paging based on this field name (which MAY NOT EXIST!)
+				// Without the paging field the window cannot advance, but that only matters if records
+				// remain: a result that fits in one page needs no paging, and many views carry no
+				// date/time field. Completeness uses the same tolerance rule as the finished walk, so a
+				// genuine shortfall still raises rather than truncating silently.
+				var pageWasFull = items.Count == pageSize;
+				if (!pageWasFull && ItemsReturnedInsideTolerance(finalResult.Items.Count, apiReportedTotalCount))
+				{
+					break;
+				}
+
 				throw new ServiceNowApiException(
-					$"The table / view '{tableName}' does not have the '{_options.PagingFieldName}' field " +
-					"required to automatically page all the results. You could try a paged query instead.");
+					$"The table / view '{tableName}' does not have the '{orderByField}' field, which is " +
+					$"required to page through the full result set ({finalResult.Items.Count:N0} of " +
+					$"{apiReportedTotalCount:N0} records retrieved). Set the {nameof(Options.PagingFieldName)} " +
+					"option (or the customOrderByField parameter) to a date/time field that this table / view " +
+					"does have, or request a single page with skip / take.");
 			}
 
 			// At this point, we can be sure that we have the paging field in the data
