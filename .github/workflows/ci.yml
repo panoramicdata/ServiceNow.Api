@@ -43,6 +43,71 @@ jobs:
         name: packages
         path: ./artifacts/*.nupkg
 
+  # Test coverage, uploaded to Codacy (OPS-157454).
+  #
+  # pdl-public, not a GitHub-hosted runner and not pdl-prod-cluster. This repository is public, and
+  # GitHub disallows self-hosted runners for public repositories unless the runner group opts in,
+  # because a fork pull request is untrusted code from a stranger. pdl-public is the hardened scale
+  # set that may: no dind, no privileged container, no hostPath, nothing shared between jobs.
+  #
+  # The filter excludes Category=Integration: those tests talk to a real ServiceNow instance using
+  # credentials held in local user secrets, and some create and delete records.
+  coverage:
+    runs-on: [pdl-public]
+
+    # The actions-runner image does not offer the Node version several actions request by default;
+    # without FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 they fail before their first step runs.
+    env:
+      DOTNET_NOLOGO: 1
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+      with:
+        fetch-depth: 0 # avoid a shallow clone so nbgv can do its work.
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v6
+      # The runner user cannot write /usr/share/dotnet, so install the SDK somewhere it can.
+      env:
+        DOTNET_INSTALL_DIR: ${{ runner.temp }}/dotnet
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Build tests
+      run: dotnet build ServiceNow.Api.Test/ServiceNow.Api.Test.csproj --configuration Debug
+
+    # The test project is a Microsoft.Testing.Platform host, so coverage is collected by running it
+    # directly (Microsoft.Testing.Extensions.CodeCoverage). On Linux it has no .exe extension.
+    - name: Run tests with coverage
+      run: >-
+        ./ServiceNow.Api.Test/bin/Debug/net10.0/ServiceNow.Api.Test
+        --coverage
+        --coverage-settings coverage.config
+        --coverage-output-format cobertura
+        --coverage-output coverage.cobertura.xml
+        --filter "Category!=Integration"
+
+    # continue-on-error: a Codacy outage must not turn a passing test run red. The trade-off is that
+    # an expired project token fails silently, so check the log for "Coverage received successfully".
+    - name: Upload coverage to Codacy
+      continue-on-error: true
+      uses: codacy/codacy-coverage-reporter-action@v1
+      with:
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        coverage-reports: ServiceNow.Api.Test/bin/Debug/net10.0/TestResults/coverage.cobertura.xml
+
+    - name: Upload coverage artifact
+      if: always()
+      continue-on-error: true
+      uses: actions/upload-artifact@v7
+      with:
+        name: coverage
+        path: ServiceNow.Api.Test/bin/Debug/net10.0/TestResults/coverage.cobertura.xml
+        retention-days: 7
+
   publish:
     needs: build
     runs-on: ubuntu-latest
