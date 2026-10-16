@@ -99,6 +99,7 @@ public class XunitLogger(ITestOutputHelper output, string category, LogLevel min
 	{
 		public void Dispose()
 		{
+			// This logger does not support scopes, so there is nothing to clean up here.
 		}
 	}
 }
@@ -144,6 +145,8 @@ public class XunitLogger<T>(ITestOutputHelper output) : ILogger<T>, IDisposable
 
 	protected virtual void Dispose(bool disposing)
 	{
+		// No unmanaged resources are held by this logger, so there is nothing to release here.
+		// The flag simply ensures Dispose is only applied once.
 		if (!_disposedValue)
 		{
 			_disposedValue = true;

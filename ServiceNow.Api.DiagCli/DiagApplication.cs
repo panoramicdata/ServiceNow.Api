@@ -44,11 +44,9 @@ internal sealed class DiagApplication(
 
 	private async Task ExecuteTestAsync(DiagnosticTest test)
 	{
-		var diagnostic = test.Type switch
-		{
-			DiagnosticType.Paging => serviceProvider.GetRequiredService<PagingDiagnostic>(),
-			_ => throw new NotSupportedException($"Test type {test.Type} is not supported."),
-		};
+		var diagnostic = test.Type == DiagnosticType.Paging
+			? serviceProvider.GetRequiredService<PagingDiagnostic>()
+			: throw new NotSupportedException($"Test type {test.Type} is not supported.");
 		await diagnostic.ExecuteAsync(test).ConfigureAwait(false);
 	}
 }

@@ -38,11 +38,9 @@ public class ServiceNowClient : IDisposable
 
 		ArgumentNullException.ThrowIfNull(password);
 
-		var baseAddress = _options.Environment switch
-		{
-			ServiceNowEnvironment.GCC => $"https://{account}.servicenowservices.com",
-			_ => $"https://{account}.service-now.com",
-		};
+		var baseAddress = _options.Environment == ServiceNowEnvironment.GCC
+			? $"https://{account}.servicenowservices.com"
+			: $"https://{account}.service-now.com";
 		var httpClientHandler = new HttpClientHandler();
 		_httpClient = new HttpClient(httpClientHandler)
 		{

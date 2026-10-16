@@ -12,44 +12,44 @@ internal class ResourceLinkConverter : JsonConverter
 
 	public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
 	{
-		if (reader.TokenType == JsonToken.StartObject)
+		if (reader.TokenType != JsonToken.StartObject)
 		{
-
-			if (!reader.Read())
-			{
-				return null;
-			}
-
-			string? link = null;
-			string? value = null;
-			while (reader.TokenType != JsonToken.EndObject)
-			{
-				if (reader.Value is not null && reader.Value.ToString()!.Equals("link", StringComparison.InvariantCultureIgnoreCase))
-				{
-					link = reader.ReadAsString();
-				}
-				else if (reader.Value is not null && reader.Value.ToString()!.Equals("value", StringComparison.InvariantCultureIgnoreCase))
-				{
-					value = reader.ReadAsString();
-				}
-				else
-				{
-					_ = reader.Read();
-				}
-			}
-
-			var resourceLink = (IResourceLink?)Activator.CreateInstance(objectType);
-			if (resourceLink is null)
-			{
-				return null;
-			}
-
-			resourceLink.Link = link;
-			resourceLink.Value = value;
-			return resourceLink;
+			return null;
 		}
 
-		return null;
+		if (!reader.Read())
+		{
+			return null;
+		}
+
+		var resourceLink = (IResourceLink?)Activator.CreateInstance(objectType);
+		if (resourceLink is null)
+		{
+			return null;
+		}
+
+		string? link = null;
+		string? value = null;
+		while (reader.TokenType != JsonToken.EndObject)
+		{
+			var tokenName = reader.Value?.ToString();
+			if (string.Equals(tokenName, "link", StringComparison.InvariantCultureIgnoreCase))
+			{
+				link = reader.ReadAsString();
+			}
+			else if (string.Equals(tokenName, "value", StringComparison.InvariantCultureIgnoreCase))
+			{
+				value = reader.ReadAsString();
+			}
+			else
+			{
+				_ = reader.Read();
+			}
+		}
+
+		resourceLink.Link = link;
+		resourceLink.Value = value;
+		return resourceLink;
 	}
 
 	public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)

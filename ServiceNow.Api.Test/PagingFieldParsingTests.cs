@@ -28,18 +28,12 @@ public class PagingFieldParsingTests
 	[Fact]
 	public async Task ObjectShapedPagingField_PagesInsteadOfThrowing()
 	{
-		using var handler = new StubServiceNowHandler(totalCount: 1_500,
+		var result = await GetAllByQueryAsync(totalCount: 1_500,
 		[
 			MakeObjectShapedPage(0, PageSize),
 			MakeObjectShapedPage(PageSize, 500),
 			[]
 		]);
-
-		using var client = new ServiceNowClient(handler);
-
-		var result = await client
-			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
-			.ConfigureAwait(true);
 
 		result.Should().HaveCount(1_500, "an object-shaped ordering field must not break paging");
 	}
@@ -58,12 +52,7 @@ public class PagingFieldParsingTests
 			["value"] = "2026-01-01 10:00:00"
 		});
 
-		using var handler = new StubServiceNowHandler(totalCount: PageSize, [fullPage, []]);
-		using var client = new ServiceNowClient(handler);
-
-		_ = await client
-			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
-			.ConfigureAwait(true);
+		var handler = await _RunGetAllByQueryAsync(totalCount: PageSize, pages: [fullPage]);
 
 		// The second request carries the paging window, built from whichever representation was used.
 		handler.RequestUris.Should().HaveCountGreaterThan(1);
@@ -81,12 +70,7 @@ public class PagingFieldParsingTests
 		// 05:00 at +05:00 is midnight UTC.
 		var fullPage = MakePageSharingOneTimestamp("2026-01-02T05:00:00+05:00");
 
-		using var handler = new StubServiceNowHandler(totalCount: PageSize, [fullPage, []]);
-		using var client = new ServiceNowClient(handler);
-
-		_ = await client
-			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
-			.ConfigureAwait(true);
+		var handler = await _RunGetAllByQueryAsync(totalCount: PageSize, pages: [fullPage]);
 
 		handler.RequestUris.Should().HaveCountGreaterThan(1);
 		handler.RequestUris[1].Should().Contain("2026-01-02 00:00:00", "the offset should be applied, not ignored");
@@ -101,12 +85,7 @@ public class PagingFieldParsingTests
 	{
 		var fullPage = MakePageSharingOneTimestamp("not a date at all");
 
-		using var handler = new StubServiceNowHandler(totalCount: PageSize, [fullPage, []]);
-		using var client = new ServiceNowClient(handler);
-
-		var act = async () => await client
-			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
-			.ConfigureAwait(true);
+		var act = async () => await _RunGetAllByQueryAsync(totalCount: PageSize, pages: [fullPage]).ConfigureAwait(true);
 
 		(await act.Should().ThrowAsync<ServiceNowApiException>().ConfigureAwait(true))
 			.WithMessage("*sys_created_on*not a date at all*");
@@ -119,18 +98,12 @@ public class PagingFieldParsingTests
 	[Fact]
 	public async Task PlainUtcPagingField_StillPagesAsBefore()
 	{
-		using var handler = new StubServiceNowHandler(totalCount: 1_500,
+		var result = await GetAllByQueryAsync(totalCount: 1_500,
 		[
 			MakePlainPage(0, PageSize),
 			MakePlainPage(PageSize, 500),
 			[]
 		]);
-
-		using var client = new ServiceNowClient(handler);
-
-		var result = await client
-			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
-			.ConfigureAwait(true);
 
 		result.Should().HaveCount(1_500);
 	}
@@ -140,6 +113,25 @@ public class PagingFieldParsingTests
 	/// client derives from the page is deterministic and can be asserted on. The sys_ids must differ or the
 	/// client's de-duplication would collapse the page to a single row.
 	/// </summary>
+	private static async Task<List<JObject>> GetAllByQueryAsync(int totalCount, List<List<JObject>> pages)
+	{
+		using var handler = new StubServiceNowHandler(totalCount: totalCount, pages);
+		using var client = new ServiceNowClient(handler);
+		return await client
+			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
+			.ConfigureAwait(true);
+	}
+
+	private static async Task<StubServiceNowHandler> _RunGetAllByQueryAsync(int totalCount, List<JObject>[] pages)
+	{
+		using var handler = new StubServiceNowHandler(totalCount: totalCount, [.. pages, []]);
+		using var client = new ServiceNowClient(handler);
+		var _ = await client
+			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
+			.ConfigureAwait(true);
+		return handler;
+	}
+
 	private static List<JObject> MakePageSharingOneTimestamp(JToken sharedCreatedOn)
 		=> [.. Enumerable.Range(0, PageSize).Select(i => new JObject
 		{

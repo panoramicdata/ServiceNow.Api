@@ -1,5 +1,6 @@
 ﻿using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace ServiceNow.Api.Test;
@@ -19,29 +20,9 @@ public class GetAllByQueryToleranceTests(ITestOutputHelper iTestOutputHelper, Fi
 	public async Task PagingTestAsync()
 	{
 		// A repeat of another test but with tolerance defined in the client
-
 		// This test fails if not ordering by ORDERBYsys_id
-		const string? query = null;
-		var fieldList = new List<string>();
-		const string? extraQueryString = null;
-
-		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, cancellationToken: CancellationToken);
-		result.Should().NotBeNull();
-		Assert.NotEmpty(result);
-		result[0].ContainsKey("sys_id").Should().BeTrue();
-		// Expecting the u_value field to be present as we didn't limit the fields to be retrieved
-		result[0].ContainsKey("u_value").Should().BeTrue();
-
-		// Check for dupes
-		var dupes = result.GroupBy(ci => ci["sys_id"]).Where(g => g.Count() > 1).Select(g => new { Id = g.First()["sys_id"], Count = g.Count() }).ToList();
-
-		var unique = result.GroupBy(ci => ci["sys_id"]).Select(ci => ci.First()).ToList();
-
-		Logger.LogInformation(
-			"Found {DupeCount} dupes - total retrieved = {ResultCount} - unique = {UniqueCount}",
-			dupes.Count, result.Count, unique.Count);
-
-		dupes.Should().BeEmpty();
+		var result = await Client.GetAllByQueryAsync("u_ci_property", null, new List<string>(), null, cancellationToken: CancellationToken);
+		await ValidatePagingResultAsync(result);
 	}
 
 	/// <summary>
@@ -51,20 +32,20 @@ public class GetAllByQueryToleranceTests(ITestOutputHelper iTestOutputHelper, Fi
 	public async Task AnotherPagingTestAsync()
 	{
 		// A repeat of another test but with tolerance defined in the client
-
 		// This test fails if not ordering by ORDERBYsys_id
-		const string? query = null;
-		var fieldList = new List<string>();
-		const string? extraQueryString = null;
-
 		var result = await Client.GetAllByQueryAsync(
 			"u_view_websites",
-			query,
-			fieldList,
-			extraQueryString,
+			null,
+			new List<string>(),
+			null,
 			"wss_sys_updated_on",
 			3,
 			CancellationToken);
+		await ValidatePagingResultAsync(result);
+	}
+
+	private Task ValidatePagingResultAsync(List<JObject> result)
+	{
 		result.Should().NotBeNull();
 		Assert.NotEmpty(result);
 		result[0].ContainsKey("sys_id").Should().BeTrue();
@@ -81,5 +62,6 @@ public class GetAllByQueryToleranceTests(ITestOutputHelper iTestOutputHelper, Fi
 			dupes.Count, result.Count, unique.Count);
 
 		dupes.Should().BeEmpty();
+		return Task.CompletedTask;
 	}
 }

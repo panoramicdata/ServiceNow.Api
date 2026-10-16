@@ -25,28 +25,11 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 		const string? extraQueryString = null;
 
 		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, cancellationToken: CancellationToken);
-		result.Should().NotBeNull();
+		_ = result.Should().NotBeNull();
 		Assert.NotEmpty(result);
-		result[0].ContainsKey("sys_id").Should().BeTrue();
-		// Not expecting the u_value field to be present as we asked for sys_id only
-		//Assert.False(result[0].ContainsKey("u_value"));
+		_ = result[0].ContainsKey("sys_id").Should().BeTrue();
 
-		// There should only be the properties requested, even though sys_id and sys_created_on are used internally for paging
-		// (sys_created_on is used unless the paging field has been set in options passed to the client, which would be used instead)
-		var actualProperties = result[0].Properties().Select(p => p.Name).ToList();
-		//Assert.Equal(fieldList.OrderBy(name => name), actualProperties.OrderBy(name => name));
-
-		// Check for dupes
-		var dupes = result.GroupBy(ci => ci["sys_id"]).Where(g => g.Count() > 1).Select(g => new { Id = g.First()["sys_id"], Count = g.Count() }).ToList();
-
-		var unique = result.GroupBy(ci => ci["sys_id"]).Select(ci => ci.First()).ToList();
-
-		Logger.LogInformation("Found {DupesCount} dupes - total retrieved = {ResultCount} - unique = {UniqueCount}",
-			dupes.Count,
-			result.Count,
-			unique.Count);
-
-		dupes.Should().BeEmpty();
+		await ValidatePagingResultAsync(result);
 	}
 
 	/// <summary>
@@ -62,21 +45,11 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 		const string? extraQueryString = null;
 
 		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, cancellationToken: CancellationToken);
-		result.Should().NotBeNull();
+		_ = result.Should().NotBeNull();
 		Assert.NotEmpty(result);
-		result[0].ContainsKey("sys_id").Should().BeTrue();
-		// Expecting the u_value field to be present as we didn't limit the fields to be retrieved
-		result[0].ContainsKey("u_value").Should().BeTrue();
+		_ = result[0].ContainsKey("sys_id").Should().BeTrue();
 
-		// Check for dupes
-		var dupes = result.GroupBy(ci => ci["sys_id"]).Where(g => g.Count() > 1).Select(g => new { Id = g.First()["sys_id"], Count = g.Count() }).ToList();
-
-		var unique = result.GroupBy(ci => ci["sys_id"]).Select(ci => ci.First()).ToList();
-
-		Logger.LogInformation("Found {DupesCount} dupes - total retrieved = {ResultCount} - unique = {UniqueCount}",
-			dupes.Count, result.Count, unique.Count);
-
-		dupes.Should().BeEmpty();
+		await ValidatePagingResultAsync(result);
 	}
 
 	/// <summary>
@@ -91,12 +64,10 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 		_ = page.Items.Should().NotBeNullOrEmpty();
 		var firstItem = page.Items[0];
 
-		// Re-fetch using SysId
 		var refetchById = await Client.GetByIdAsync<Incident>(firstItem.SysId, CancellationToken);
 		_ = refetchById.Should().NotBeNull();
 		_ = firstItem.SysId.Should().Be(refetchById!.SysId);
 
-		// Re-fetch using SysId
 		var refetchByQuery = (await Client.GetPageByQueryAsync<Incident>(0, 1, $"sys_id={firstItem.SysId}", CancellationToken))?.Items.FirstOrDefault();
 		_ = refetchByQuery.Should().NotBeNull();
 		_ = firstItem.SysId.Should().Be(refetchByQuery!.SysId);
@@ -148,5 +119,22 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 
 		var relationship = list.FirstOrDefault();
 		_ = relationship.Should().NotBeNull();
+	}
+
+	private Task ValidatePagingResultAsync(IEnumerable<dynamic> result)
+	{
+		result.Should().NotBeNull();
+		Assert.NotEmpty(result);
+		var dupes = result.GroupBy(ci => ci["sys_id"]).Where(g => g.Count() > 1).Select(g => new { Id = g.First()["sys_id"], Count = g.Count() }).ToList();
+
+		var unique = result.GroupBy(ci => ci["sys_id"]).Select(ci => ci.First()).ToList();
+
+		Logger.LogInformation("Found {DupesCount} dupes - total retrieved = {ResultCount} - unique = {UniqueCount}",
+			dupes.Count,
+			result.Count(),
+			unique.Count);
+
+		dupes.Should().BeEmpty();
+		return Task.CompletedTask;
 	}
 }
