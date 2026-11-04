@@ -42,7 +42,7 @@ public class ServiceNowClient : IDisposable
 			? $"https://{account}.servicenowservices.com"
 			: $"https://{account}.service-now.com";
 		var httpClientHandler = new HttpClientHandler();
-		_httpClient = new HttpClient(httpClientHandler)
+		_httpClient = new HttpClient(new ReadOnlyHandler(_options, httpClientHandler))
 		{
 			BaseAddress = new Uri(baseAddress),
 			DefaultRequestHeaders =
@@ -80,7 +80,7 @@ public class ServiceNowClient : IDisposable
 		_logger = _options.Logger ?? new NullLogger<ServiceNowClient>();
 		AccountName = "test";
 
-		_httpClient = new HttpClient(httpMessageHandler)
+		_httpClient = new HttpClient(new ReadOnlyHandler(_options, httpMessageHandler))
 		{
 			BaseAddress = new Uri("https://test.service-now.com"),
 			DefaultRequestHeaders =

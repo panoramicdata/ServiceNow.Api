@@ -13,6 +13,11 @@ public class Options
 	public ILogger? Logger { get; set; }
 
 	/// <summary>
+	/// Whether the client refuses every request other than GET, HEAD and OPTIONS
+	/// </summary>
+	public bool IsReadOnly { get; set; }
+
+	/// <summary>
 	/// The field that is used in the "GetAllByQueryInternalAsync" method in ServiceNowClient.
 	/// This can be set because it CAN happen that the table/view does NOT have this field,
 	/// but another field e.g. inc_sys_created_on. Note it must be DateTime-related to parse properly
