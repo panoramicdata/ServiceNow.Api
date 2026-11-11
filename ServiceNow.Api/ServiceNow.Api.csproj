@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <Authors>Panoramic Data Limited</Authors>
     <Company>Panoramic Data Limited</Company>
     <Description>A ServiceNow REST API client</Description>
@@ -36,7 +36,6 @@ The field is now required only when records remain to be collected: a full page,
   <ItemGroup>
     <!-- Floor held below the central pin: this is the minimum version consumers inherit, and
          raising it fails restore (NU1109) for any consumer pinning an earlier 10.0.x. -->
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" VersionOverride="10.0.9" />
     <PackageReference Include="Nerdbank.GitVersioning">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
