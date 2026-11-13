@@ -5,18 +5,21 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/24dcf171dd8540a192635ed46eeb1ea3)](https://www.codacy.com/gh/panoramicdata/ServiceNow.Api/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=panoramicdata/ServiceNow.Api&amp;utm_campaign=Badge_Grade)
 
+
+Supports .NET 11.0.
+
 # Usage
 
 To create a simple command line app that uses the ServiceNow REST API:
 
-1. Create a .NET Core 10.0 Console project in Visual Studio
+1. Create a .NET 11.0 Console project in Visual Studio
 2. Ensure that you have specified &lt;LangVersion&gt;latest&lt;/LangVersion&gt; in the csproj file, e.g.:
 ```` xml
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFramework>net11.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
 		<AnalysisMode>Recommended</AnalysisMode>
