@@ -1,4 +1,4 @@
-using AwesomeAssertions;
+﻿using AwesomeAssertions;
 using Newtonsoft.Json.Linq;
 using ServiceNow.Api.Exceptions;
 using System.Globalization;
@@ -41,25 +41,8 @@ public class PagingTerminationTests
 		]).ConfigureAwait(true);
 
 		context.Result.Should().HaveCount(2_497, "a short page means ACL filtering, not end of data");
-		context.Handler.RequestCount.Should().Be(4, "paging should continue past the short page until an empty one");
-	}
-
-	/// <summary>
-	/// The historic behaviour: stopping at the first short page. Guards against a regression
-	/// back to it by asserting the count that bug produced is NOT what we get.
-	/// </summary>
-	[Fact]
-	public async Task ShortPageMidStream_DoesNotStopAtTheShortPage()
-	{
-		using var context = await RunGetAllByQuery(totalCount: 2_497,
-		[
-			MakePage(0, 1_000),
-			MakePage(1_000, 997),
-			MakePage(1_997, 500),
-			[]
-		]).ConfigureAwait(true);
-
 		context.Result.Should().NotHaveCount(1_997, "1,997 is the truncated count produced by stopping at the short page");
+		context.Handler.RequestCount.Should().Be(4, "paging should continue past the short page until an empty one");
 	}
 
 	/// <summary>
@@ -85,20 +68,11 @@ public class PagingTerminationTests
 	[Fact]
 	public async Task RetrievingFewerThanTheReportedTotal_Throws()
 	{
-		var handler = new StubServiceNowHandler(totalCount: 100,
-		[
-			MakePage(0, 50),
-			[]
-		]);
+		using var handler = new StubServiceNowHandler(totalCount: 100, [MakePage(0, 50), []]);
 
-		using var client = new ServiceNowClient(handler);
+		var exception = await StubRun.ThrowsAsync<Exception>(handler, TableName).ConfigureAwait(true);
 
-		var act = async () => await client
-			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
-			.ConfigureAwait(true);
-
-		(await act.Should().ThrowAsync<Exception>().ConfigureAwait(true))
-			.WithMessage("*100*50*", "the message should name both the expected and the retrieved count");
+		exception.Message.Should().Match("*100*50*", "the message should name both the expected and the retrieved count");
 	}
 
 	/// <summary>
@@ -157,20 +131,13 @@ public class PagingTerminationTests
 	[InlineData(50, 10)]    // far past it
 	public async Task ShortfallBeyondTolerance_Throws(int returned, int tolerance)
 	{
-		var handler = new StubServiceNowHandler(totalCount: 100,
-		[
-			MakePage(0, returned),
-			[]
-		]);
+		using var handler = new StubServiceNowHandler(totalCount: 100, [MakePage(0, returned), []]);
 
-		using var client = new ServiceNowClient(handler, new Options { ValidateCountItemsReturnedTolerance = tolerance });
-
-		var act = async () => await client
-			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
+		var exception = await StubRun
+			.ThrowsAsync<Exception>(handler, TableName, new Options { ValidateCountItemsReturnedTolerance = tolerance })
 			.ConfigureAwait(true);
 
-		(await act.Should().ThrowAsync<Exception>().ConfigureAwait(true))
-			.WithMessage($"*{returned}*{tolerance} tolerance*", "the message should name the retrieved count and the tolerance applied");
+		exception.Message.Should().Match($"*{returned}*{tolerance} tolerance*", "the message should name the retrieved count and the tolerance applied");
 	}
 
 	/// <summary>
@@ -200,38 +167,24 @@ public class PagingTerminationTests
 		var stuck = MakePage(0, 1_000, sameTimestamp: true);
 		var stuckAgain = MakePage(1_000, 1_000, sameTimestamp: true);
 
-		var handler = new StubServiceNowHandler(totalCount: 5_000, [stuck, stuckAgain]);
-		using var client = new ServiceNowClient(handler);
+		using var handler = new StubServiceNowHandler(totalCount: 5_000, [stuck, stuckAgain]);
 
-		var act = async () => await client
-			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
-			.ConfigureAwait(true);
+		var exception = await StubRun.ThrowsAsync<ServiceNowApiException>(handler, TableName).ConfigureAwait(true);
 
-		(await act.Should().ThrowAsync<ServiceNowApiException>().ConfigureAwait(true))
-			.WithMessage("*Paging window has not increased*");
+		exception.Message.Should().Match("*Paging window has not increased*");
 	}
 
 	/// <summary>
 	/// The outcome of a GetAllByQueryAsync walk against the stub handler, exposed to the
 	/// caller so that assertions can reference both the result and the handler.
 	/// </summary>
-	private sealed class RunOutcome : IDisposable
+	private sealed class RunOutcome(StubServiceNowHandler handler, List<JObject> result) : IDisposable
 	{
-		public RunOutcome(StubServiceNowHandler handler, List<JObject> result)
-		{
-			Handler = handler;
-			Result = result;
-		}
+		public StubServiceNowHandler Handler { get; } = handler;
 
-		public StubServiceNowHandler Handler { get; }
+		public List<JObject> Result { get; } = result;
 
-		public List<JObject> Result { get; }
-
-		public void Dispose()
-		{
-			Handler.Dispose();
-			GC.SuppressFinalize(this);
-		}
+		public void Dispose() => Handler.Dispose();
 	}
 
 	private static async Task<RunOutcome> RunGetAllByQuery(
@@ -240,10 +193,7 @@ public class PagingTerminationTests
 		Options? options = null)
 	{
 		var handler = new StubServiceNowHandler(totalCount, pages);
-		using var client = new ServiceNowClient(handler, options);
-		var result = await client
-			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
-			.ConfigureAwait(true);
+		var result = await StubRun.GetAllAsync(handler, TableName, options).ConfigureAwait(true);
 		return new RunOutcome(handler, result);
 	}
 

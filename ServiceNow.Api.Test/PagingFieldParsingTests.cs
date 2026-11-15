@@ -1,4 +1,4 @@
-using AwesomeAssertions;
+﻿using AwesomeAssertions;
 using Newtonsoft.Json.Linq;
 using ServiceNow.Api.Exceptions;
 using System.Globalization;
@@ -52,12 +52,12 @@ public class PagingFieldParsingTests
 			["value"] = "2026-01-01 10:00:00"
 		});
 
-		var handler = await _RunGetAllByQueryAsync(totalCount: PageSize, pages: [fullPage]);
+		var requestUris = await RunAndCaptureRequestUrisAsync(totalCount: PageSize, pages: [fullPage]);
 
 		// The second request carries the paging window, built from whichever representation was used.
-		handler.RequestUris.Should().HaveCountGreaterThan(1);
-		handler.RequestUris[1].Should().Contain("2026-01-01 10:00:00", "the raw value is the correct boundary");
-		handler.RequestUris[1].Should().NotContain("2030", "the display value must not be used as the boundary");
+		requestUris.Should().HaveCountGreaterThan(1);
+		requestUris[1].Should().Contain("2026-01-01 10:00:00", "the raw value is the correct boundary");
+		requestUris[1].Should().NotContain("2030", "the display value must not be used as the boundary");
 	}
 
 	/// <summary>
@@ -70,10 +70,10 @@ public class PagingFieldParsingTests
 		// 05:00 at +05:00 is midnight UTC.
 		var fullPage = MakePageSharingOneTimestamp("2026-01-02T05:00:00+05:00");
 
-		var handler = await _RunGetAllByQueryAsync(totalCount: PageSize, pages: [fullPage]);
+		var requestUris = await RunAndCaptureRequestUrisAsync(totalCount: PageSize, pages: [fullPage]);
 
-		handler.RequestUris.Should().HaveCountGreaterThan(1);
-		handler.RequestUris[1].Should().Contain("2026-01-02 00:00:00", "the offset should be applied, not ignored");
+		requestUris.Should().HaveCountGreaterThan(1);
+		requestUris[1].Should().Contain("2026-01-02 00:00:00", "the offset should be applied, not ignored");
 	}
 
 	/// <summary>
@@ -85,7 +85,7 @@ public class PagingFieldParsingTests
 	{
 		var fullPage = MakePageSharingOneTimestamp("not a date at all");
 
-		var act = async () => await _RunGetAllByQueryAsync(totalCount: PageSize, pages: [fullPage]).ConfigureAwait(true);
+		var act = async () => await RunAndCaptureRequestUrisAsync(totalCount: PageSize, pages: [fullPage]).ConfigureAwait(true);
 
 		(await act.Should().ThrowAsync<ServiceNowApiException>().ConfigureAwait(true))
 			.WithMessage("*sys_created_on*not a date at all*");
@@ -116,20 +116,14 @@ public class PagingFieldParsingTests
 	private static async Task<List<JObject>> GetAllByQueryAsync(int totalCount, List<List<JObject>> pages)
 	{
 		using var handler = new StubServiceNowHandler(totalCount: totalCount, pages);
-		using var client = new ServiceNowClient(handler);
-		return await client
-			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
-			.ConfigureAwait(true);
+		return await StubRun.GetAllAsync(handler, TableName).ConfigureAwait(true);
 	}
 
-	private static async Task<StubServiceNowHandler> _RunGetAllByQueryAsync(int totalCount, List<JObject>[] pages)
+	private static async Task<IReadOnlyList<string>> RunAndCaptureRequestUrisAsync(int totalCount, List<JObject>[] pages)
 	{
 		using var handler = new StubServiceNowHandler(totalCount: totalCount, [.. pages, []]);
-		using var client = new ServiceNowClient(handler);
-		var _ = await client
-			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
-			.ConfigureAwait(true);
-		return handler;
+		_ = await StubRun.GetAllAsync(handler, TableName).ConfigureAwait(true);
+		return handler.RequestUris;
 	}
 
 	private static List<JObject> MakePageSharingOneTimestamp(JToken sharedCreatedOn)

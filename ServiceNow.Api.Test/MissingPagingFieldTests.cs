@@ -1,4 +1,4 @@
-using AwesomeAssertions;
+﻿using AwesomeAssertions;
 using Newtonsoft.Json.Linq;
 using ServiceNow.Api.Exceptions;
 using Xunit;
@@ -28,17 +28,12 @@ public class MissingPagingFieldTests
 	[Fact]
 	public async Task ShortPageWithNoPagingField_ReturnsTheRows()
 	{
-		var handler = new StubServiceNowHandler(totalCount: 3, [MakeRows(0, 3), []]);
-		using var client = new ServiceNowClient(handler);
+		using var handler = new StubServiceNowHandler(totalCount: 3, [MakeRows(0, 3), []]);
 
-		var result = await client
-			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
-			.ConfigureAwait(true);
+		var result = await StubRun.GetAllAsync(handler, TableName).ConfigureAwait(true);
 
 		result.Should().HaveCount(3, "a result that fits in one page needs no paging field");
 		handler.RequestCount.Should().Be(1, "the complete result arrived in the first request");
-
-		handler.Dispose();
 	}
 
 	/// <summary>
@@ -49,19 +44,13 @@ public class MissingPagingFieldTests
 	public async Task ShortPageWithNoPagingField_ReturnsTheRequestedFields()
 	{
 		var fieldList = new List<string> { "cmdbci_name", "os_u_end_of_support" };
+		using var handler = new StubServiceNowHandler(totalCount: 3, [MakeRows(0, 3), []]);
 
-		var handler = new StubServiceNowHandler(totalCount: 3, [MakeRows(0, 3), []]);
-		using var client = new ServiceNowClient(handler);
-
-		var result = await client
-			.GetAllByQueryAsync(TableName, fieldList: fieldList, cancellationToken: TestContext.Current.CancellationToken)
-			.ConfigureAwait(true);
+		var result = await StubRun.GetAllAsync(handler, TableName, fieldList: fieldList).ConfigureAwait(true);
 
 		result.Should().HaveCount(3);
 		result[0].Properties().Select(property => property.Name)
 			.Should().BeEquivalentTo(fieldList, "sys_id and the paging field are requested for paging, then trimmed");
-
-		handler.Dispose();
 	}
 
 	/// <summary>
@@ -71,24 +60,12 @@ public class MissingPagingFieldTests
 	[Fact]
 	public async Task ShortPageWithNoPagingField_ShortOfTheReportedTotal_Throws()
 	{
-		var handler = new StubServiceNowHandler(totalCount: 100, [MakeRows(0, 3), []]);
-		var client = new ServiceNowClient(handler);
+		using var handler = new StubServiceNowHandler(totalCount: 100, [MakeRows(0, 3), []]);
 
-		var act = async () => await client
-			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
-			.ConfigureAwait(true);
+		var exception = await StubRun.ThrowsAsync<ServiceNowApiException>(handler, TableName).ConfigureAwait(true);
 
-		try
-		{
-			(await act.Should().ThrowAsync<ServiceNowApiException>().ConfigureAwait(true))
-				.WithMessage("*does not have*sys_created_on*", "the message must name the paging problem")
-				.WithMessage("*PagingFieldName*", "and the option that resolves it");
-		}
-		finally
-		{
-			client.Dispose();
-			handler.Dispose();
-		}
+		exception.Message.Should().Match("*does not have*sys_created_on*", "the message must name the paging problem");
+		exception.Message.Should().Contain("PagingFieldName", "the message must name the option that resolves it");
 	}
 
 	/// <summary>
@@ -98,23 +75,11 @@ public class MissingPagingFieldTests
 	[Fact]
 	public async Task FullPageWithNoPagingField_Throws()
 	{
-		var handler = new StubServiceNowHandler(totalCount: 5_000, [MakeRows(0, PageSize), []]);
-		var client = new ServiceNowClient(handler);
+		using var handler = new StubServiceNowHandler(totalCount: 5_000, [MakeRows(0, PageSize), []]);
 
-		var act = async () => await client
-			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
-			.ConfigureAwait(true);
+		var exception = await StubRun.ThrowsAsync<ServiceNowApiException>(handler, TableName).ConfigureAwait(true);
 
-		try
-		{
-			(await act.Should().ThrowAsync<ServiceNowApiException>().ConfigureAwait(true))
-				.WithMessage("*does not have*sys_created_on*", "a full page cannot be assumed to be the whole result");
-		}
-		finally
-		{
-			client.Dispose();
-			handler.Dispose();
-		}
+		exception.Message.Should().Match("*does not have*sys_created_on*", "a full page cannot be assumed to be the whole result");
 	}
 
 	/// <summary>
@@ -124,16 +89,13 @@ public class MissingPagingFieldTests
 	[Fact]
 	public async Task ShortPageWithNoPagingField_WithinTolerance_ReturnsWhatWasRead()
 	{
-		var handler = new StubServiceNowHandler(totalCount: 100, [MakeRows(0, 95), []]);
-		using var client = new ServiceNowClient(handler, new Options { ValidateCountItemsReturnedTolerance = 10 });
+		using var handler = new StubServiceNowHandler(totalCount: 100, [MakeRows(0, 95), []]);
 
-		var result = await client
-			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
+		var result = await StubRun
+			.GetAllAsync(handler, TableName, new Options { ValidateCountItemsReturnedTolerance = 10 })
 			.ConfigureAwait(true);
 
 		result.Should().HaveCount(95, "a shortfall inside the tolerance is not a reason to demand a paging field");
-
-		handler.Dispose();
 	}
 
 	/// <summary>
@@ -143,18 +105,14 @@ public class MissingPagingFieldTests
 	[Fact]
 	public async Task ShortPageWithNoPagingField_WithValidationDisabled_ReturnsWhatWasRead()
 	{
-		var handler = new StubServiceNowHandler(totalCount: 100, [MakeRows(0, 3), []]);
-		using var client = new ServiceNowClient(handler, new Options { ValidateCountItemsReturned = false });
+		using var handler = new StubServiceNowHandler(totalCount: 100, [MakeRows(0, 3), []]);
 
-		var result = await client
-			.GetAllByQueryAsync(TableName, cancellationToken: TestContext.Current.CancellationToken)
+		var result = await StubRun
+			.GetAllAsync(handler, TableName, new Options { ValidateCountItemsReturned = false })
 			.ConfigureAwait(true);
 
 		result.Should().HaveCount(3);
-
-		handler.Dispose();
 	}
-
 	/// <summary>
 	/// Rows as a view with no date/time column returns them: a sys_id, business fields, and no
 	/// sys_created_on anywhere.

@@ -1,5 +1,4 @@
 ﻿using AwesomeAssertions;
-using Microsoft.Extensions.Logging;
 using ServiceNow.Api.Tables;
 using Xunit;
 
@@ -20,16 +19,7 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 	public async Task InternalPagingTestAsync()
 	{
 		// This test fails if not ordering by ORDERBYsys_id
-		const string query = "u_nameNotEmpty";
-		var fieldList = new List<string> { "sys_id", "sys_updated_on", "u_name", "u_value", "sys_created_on" };
-		const string? extraQueryString = null;
-
-		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, cancellationToken: CancellationToken);
-		_ = result.Should().NotBeNull();
-		Assert.NotEmpty(result);
-		_ = result[0].ContainsKey("sys_id").Should().BeTrue();
-
-		await ValidatePagingResultAsync(result);
+		await AssertPagingAsync("u_nameNotEmpty", ["sys_id", "sys_updated_on", "u_name", "u_value", "sys_created_on"]);
 	}
 
 	/// <summary>
@@ -40,16 +30,7 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 	public async Task PagingTestAsync()
 	{
 		// This test fails if not ordering by ORDERBYsys_id
-		const string? query = null;
-		var fieldList = new List<string>();
-		const string? extraQueryString = null;
-
-		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, extraQueryString, cancellationToken: CancellationToken);
-		_ = result.Should().NotBeNull();
-		Assert.NotEmpty(result);
-		_ = result[0].ContainsKey("sys_id").Should().BeTrue();
-
-		await ValidatePagingResultAsync(result);
+		await AssertPagingAsync(null, []);
 	}
 
 	/// <summary>
@@ -121,20 +102,13 @@ public class QueryTests(ITestOutputHelper iTestOutputHelper, Fixture fixture) : 
 		_ = relationship.Should().NotBeNull();
 	}
 
-	private Task ValidatePagingResultAsync(IEnumerable<dynamic> result)
+	private async Task AssertPagingAsync(string? query, List<string> fieldList)
 	{
-		result.Should().NotBeNull();
+		var result = await Client.GetAllByQueryAsync("u_ci_property", query, fieldList, null, cancellationToken: CancellationToken);
+		_ = result.Should().NotBeNull();
 		Assert.NotEmpty(result);
-		var dupes = result.GroupBy(ci => ci["sys_id"]).Where(g => g.Count() > 1).Select(g => new { Id = g.First()["sys_id"], Count = g.Count() }).ToList();
+		_ = result[0].ContainsKey("sys_id").Should().BeTrue();
 
-		var unique = result.GroupBy(ci => ci["sys_id"]).Select(ci => ci.First()).ToList();
-
-		Logger.LogInformation("Found {DupesCount} dupes - total retrieved = {ResultCount} - unique = {UniqueCount}",
-			dupes.Count,
-			result.Count(),
-			unique.Count);
-
-		dupes.Should().BeEmpty();
-		return Task.CompletedTask;
+		AssertNoDuplicateSysIds(result);
 	}
 }
