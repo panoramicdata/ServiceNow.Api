@@ -9,6 +9,8 @@ namespace ServiceNow.Api.Tables;
 [JsonConverter(typeof(ResourceLinkConverter))]
 public class ResourceLink<T> : IResourceLink
 {
+	public static Type TargetType => typeof(T);
+
 	[DataMember(Name = "link")]
 	public string? Link { get; set; } // REST URL for child record
 
@@ -17,4 +19,4 @@ public class ResourceLink<T> : IResourceLink
 
 	// The ToString Method is called on serialization back to servicenow through the ResourceLinkConverter
 	public override string ToString() => Value ?? string.Empty;
-}
+}

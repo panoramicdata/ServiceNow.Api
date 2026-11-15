@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Microsoft.DependencyInjection.Abstracts;
 
@@ -88,4 +89,20 @@ public abstract class ServiceNowTest : TestBed<Fixture>
 	/// The client used by the test
 	/// </summary>
 	protected ServiceNowClient Client { get; }
+
+	/// <summary>
+	/// Logs how many records were retrieved and asserts that none share a sys_id.
+	/// </summary>
+	/// <param name="result">The retrieved records.</param>
+	protected void AssertNoDuplicateSysIds(IReadOnlyCollection<JObject> result)
+	{
+		var groups = result.GroupBy(ci => ci["sys_id"]?.ToString()).ToList();
+		var dupes = groups.Where(g => g.Count() > 1).ToList();
+
+		Logger.LogInformation(
+			"Found {DupeCount} dupes - total retrieved = {ResultCount} - unique = {UniqueCount}",
+			dupes.Count, result.Count, groups.Count);
+
+		Assert.Empty(dupes);
+	}
 }
