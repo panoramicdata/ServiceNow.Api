@@ -22,7 +22,10 @@ public class ServiceNowClientStubbedTests
 	private sealed class StubHandler(HttpStatusCode status, string body) : HttpMessageHandler
 	{
 		protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-			=> Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(body), RequestMessage = request });
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+			return Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(body), RequestMessage = request });
+		}
 	}
 
 	[Fact]
