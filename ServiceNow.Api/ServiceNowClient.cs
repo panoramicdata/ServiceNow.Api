@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using ServiceNow.Api.MetaData;
 using ServiceNow.Api.Tables;
 using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace ServiceNow.Api;
@@ -21,7 +22,7 @@ public partial class ServiceNowClient : IDisposable
 		 string account,
 		 string username,
 		 string password,
-		Options? options = null)
+		[Optional] Options? options)
 	{
 		_options = options ?? new();
 
@@ -48,7 +49,7 @@ public partial class ServiceNowClient : IDisposable
 		string account,
 		string username,
 		string password,
-		ILogger? iLogger = null)
+		[Optional] ILogger? iLogger)
 	: this(account, username, password, new Options { Logger = iLogger })
 	{
 	}
@@ -61,7 +62,7 @@ public partial class ServiceNowClient : IDisposable
 	/// <param name="options">Client options.</param>
 	internal ServiceNowClient(
 		HttpMessageHandler httpMessageHandler,
-		Options? options = null)
+		[Optional] Options? options)
 	{
 		ArgumentNullException.ThrowIfNull(httpMessageHandler);
 
@@ -80,10 +81,10 @@ public partial class ServiceNowClient : IDisposable
 		GC.SuppressFinalize(this);
 	}
 
-	public async Task<T?> GetByIdAsync<T>(string sysId, CancellationToken cancellationToken = default) where T : Table
+	public async Task<T?> GetByIdAsync<T>(string sysId, [Optional] CancellationToken cancellationToken) where T : Table
 		=> (await GetInternalAsync<RestResponse<T>>($"api/now/table/{Table.GetTableName<T>()}/{sysId}", cancellationToken).ConfigureAwait(false)).Item;
 
-	public async Task<JObject?> GetByIdAsync(string tableName, string sysId, CancellationToken cancellationToken = default)
+	public async Task<JObject?> GetByIdAsync(string tableName, string sysId, [Optional] CancellationToken cancellationToken)
 		=> (await GetInternalAsync<RestResponse<JObject>>($"api/now/table/{tableName}/{sysId}", cancellationToken).ConfigureAwait(false)).Item;
 
 	/// <summary>
@@ -115,7 +116,7 @@ public partial class ServiceNowClient : IDisposable
 	public async Task<List<Attachment>> GetAttachmentsAsync(
 		string tableName,
 		string tableSysId,
-		CancellationToken cancellationToken = default)
+		[Optional] CancellationToken cancellationToken)
 		=> (await GetInternalAsync<RestResponse<List<Attachment>>>($"api/now/attachment?sysparm_query=table_name={tableName}^table_sys_id={tableSysId}", cancellationToken).ConfigureAwait(false)).Item ?? [];
 
 	/// <summary>
@@ -129,8 +130,8 @@ public partial class ServiceNowClient : IDisposable
 	public async Task<string> DownloadAttachmentAsync(
 		Attachment attachment,
 		string outputPath,
-		string? filename = null,
-		CancellationToken cancellationToken = default)
+		[Optional] string? filename,
+		[Optional] CancellationToken cancellationToken)
 	{
 		var actualFilename = filename ?? attachment.FileName ?? throw new ArgumentException("Filename must be provided or available from attachment", nameof(filename));
 		var fileToWriteTo = Path.Combine(outputPath, actualFilename);
@@ -143,7 +144,7 @@ public partial class ServiceNowClient : IDisposable
 		return fileToWriteTo;
 	}
 
-	public Task<T> CreateAsync<T>(T @object, CancellationToken cancellationToken = default) where T : Table
+	public Task<T> CreateAsync<T>(T @object, [Optional] CancellationToken cancellationToken) where T : Table
 		=> CreateAsync(@object, null, cancellationToken);
 
 	public Task<T> CreateAsync<T>(T @object, string? extraQueryString) where T : Table
@@ -152,7 +153,7 @@ public partial class ServiceNowClient : IDisposable
 	public Task<T> CreateAsync<T>(T @object, string? extraQueryString, CancellationToken cancellationToken) where T : Table
 		=> SendForItemAsync<T>(HttpMethod.Post, CreateUrl(Table.GetTableName<T>(), extraQueryString), SerializeIgnoringNulls(@object), cancellationToken);
 
-	public Task<JObject> CreateAsync(string tableName, JObject jObject, CancellationToken cancellationToken = default)
+	public Task<JObject> CreateAsync(string tableName, JObject jObject, [Optional] CancellationToken cancellationToken)
 		=> CreateAsync(tableName, jObject, null, cancellationToken);
 
 	public Task<JObject> CreateAsync(string tableName, JObject jObject, string? extraQueryString)

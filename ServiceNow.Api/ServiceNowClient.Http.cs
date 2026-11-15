@@ -14,6 +14,9 @@ public partial class ServiceNowClient
 	private static string Describe(string? value)
 		=> string.IsNullOrWhiteSpace(value) ? "<not set>" : value;
 
+	private static string DescribeQuery(string tableName, string? query, List<string>? fieldList, string? extraQueryString)
+		=> $"{nameof(tableName)}: {tableName}, {nameof(query)}: {query ?? "<not set>"}, {nameof(fieldList)}: {Describe(fieldList)}, {nameof(extraQueryString)}: {Describe(extraQueryString)}";
+
 	private static string Describe(List<string>? fieldList)
 		=> fieldList?.Any() == true ? string.Join(", ", fieldList) : "<not set>";
 
