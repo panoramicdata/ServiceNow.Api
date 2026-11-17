@@ -12,7 +12,7 @@ public class NullResultTests
 	private sealed class StubHandler(HttpStatusCode status, string body) : HttpMessageHandler
 	{
 		protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-			=> Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(body) });
+			=> Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(body), RequestMessage = request });
 	}
 
 	private static ServiceNowClient CreateClient(string body, HttpStatusCode status = HttpStatusCode.OK)

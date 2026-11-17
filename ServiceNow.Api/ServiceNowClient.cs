@@ -161,8 +161,8 @@ public partial class ServiceNowClient : IDisposable
 		string tableSysId,
 		string fileName,
 		Stream content,
-		string? contentType = null,
-		CancellationToken cancellationToken = default)
+		[Optional] string? contentType,
+		[Optional] CancellationToken cancellationToken)
 	{
 		ArgumentException.ThrowIfNullOrWhiteSpace(tableName);
 		ArgumentException.ThrowIfNullOrWhiteSpace(tableSysId);

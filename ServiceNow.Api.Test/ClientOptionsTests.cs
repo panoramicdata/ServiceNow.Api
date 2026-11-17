@@ -17,6 +17,7 @@ public class ClientOptionsTests
 
 		protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
 		{
+			cancellationToken.ThrowIfCancellationRequested();
 			Uris.Add(request.RequestUri);
 			return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
 			{
@@ -29,6 +30,7 @@ public class ClientOptionsTests
 	{
 		protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
 		{
+			ArgumentNullException.ThrowIfNull(request);
 			await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
 			return new HttpResponseMessage(HttpStatusCode.OK);
 		}
