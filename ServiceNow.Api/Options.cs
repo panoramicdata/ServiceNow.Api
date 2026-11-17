@@ -18,6 +18,19 @@ public class Options
 	public bool IsReadOnly { get; set; }
 
 	/// <summary>
+	/// The request timeout. When null, the HttpClient default (100 seconds) applies.
+	/// Use <see cref="System.Threading.Timeout.InfiniteTimeSpan"/> to disable it.
+	/// </summary>
+	public TimeSpan? Timeout { get; set; }
+
+	/// <summary>
+	/// An optional handler to send requests through, for a proxy, client certificates or a resilience pipeline.
+	/// The client takes ownership and disposes it when the client is disposed.
+	/// When null, a default <see cref="HttpClientHandler"/> is used.
+	/// </summary>
+	public HttpMessageHandler? HttpMessageHandler { get; set; }
+
+	/// <summary>
 	/// The field that is used in the "GetAllByQueryInternalAsync" method in ServiceNowClient.
 	/// This can be set because it CAN happen that the table/view does NOT have this field,
 	/// but another field e.g. inc_sys_created_on. Note it must be DateTime-related to parse properly

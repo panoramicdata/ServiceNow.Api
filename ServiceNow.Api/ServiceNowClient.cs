@@ -7,6 +7,7 @@ using ServiceNow.Api.Tables;
 using System.Net.Http.Headers;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Web;
 
 namespace ServiceNow.Api;
 
@@ -39,7 +40,7 @@ public partial class ServiceNowClient : IDisposable
 		var baseAddress = _options.Environment == ServiceNowEnvironment.GCC
 			? $"https://{account}.servicenowservices.com"
 			: $"https://{account}.service-now.com";
-		_httpClient = CreateHttpClient(new HttpClientHandler(), baseAddress);
+		_httpClient = CreateHttpClient(_options.HttpMessageHandler ?? new HttpClientHandler(), baseAddress);
 		var basicString = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}"));
 		_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", basicString);
 		_logger.LogDebug("Created ServiceNowClient instance.");
@@ -144,6 +145,42 @@ public partial class ServiceNowClient : IDisposable
 		return fileToWriteTo;
 	}
 
+	/// <summary>
+	/// Upload an attachment to a record using the Attachment API (api/now/attachment/file).
+	/// The stream is sent as the raw request body, which is what that endpoint expects.
+	/// </summary>
+	/// <param name="tableName">The name of the table the record is in</param>
+	/// <param name="tableSysId">The sys_id of the record to attach the file to</param>
+	/// <param name="fileName">The file name to store the attachment under</param>
+	/// <param name="content">The file content</param>
+	/// <param name="contentType">The content type, defaults to application/octet-stream</param>
+	/// <param name="cancellationToken">A cancellation token</param>
+	/// <returns>The created attachment metadata</returns>
+	public async Task<Attachment?> UploadAttachmentAsync(
+		string tableName,
+		string tableSysId,
+		string fileName,
+		Stream content,
+		string? contentType = null,
+		CancellationToken cancellationToken = default)
+	{
+		ArgumentException.ThrowIfNullOrWhiteSpace(tableName);
+		ArgumentException.ThrowIfNullOrWhiteSpace(tableSysId);
+		ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
+		ArgumentNullException.ThrowIfNull(content);
+
+		var url = $"api/now/attachment/file?table_name={HttpUtility.UrlEncode(tableName)}&table_sys_id={HttpUtility.UrlEncode(tableSysId)}&file_name={HttpUtility.UrlEncode(fileName)}";
+		using var request = new HttpRequestMessage(HttpMethod.Post, url)
+		{
+			Content = new StreamContent(content)
+		};
+		request.Content.Headers.ContentType = MediaTypeHeaderValue.Parse(string.IsNullOrWhiteSpace(contentType) ? "application/octet-stream" : contentType);
+
+		using var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+		await EnsureSuccessAsync(response, cancellationToken).ConfigureAwait(false);
+		return (await GetDeserializedObjectFromResponse<RestResponse<Attachment>>(response, Guid.NewGuid()).ConfigureAwait(false)).Item;
+	}
+
 	public Task<T> CreateAsync<T>(T @object, [Optional] CancellationToken cancellationToken) where T : Table
 		=> CreateAsync(@object, null, cancellationToken);
 
@@ -224,7 +261,8 @@ public partial class ServiceNowClient : IDisposable
 	}
 
 	private HttpClient CreateHttpClient(HttpMessageHandler innerHandler, string baseAddress)
-		=> new(new ReadOnlyHandler(_options, innerHandler))
+	{
+		var httpClient = new HttpClient(new ReadOnlyHandler(_options, innerHandler))
 		{
 			BaseAddress = new Uri(baseAddress),
 			DefaultRequestHeaders =
@@ -232,6 +270,13 @@ public partial class ServiceNowClient : IDisposable
 				Accept = {new MediaTypeWithQualityHeaderValue("application/json")},
 			}
 		};
+		if (_options.Timeout is { } timeout)
+		{
+			httpClient.Timeout = timeout;
+		}
+
+		return httpClient;
+	}
 
 	private static string CreateUrl(string tableName, string? extraQueryString)
 		=> $"api/now/table/{tableName}" + (string.IsNullOrWhiteSpace(extraQueryString) ? "" : "?" + extraQueryString);

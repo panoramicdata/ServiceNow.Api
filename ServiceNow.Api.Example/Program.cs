@@ -7,7 +7,7 @@ public static class Program
 {
 	/// <summary>
 	/// The main entry point of the application.  It expects three arguments:
-	/// 1. The ServiceNow account URL (e.g. "https://dev12345.service-now.com")
+	/// 1. The ServiceNow instance sub-domain only (e.g. "dev12345" for https://dev12345.service-now.com)
 	/// 2. The username to authenticate with
 	/// 3. The password to authenticate with
 	/// </summary>
