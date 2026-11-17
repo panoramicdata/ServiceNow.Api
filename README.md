@@ -101,3 +101,40 @@ public class WinServerModel
 	public string Name { get; set; }
 }
 ````
+
+## The account argument
+
+The first constructor argument is the instance sub-domain only, not a URL. For `https://mycompany.service-now.com` use `"mycompany"`.
+
+## VB.NET example
+
+```` vb
+Imports System.Collections.Generic
+Imports ServiceNow.Api
+
+Module Program
+	Async Function Main(args As String()) As Task
+		' "mycompany" for https://mycompany.service-now.com
+		Dim account = "mycompany"
+		Dim username = args(0)
+		Dim password = args(1)
+
+		Using client As New ServiceNowClient(account, username, password, New Options())
+			Dim fields As New List(Of String) From {"sys_id", "name"}
+			Dim results = Await client.GetAllByQueryAsync("cmdb_ci_win_server", "name", fields)
+			Console.WriteLine($"Found {results.Count} servers")
+		End Using
+	End Function
+End Module
+````
+
+## Options
+
+`Options.Timeout` overrides the 100 second default request timeout. `Options.HttpMessageHandler` supplies the handler requests are sent through (for a proxy, client certificates or a resilience pipeline); the client disposes it with itself.
+
+## Uploading attachments
+
+```` C#
+await using var file = File.OpenRead("report.pdf");
+var attachment = await client.UploadAttachmentAsync("incident", incidentSysId, "report.pdf", file, "application/pdf");
+````

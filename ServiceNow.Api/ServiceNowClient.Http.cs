@@ -91,7 +91,12 @@ public partial class ServiceNowClient
 
 			_logger.LogTrace($"Request {requestId}: Content length: {content.Length / 1024:N0} KB");
 
+			// An empty or "null" body is a valid response from some endpoints, so give callers an empty envelope
 			var deserializeObject = JsonConvert.DeserializeObject<T>(content);
+			if (deserializeObject is null && typeof(T).GetConstructor(Type.EmptyTypes) is not null)
+			{
+				deserializeObject = Activator.CreateInstance<T>();
+			}
 
 			if (deserializeObject is RestListResponseBase restListResponse)
 			{
