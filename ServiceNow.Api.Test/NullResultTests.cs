@@ -9,15 +9,6 @@ public class NullResultTests
 {
 	private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-	private sealed class StubHandler(HttpStatusCode status, string body) : HttpMessageHandler
-	{
-		protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-		{
-			cancellationToken.ThrowIfCancellationRequested();
-			return Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(body), RequestMessage = request });
-		}
-	}
-
 	private static ServiceNowClient CreateClient(string body, HttpStatusCode status = HttpStatusCode.OK)
 		=> new(new StubHandler(status, body), new Options());
 
