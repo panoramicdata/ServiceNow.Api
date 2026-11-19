@@ -20,9 +20,27 @@ public partial class ServiceNowClient : IDisposable
 	private readonly Options _options;
 
 	public ServiceNowClient(
-		 string account,
-		 string username,
-		 string password,
+		string account,
+		string username,
+		string password,
+		[Optional] Options? options)
+		: this(account, CreateBasicHeader(account, username, password), options)
+	{
+	}
+
+	/// <summary>
+	/// Creates a client that sends the supplied Authorization header with every request.
+	/// </summary>
+	/// <remarks>
+	/// The header is used as given and is never refreshed, so a bearer token is only valid until it expires.
+	/// This does not implement the OAuth flow itself.
+	/// </remarks>
+	/// <param name="account">The ServiceNow instance name.</param>
+	/// <param name="authenticationHeader">The Authorization header to send, for example a bearer token.</param>
+	/// <param name="options">Client options.</param>
+	public ServiceNowClient(
+		string account,
+		AuthenticationHeaderValue authenticationHeader,
 		[Optional] Options? options)
 	{
 		_options = options ?? new();
@@ -33,16 +51,13 @@ public partial class ServiceNowClient : IDisposable
 		AccountName = account;
 		ArgumentNullException.ThrowIfNull(account);
 
-		ArgumentNullException.ThrowIfNull(username);
-
-		ArgumentNullException.ThrowIfNull(password);
+		ArgumentNullException.ThrowIfNull(authenticationHeader);
 
 		var baseAddress = _options.Environment == ServiceNowEnvironment.GCC
 			? $"https://{account}.servicenowservices.com"
 			: $"https://{account}.service-now.com";
 		_httpClient = CreateHttpClient(_options.HttpMessageHandler ?? new HttpClientHandler(), baseAddress);
-		var basicString = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}"));
-		_httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", basicString);
+		_httpClient.DefaultRequestHeaders.Authorization = authenticationHeader;
 		_logger.LogDebug("Created ServiceNowClient instance.");
 	}
 
@@ -75,6 +90,15 @@ public partial class ServiceNowClient : IDisposable
 	}
 
 	public string AccountName { get; } = string.Empty;
+
+	private static AuthenticationHeaderValue CreateBasicHeader(string account, string username, string password)
+	{
+		ArgumentNullException.ThrowIfNull(account);
+		ArgumentNullException.ThrowIfNull(username);
+		ArgumentNullException.ThrowIfNull(password);
+
+		return new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{username}:{password}")));
+	}
 
 	public void Dispose()
 	{
