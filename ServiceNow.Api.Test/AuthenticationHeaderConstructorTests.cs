@@ -27,7 +27,7 @@ public class AuthenticationHeaderConstructorTests
 		}
 	}
 
-	private static async Task<AuthenticationHeaderValue?> SendAsync(Func<Options, ServiceNowClient> create)
+	private static async Task<AuthenticationHeaderValue?> CaptureAuthorizationAsync(Func<Options, ServiceNowClient> create)
 	{
 		using var handler = new CapturingHandler();
 		using var client = create(new Options { HttpMessageHandler = handler });
@@ -40,7 +40,7 @@ public class AuthenticationHeaderConstructorTests
 	[Fact]
 	public async Task AuthenticationHeaderConstructor_SendsSuppliedHeader()
 	{
-		var header = await SendAsync(options => new ServiceNowClient("acme", new AuthenticationHeaderValue("Bearer", "token-123"), options));
+		var header = await CaptureAuthorizationAsync(options => new ServiceNowClient("acme", new AuthenticationHeaderValue("Bearer", "token-123"), options));
 
 		header.Should().NotBeNull();
 		header!.Scheme.Should().Be("Bearer");
@@ -50,7 +50,7 @@ public class AuthenticationHeaderConstructorTests
 	[Fact]
 	public async Task UsernamePasswordConstructor_StillSendsBasicHeader()
 	{
-		var header = await SendAsync(options => new ServiceNowClient("acme", "user", "pass", options));
+		var header = await CaptureAuthorizationAsync(options => new ServiceNowClient("acme", "user", "pass", options));
 
 		header.Should().NotBeNull();
 		header!.Scheme.Should().Be("Basic");
