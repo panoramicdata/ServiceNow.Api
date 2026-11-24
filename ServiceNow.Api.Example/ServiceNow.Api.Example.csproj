@@ -7,7 +7,6 @@
     <Nullable>enable</Nullable>
     <AnalysisMode>Recommended</AnalysisMode>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
-    <Copyright>Copyright © Panoramic Data Limited 2025</Copyright>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

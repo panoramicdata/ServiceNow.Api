@@ -7,7 +7,6 @@
     <AnalysisMode>Recommended</AnalysisMode>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <TargetFramework>net11.0</TargetFramework>
-    <Copyright>Copyright © Panoramic Data Limited 2025</Copyright>
     <Product>ServiceNow API DiagCli</Product>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>$(NoWarn);CA1873;CS1591</NoWarn>
